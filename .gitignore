@@ -1,0 +1,8 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+server/TripoSR/
+server/req-triposr.txt
+server/tsr.zip
+.DS_Store

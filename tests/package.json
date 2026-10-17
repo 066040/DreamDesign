@@ -1,0 +1,13 @@
+{
+  "name": "dreamdesign-tests",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Unit and UI (jsdom) tests for DreamDesign",
+  "scripts": {
+    "test": "node test_pure.js && node test_ui.js"
+  },
+  "devDependencies": {
+    "jsdom": "^22.1.0",
+    "three": "0.128.0"
+  }
+}

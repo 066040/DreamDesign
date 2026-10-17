@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+      - name: Built page is up to date
+        run: |
+          node app/src/build.js /tmp/index.html
+          diff -q /tmp/index.html docs/index.html || (echo "docs/index.html is stale: run 'node app/src/build.js' and commit it" && exit 1)
+      - run: npm ci
+        working-directory: tests
+      - run: npm test
+        working-directory: tests
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install "numpy<2" trimesh scikit-image scipy fastapi httpx python-multipart pillow
+      - run: python -m py_compile server/server.py server/meshfix.py server/torchmcubes.py
+      - run: python tests/test_meshfix.py
+      - run: python tests/server_mock/t.py

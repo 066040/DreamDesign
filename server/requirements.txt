@@ -1,0 +1,10 @@
+# Server extras (TripoSR's own requirements are installed by the installer, minus torchmcubes and gradio)
+fastapi
+uvicorn
+python-multipart
+scikit-image
+scipy
+trimesh
+numpy<2
+opencv-python-headless<4.12
+onnxruntime

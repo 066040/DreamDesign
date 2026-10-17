@@ -1,0 +1,234 @@
+<title>DreamDesign – 3D tasarım</title>
+<style>
+[hidden]{display:none!important}
+/* Yerleşim: tam ekran çalışma alanı; solda 3D görünüm, sağda sekmeli panel. Teknik çizim hissi: sakin gri-mavi nötrler, tek vurgu rengi. */
+:root{--bg:#f2f4f7;--panel:#fff;--ink:#1a2230;--mut:#66707e;--line:#d6dbe3;--acc:#1f6feb;--accink:#fff;--vp:#e6e9ee;--g1:#8c95a4;--g2:#cdd2db;--warn:#c0392b;--ok:#1a8f5a;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13171e;--panel:#1a202a;--ink:#e6e9ee;--mut:#98a2b0;--line:#2a323f;--acc:#5b9bff;--accink:#0b1220;--vp:#0f131a;--g1:#566176;--g2:#252d39;--warn:#ff7b6b;--ok:#4cd08f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13171e;--panel:#1a202a;--ink:#e6e9ee;--mut:#98a2b0;--line:#2a323f;--acc:#5b9bff;--accink:#0b1220;--vp:#0f131a;--g1:#566176;--g2:#252d39;--warn:#ff7b6b;--ok:#4cd08f;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 "Segoe UI",system-ui,-apple-system,sans-serif}
+#app{display:flex;height:100%}
+#vp{flex:1;position:relative;min-width:0;min-height:0;overflow:hidden}
+#vp canvas.main{display:block;width:100%;height:100%;touch-action:none}
+#bar{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.grp{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px;pointer-events:auto}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:none;border:0;border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover{background:var(--bg)}
+button.on{background:var(--acc);color:var(--accink)}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+#hint{position:absolute;left:12px;bottom:10px;right:12px;color:var(--mut);font-size:12px;pointer-events:none}
+#drop{position:absolute;inset:8px;border:2px dashed var(--acc);border-radius:12px;background:color-mix(in srgb,var(--panel) 70%,transparent);display:none;align-items:center;justify-content:center;font-size:18px;pointer-events:none;z-index:3}
+#lbls{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#lbls span{position:absolute;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+#lbls span.m{border-color:var(--acc);color:var(--acc)}
+#side{width:360px;display:flex;flex-direction:column;background:var(--panel);border-left:1px solid var(--line);min-height:0}
+#tabs{display:flex;flex-wrap:wrap;gap:2px;padding:6px;border-bottom:1px solid var(--line)}
+#tabs button{padding:5px 8px;font-size:13px}
+#pages{flex:1;overflow:auto;padding:14px}
+.page{display:none}.page.on{display:block}
+h3{margin:0 0 8px;font-size:14px}
+.sec{margin-bottom:18px}
+.list button{display:flex;width:100%;justify-content:space-between;text-align:left;border:1px solid transparent}
+.list button.sel{border-color:var(--acc);background:var(--bg)}
+.mut{color:var(--mut)}
+label{display:block;margin:10px 0 4px;color:var(--mut);font-size:12px}
+label.chk{display:flex;gap:6px;align-items:center;margin:8px 0}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.two{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px;min-width:0}
+input[type=checkbox]{width:auto}
+input[type=range]{padding:0}
+input[type=color]{height:30px;padding:2px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.kv span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.sm{border:1px solid var(--line)}
+.wide{width:100%;border:1px solid var(--acc);color:var(--acc);font-weight:600}
+#msg,.msg{font-size:12px;margin-top:6px}
+.note{font-size:12px;color:var(--mut);margin:6px 0 0}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600}
+.card{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:6px;cursor:grab;background:var(--bg)}
+.card b{flex:1;font-weight:600}
+/* çizim alanı */
+#sk{position:absolute;inset:0;z-index:5;background:var(--vp);display:none;flex-direction:column}
+#sk.on{display:flex}
+#skbar{display:flex;gap:6px;flex-wrap:wrap;padding:8px;align-items:center;background:var(--panel);border-bottom:1px solid var(--line)}
+#skbar input,#skbar select{width:84px}
+#skbody{flex:1;display:flex;min-height:0}
+#skc{flex:1;min-width:0;position:relative}
+#skc canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+#skside{width:250px;background:var(--panel);border-left:1px solid var(--line);padding:12px;overflow:auto}
+#cam{position:absolute;right:12px;bottom:12px;width:220px;border-radius:10px;border:1px solid var(--line);display:none;background:#000;z-index:4}
+@media(max-width:760px){#app{flex-direction:column}#side{width:auto;height:50%;border-left:0;border-top:1px solid var(--line)}#hint{display:none}#skside{display:none}}
+</style>
+<div id="app">
+ <div id="vp">
+  <div id="bar">
+   <div class="grp" id="modes">
+    <button data-mode="sec" class="on" title="Q">Seç</button><button data-mode="move" title="G">Taşı</button><button data-mode="rot" title="R">Döndür</button><button data-mode="scl" title="S">Ölçekle</button><button data-mode="cage" title="K">Kafes</button><button data-mode="grab" title="E">Esnet</button><button data-mode="meas" title="M">Ölç</button>
+   </div>
+   <div class="grp"><button data-v="x" title="Tuş: 1">X</button><button data-v="y" title="Tuş: 2">Y</button><button data-v="z" title="Tuş: 3">Z</button><button data-v="iso" title="Tuş: 0">İzo</button><button id="fit" title="Tuş: F">Sığdır</button><button id="ortho" title="Tuş: P">Dik</button></div>
+   <div class="grp"><select id="disp" title="Görünüm biçimi (Tuş: W)" style="width:auto;border:0;background:none"><option value="solid">Boyalı</option><option value="tri">İskelet (üçgen)</option><option value="outline">Ana hat</option><option value="contour">Kesit çizgileri</option><option value="center">Orta hat</option></select><button id="spin">360° dön</button></div>
+   <div class="grp"><button id="skopen" title="Tuş: D">Çizim alanı</button></div>
+   <div class="grp"><button id="hundo" title="Geri al (Ctrl+Z)">↶ Geri al</button><button id="hredo" title="İleri al (Ctrl+Y)">↷ İleri al</button></div>
+   <div class="grp" id="mgrp" hidden><button id="mclear2" title="Tüm ölçüleri sil">Ölçüleri sil ✕</button></div>
+  </div>
+  <div id="lbls"></div>
+  <div id="hint">Sol tuş (boşlukta): her yöne döndür · Sağ tuş: kaydır · Tekerlek: yakınlaştır · Kare = 100 mm · Model veya fotoğrafı bu alana bırak</div>
+  <div id="drop">Bırak: GLB, OBJ, STL veya fotoğraf</div>
+  <video id="cam" playsinline muted></video>
+  <div id="sk">
+   <div id="skbar">
+    <div class="grp" id="sktools"><button data-sk="sel" class="on">Seç</button><button data-sk="line">Çizgi</button><button data-sk="rect">Dikdörtgen</button><button data-sk="circ">Daire</button></div><div class="grp"><button id="skundo" title="Geri al (Ctrl+Z)">↶</button><button id="skredo" title="İleri al (Ctrl+Y)">↷</button><button id="skall" title="Çizimdeki her şeyi sil">Hepsini sil</button></div>
+    <select id="skplane" title="Çizim düzlemi" style="width:auto"><option value="front">Ön (X–Z)</option><option value="side">Yan (Y–Z)</option><option value="top">Üst (X–Y)</option></select>
+    <label class="chk" style="margin:0"><input type="checkbox" id="sksnap" checked>Izgara</label><input id="skgrid" type="number" min="1" value="10" title="Izgara aralığı (mm)">
+    <button id="skimg" class="sm">Fotoğraftan ana hat…</button><input id="skfile" type="file" accept="image/*" hidden>
+    <span class="mut" id="skinfo" style="margin-left:auto"></span>
+    <button id="skclose" class="sm">Kapat</button>
+   </div>
+   <div id="skbody"><div id="skc"><canvas></canvas></div>
+    <div id="skside">
+     <h3>Seçili şekil</h3><div id="skprops"><p class="note">Bir şekil seç. Çizgi aracında tıkla, çift tıkla/Enter ile bitir; ilk noktaya tıklarsan kapanır. Shift: 0/45/90°.</p></div>
+     <h3 style="margin-top:16px">Katıya çevir</h3>
+     <label>Kalınlık / derinlik (mm)</label><input id="skdepth" type="number" value="100" min="0.1">
+     <label class="chk"><input type="checkbox" id="skcenter" checked>Düzleme göre ortala</label>
+     <label>Düzlem ofseti (mm)</label><input id="skoff" type="number" value="0">
+     <div class="btnrow"><button id="skext" class="wide">Ekstrüde et</button><button id="skrev" class="wide">Döndür (revolve, Z ekseni)</button></div>
+     <p class="note">Dönüş: şekli eksenin sağına (X≥0) çiz; Z ekseni etrafında 360° döner. Delikli şekil (iç boşluk) için içi boş kesiti dış hat olarak çiz.</p>
+     <div class="msg" id="skmsg"></div>
+     <div id="skref" hidden><h3 style="margin-top:16px">Fotoğraf ana hattı</h3>
+      <label>Gerçek genişlik (mm)</label><input id="skrefw" type="number" value="1000">
+      <label>Eşik <span id="sktolv">60</span></label><input id="sktol" type="range" min="15" max="200" value="60">
+      <label>Sadelik (nokta azaltma)</label><input id="skeps" type="range" min="0.5" max="6" step="0.5" value="1.5">
+      <div class="btnrow"><button id="skdo" class="wide">Ana hattı çıkar</button></div>
+      <label class="chk"><input type="checkbox" id="skshow" checked>Fotoğrafı arkada göster</label>
+      <div class="btnrow"><button class="sm" id="skrefdel">Fotoğrafı ve ana hattı kaldır</button></div></div>
+    </div></div>
+  </div>
+ </div>
+ <aside id="side">
+  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="file">Dosya</button></div>
+  <div id="pages">
+   <div class="page on" id="p-model">
+    <div class="sec"><h3>Model yükle</h3>
+     <button id="load" class="wide">Dosya seç (model veya fotoğraf)</button>
+     <input id="file" type="file" accept=".glb,.gltf,.obj,.stl,.jpg,.jpeg,.png,.webp" hidden>
+     <div class="two"><div><label>Fotoğraf çözünürlüğü</label><select id="genres"><option value="128">128 (hızlı)</option><option value="192" selected>192 (önerilen)</option><option value="256">256 (ince, yavaş)</option></select></div>
+      <div><label>Yumuşatma</label><select id="gensm"><option value="0">Kapalı</option><option value="6">Hafif</option><option value="10" selected>Orta</option><option value="20">Güçlü</option></select></div></div>
+     <p class="note">GLB, OBJ, STL açılır. Fotoğraf (JPG, PNG, WEBP) yerel sunucu çalışırken 3D modele çevrilir. Model X–Y düzleminde ortalanır, tabanı Z=0'a oturur, en uzun kenarı 1000 mm olur.</p>
+     <div id="msg" role="alert"></div></div>
+    <div class="sec"><h3>Çoklu görünümden model</h3>
+     <p class="note">Ön, yan ve/veya üst görünümü yükle (fotoğraf, çizim ya da şeffaf PNG; arka plan düz renk olsun). Birden fazla görünümde gerçek ölçüye dayalı hacim çıkar; tek görünümde derinlik tahmin edilip şişirilir.</p>
+     <div id="mvrows"></div>
+     <div class="two"><div><label>En uzun kenar (mm)</label><input id="mvlen" type="number" value="1000" min="1"></div><div><label>Eksik ölçü oranı</label><input id="mvdr" type="number" value="0.6" step="0.05" min="0.05" title="Tek görünümde derinlik / genişlik oranı"></div></div>
+     <label>Arka plan eşiği <span id="mvtolv">60</span></label><input id="mvtol" type="range" min="15" max="200" value="60">
+     <div class="two"><div><label>Çözünürlük</label><select id="mvres"><option value="64">64 (hızlı)</option><option value="96" selected>96</option><option value="144">144 (ince)</option></select></div><div><label class="chk" style="margin-top:26px"><input type="checkbox" id="mvsym">Sağ-sol simetrik</label></div></div>
+     <button id="mvgo" class="wide" style="margin-top:8px">Modeli oluştur</button><div class="msg" id="mvmsg"></div></div>
+    <div class="sec"><h3>Parça ekle</h3>
+     <div class="grp" style="flex-wrap:wrap"><button data-add="box">Kutu</button><button data-add="cyl">Silindir</button><button data-add="sph">Küre</button><button data-add="cone">Koni</button></div></div>
+    <div class="sec"><h3>Montaj ağacı</h3><div id="list" class="list"></div></div>
+    <div class="sec"><h3>Seçili parça</h3><div id="props"></div></div>
+    <div class="sec"><h3>Toplam</h3><div id="tot"></div>
+     <label class="chk"><input type="checkbox" id="showcom" checked>Ağırlık merkezini göster</label>
+     <label class="chk"><input type="checkbox" id="showdim" checked>Seçili parçanın ölçü çizgilerini göster</label></div>
+   </div>
+   <div class="page" id="p-edit">
+    <details open id="d-cage"><summary>Kafes (önerilen biçim verme)</summary>
+     <p class="note">Modelin etrafına bir nokta kafesi kurulur. Noktaları tutup çekersen model pürüzsüzce şekillenir: tavanı alçalt, burnu uzat, kulpu uzat… Üstteki "Kafes" moduna geçince başlar.</p>
+     <label>Kafes yoğunluğu (X · Y · Z nokta)</label><div class="tri"><input type="number" id="cgx" min="2" max="10" value="4"><input type="number" id="cgy" min="2" max="10" value="4"><input type="number" id="cgz" min="2" max="10" value="4"></div>
+     <div class="btnrow"><button class="sm" id="cgbuild">Kafesi kur / yenile</button><button class="sm" id="cgall">Tümünü seç</button><button class="sm" id="cgnone">Seçimi bırak</button></div>
+     <label>Katman seç (tıkla: ekle, Shift+tıkla: birden çok nokta)</label>
+     <div class="btnrow" style="margin-top:0"><button class="sm" data-cl="0,0">Sol X</button><button class="sm" data-cl="0,1">Sağ X</button><button class="sm" data-cl="1,0">Ön Y</button><button class="sm" data-cl="1,1">Arka Y</button><button class="sm" data-cl="2,0">Alt Z</button><button class="sm" data-cl="2,1">Üst Z</button></div>
+     <label>Seçili noktaları genişlet</label><div class="btnrow" style="margin-top:0"><button class="sm" id="cgslx">X katmanı</button><button class="sm" id="cgsly">Y katmanı</button><button class="sm" id="cgslz">Z katmanı</button></div>
+     <label class="chk"><input type="checkbox" id="cgsym">Simetri</label>
+     <select id="cgsymax"><option value="0">X düzlemine göre (sol–sağ)</option><option value="1">Y düzlemine göre (ön–arka)</option><option value="2">Z düzlemine göre (alt–üst)</option></select>
+     <label>Tutamaç</label><div class="grp" id="cgmode"><button data-cm="translate" class="on">Taşı</button><button data-cm="scale">Ölçekle</button><button data-cm="rotate">Döndür</button></div>
+     <label>Seçimin ağırlık noktası (mm, dünya) · yaz ve Enter</label><div class="tri"><input type="number" id="cgcx" step="5"><input type="number" id="cgcy" step="5"><input type="number" id="cgcz" step="5"></div>
+     <label>Seçimi ölçekle % (X · Y · Z)</label><div class="tri"><input type="number" id="cgsx" value="100"><input type="number" id="cgsy" value="100"><input type="number" id="cgsz" value="100"></div>
+     <div class="btnrow"><button class="sm" id="cgsc">Ölçeği uygula</button><button class="sm" id="cgundo">Geri al</button><button class="sm" id="cgreset">Kafesi sıfırla</button></div>
+     <div class="btnrow"><button class="wide" id="cgapply">Uygula ve bitir</button></div>
+     <div class="msg mut" id="cginfo"></div></details>
+    <details id="d-grab"><summary>Esnet (yüzeyden tut)</summary>
+     <p class="note">Modelin üstünde herhangi bir noktayı tutup sürükle. Çevresi yüzey boyunca yumuşakça gelir. Boşlukta sürüklersen kamera döner.</p>
+     <label>Etki yarıçapı: <span id="rv">18</span>%</label><input type="range" id="rad" min="4" max="60" value="18">
+     <label>Simetri (parçanın kendi eksenleri)</label>
+     <select id="mir"><option value="-1">Kapalı</option><option value="0">X düzlemine göre</option><option value="1">Y düzlemine göre</option><option value="2">Z düzlemine göre</option></select>
+     <div class="btnrow"><button id="undo" class="sm">Geri al (Ctrl+Z)</button><button id="reset" class="sm">Şekli sıfırla</button></div></details>
+    <details><summary>Yüzey temizliği</summary>
+     <label>Yumuşatma adımı</label><input type="range" id="smn" min="1" max="40" value="8"><div class="row"><span class="mut" id="smv">8</span></div>
+     <div class="btnrow"><button class="sm" id="dosmooth">Yumuşat</button><button class="sm" id="dodrop">Kopuk kırıntıları sil</button><button class="sm" id="dowind">Yüzleri düzelt</button></div>
+     <p class="note">Yapay zekâdan gelen modeldeki basamaklı/pürüzlü yüzeyi gidermek için. Hacim neredeyse korunur.</p></details>
+    <details><summary>Kes ve ayır</summary>
+     <div class="two"><div><label>Eksen (parçanın kendi)</label><select id="cutax"><option value="0">X</option><option value="1">Y</option><option value="2" selected>Z</option></select></div>
+      <div><label>Ayrılma boşluğu (mm)</label><input type="number" id="cutgap" value="30"></div></div>
+     <label>Konum: <span id="cutv">50</span>%</label><input type="range" id="cut" min="2" max="98" value="50">
+     <div class="btnrow"><button class="wide" id="docut">Kes</button></div>
+     <p class="note">Kesit yüzeyi basit yelpaze ile kapatılır (hacim doğru çıkar; çok girintili kesitte yüzey görüntüsü kusurlu olabilir). Kesilen parçalar ayrı ayrı taşınır, ölçeklenir, kafeslenir.</p></details>
+    <details><summary>Birleştir ve çoğalt</summary>
+     <label>Birleştirilecek diğer parça</label><select id="mgsel"></select>
+     <label>Kaynak toleransı (mm)</label><input type="number" id="mgtol" value="1" min="0" step="0.5">
+     <div class="btnrow"><button class="sm" id="domerge">Birleştir</button><button class="sm" id="doclone">Kopyala</button></div>
+     <label>Ayna kopya (dünya düzlemi)</label><div class="btnrow" style="margin-top:0"><button class="sm" data-mirror="0">X=0</button><button class="sm" data-mirror="1">Y=0</button><button class="sm" data-mirror="2">Z=0</button></div>
+     <p class="note">Birleştirme parçaları tek ağ yapar; çakışan hacim için gerçek boolean yoktur (kütle çift sayılır).</p></details>
+    <details><summary>Kesit / orta hat ayarı</summary>
+     <div class="two"><div><label>Eksen</label><select id="ctax"><option value="0">X</option><option value="1">Y</option><option value="2" selected>Z</option></select></div>
+      <div><label>Aralık (mm)</label><input type="number" id="ctstep" value="25" min="2"></div></div>
+     <p class="note">Üstteki "Görünüm biçimi"nden Kesit çizgileri veya Orta hat seçilince bu ayarla çizilir.</p></details>
+   </div>
+   <div class="page" id="p-shelf">
+    <div class="sec"><h3>Parça rafı</h3>
+     <p class="note">Kartı sürükleyip modelin üstüne bırak: parça bırakılan yüzeye oturur. Raftakiler istediğin kadar çoğaltılır (4 tekerlek gibi).</p>
+     <label class="chk"><input type="checkbox" id="shalign" checked>Yüzeyin yönüne hizala</label>
+     <div class="btnrow"><button class="sm" id="shadd">Seçili parçayı rafa ekle</button><button class="sm" id="shclear">Rafı boşalt</button></div>
+     <div id="shelf"></div></div>
+   </div>
+   <div class="page" id="p-joint">
+    <div class="sec"><h3>Eklem ekle</h3>
+     <label>Üst parça (sabit kalan)</label><select id="jp"></select>
+     <label>Alt parça (hareket eden)</label><select id="jc"></select>
+     <div class="two"><div><label>Tür</label><select id="jt"><option value="rev">Dönel (menteşe)</option><option value="pri">Kayar (piston)</option></select></div>
+      <div><label>Eksen (dünya)</label><select id="ja"><option value="0">X</option><option value="1">Y</option><option value="2" selected>Z</option></select></div></div>
+     <label>Pivot noktası (mm, dünya)</label><div class="tri"><input type="number" id="jx" value="0"><input type="number" id="jy" value="0"><input type="number" id="jz" value="0"></div>
+     <div class="btnrow"><button class="sm" id="jpick">Modelden nokta seç</button><button class="sm" id="jctr">Alt parçanın merkezi</button></div>
+     <div class="two"><div><label>En az (° ya da mm)</label><input type="number" id="jmin" value="-90"></div><div><label>En çok</label><input type="number" id="jmax" value="90"></div></div>
+     <div class="btnrow"><button class="wide" id="jadd">Eklemi ekle</button></div>
+     <div class="msg" id="jmsg"></div></div>
+    <div class="sec"><h3>Eklemler</h3><div id="jlist"></div></div>
+    <div class="sec"><h3>Pozlar</h3><div class="btnrow" style="margin-top:0"><button class="sm" id="posesave">Şimdiki pozu kaydet</button></div><div id="poses"></div></div>
+   </div>
+   <div class="page" id="p-calc">
+    <div class="sec"><h3>Malzeme ve ağırlık</h3><div id="mtab"></div></div>
+    <div class="sec"><h3>Uçuş hesabı</h3>
+     <p class="note">Kütle montajdaki toplam kütledir. Yaklaşık, ön tasarım içindir.</p>
+     <div class="two"><div><label>Rotor sayısı</label><input type="number" id="fr" value="4" min="1"></div><div><label>Rotor çapı (m)</label><input type="number" id="fd" value="1.6" step="0.1" min="0.1"></div></div>
+     <div class="two"><div><label>Mevcut güç (kW)</label><input type="number" id="fp" value="200"></div><div><label>Batarya (kWh)</label><input type="number" id="fb" value="60"></div></div>
+     <div class="two"><div><label>Maks. itki (kN)</label><input type="number" id="ft" value="12" step="0.5"></div><div><label>Hava yoğunluğu (kg/m³)</label><input type="number" id="frho" value="1.225" step="0.01"></div></div>
+     <div class="two"><div><label>Rotor verimi (FM)</label><input type="number" id="ffm" value="0.7" step="0.05" min="0.3" max="0.9"></div><div><label>Motor+güç verimi</label><input type="number" id="feta" value="0.85" step="0.05" min="0.3" max="1"></div></div>
+     <div id="fout"></div></div>
+    <div class="sec"><h3>Kanat (seyir)</h3>
+     <div class="two"><div><label>Kanat alanı (m²)</label><input type="number" id="wa" value="9" step="0.5"></div><div><label>Seyir hızı (m/s)</label><input type="number" id="wv" value="55"></div></div>
+     <div class="two"><div><label>CL maks. (iniş)</label><input type="number" id="wcl" value="1.5" step="0.1"></div><div><label>Sürtünme CD0</label><input type="number" id="wcd" value="0.03" step="0.005"></div></div>
+     <div id="wout"></div></div>
+   </div>
+   <div class="page" id="p-file">
+    <div class="sec"><h3>Proje</h3><div class="btnrow" style="margin-top:0"><button class="sm" id="psave">Projeyi kaydet</button><button class="sm" id="pload">Proje aç…</button></div><input id="pfile" type="file" accept=".json,.atolye" hidden>
+     <div class="msg" id="pmsg"></div></div>
+    <div class="sec"><h3>Dışa aktar</h3>
+     <label class="chk"><input type="checkbox" id="exsel">Yalnız seçili parça</label>
+     <div class="btnrow" style="margin-top:0"><button class="sm" id="exstl">STL</button><button class="sm" id="exobj">OBJ</button><button class="sm" id="exglb">GLB</button></div>
+     <p class="note">STL ve OBJ milimetre ve Z-yukarı verir (CAD/3D baskı için). GLB renk ve malzemeyi taşır.</p></div>
+    <div class="sec"><h3>Ölçüm</h3>
+     <p class="note">Üstte "Ölç" modunu seç, modelde iki noktaya tıkla (köşelere yapışır).</p>
+     <div class="btnrow"><button class="sm" id="mclear">Ölçümleri sil</button></div></div>
+    <div class="sec"><h3>El hareketi (kamera)</h3>
+     <p class="note">Bilgisayar kamerasıyla. Başparmak+işaret parmağını birleştir: tek elle sürükle = döndür (Esnet modunda: tut ve çek), iki elle aç/kapa = yakınlaştır, ikisini birlikte oynat = kaydır. Yalnız yerel sunucuda (localhost) çalışır; ilk açılışta model dosyası indirilir.</p>
+     <div class="btnrow"><button class="sm" id="gstart">Kamerayı aç</button></div><div class="msg" id="gmsg"></div></div>
+   </div>
+  </div>
+ </aside>
+</div>
