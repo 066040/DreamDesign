@@ -32,6 +32,28 @@ from PIL import Image
 import meshfix
 
 app = FastAPI()
+
+# The hosted page (GitHub Pages) may call a server running on the user's own computer.
+# Add more origins with DD_ORIGINS="https://you.github.io,https://example.com".
+_ORIGINS = ["https://066040.github.io", "http://localhost:8000", "http://127.0.0.1:8000"] + [
+    o.strip() for o in os.getenv("DD_ORIGINS", "").split(",") if o.strip()]
+
+
+@app.middleware("http")
+async def _cors(request, call_next):
+    origin = request.headers.get("origin")
+    if request.method == "OPTIONS" and origin:
+        resp = Response(status_code=204)
+    else:
+        resp = await call_next(request)
+    if origin in _ORIGINS:
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = request.headers.get("access-control-request-headers", "*")
+        resp.headers["Access-Control-Allow-Private-Network"] = "true"   # Chrome: public page -> localhost
+        resp.headers["Vary"] = "Origin"
+    return resp
+
 device = os.getenv("TSR_DEVICE") or ("cuda:0" if torch.cuda.is_available() else "cpu")
 CHUNK = int(os.getenv("TSR_CHUNK", "2048"))
 DEFAULT_RES = int(os.getenv("TSR_RES", "192"))

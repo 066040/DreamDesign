@@ -120,6 +120,8 @@ summary{cursor:pointer;font-weight:600}
      <input id="file" type="file" accept=".glb,.gltf,.obj,.stl,.jpg,.jpeg,.png,.webp" hidden>
      <div class="two"><div><label>Fotoğraf çözünürlüğü</label><select id="genres"><option value="128">128 (hızlı)</option><option value="192" selected>192 (önerilen)</option><option value="256">256 (ince, yavaş)</option></select></div>
       <div><label>Yumuşatma</label><select id="gensm"><option value="0">Kapalı</option><option value="6">Hafif</option><option value="10" selected>Orta</option><option value="20">Güçlü</option></select></div></div>
+     <div id="bkrow"><label>Sunucu adresi (fotoğraftan 3D için)</label><div class="row" style="gap:6px"><input id="bkurl" placeholder="http://localhost:8000" style="flex:1"><button class="sm" id="bktest">Bağlan</button></div><div class="msg" id="bkmsg"></div>
+      <p class="note">Bu çevrimiçi sayfada tek fotoğraftan 3D için bilgisayarında sunucu çalışmalı (README: scripts/run.bat). Çoklu görünümden model sunucu gerektirmez.</p></div>
      <p class="note">GLB, OBJ, STL açılır. Fotoğraf (JPG, PNG, WEBP) yerel sunucu çalışırken 3D modele çevrilir. Model X–Y düzleminde ortalanır, tabanı Z=0'a oturur, en uzun kenarı 1000 mm olur.</p>
      <div id="msg" role="alert"></div></div>
     <div class="sec"><h3>Çoklu görünümden model</h3>

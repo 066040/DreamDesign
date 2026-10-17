@@ -85,6 +85,10 @@ $('#pfile').onchange=e=>{const file=e.target.files[0];e.target.value='';if(!file
 
 /* ================= dosya açma ve fotoğraftan 3B ================= */
 const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+/* Fotoğraftan 3D sunucusu: yerel sayfada aynı adres, çevrimiçi sayfada kullanıcının girdiği adres (ör. http://localhost:8000) */
+const BK_KEY='dreamdesign-backend';
+function backendBase(){if(LOCAL)return'';try{return(localStorage.getItem(BK_KEY)||'').replace(/\/+$/,'')}catch(_){return''}}
+function backendSave(v){try{v?localStorage.setItem(BK_KEY,v):localStorage.removeItem(BK_KEY)}catch(_){}}
 function loadFile(file){msg('');
  const ext=file.name.split('.').pop().toLowerCase(),base=file.name.replace(/\.[^.]+$/,'');
  const rd=new FileReader();rd.onerror=()=>msg('Dosya okunamadı.');
@@ -99,15 +103,22 @@ function loadFile(file){msg('');
   else msg('Desteklenen biçimler: GLB, GLTF, OBJ, STL, JPG, PNG, WEBP, proje (.json).');
  }catch(e){fail(e)}}
 async function generate(file,base){
- if(!LOCAL){msg('Fotoğraftan 3D üretimi yalnızca yerel sunucuda (localhost:8000) çalışır.');return}
+ const bk=backendBase();
+ if(!LOCAL&&!bk){msg('Fotoğraftan 3D için sunucu gerekir: scripts/run.bat (ya da run.sh) ile yerel sunucuyu başlat, sonra aşağıdaki "Sunucu adresi" kutusuna http://localhost:8000 yaz. Ya da birden fazla görünümden model üret (sunucu gerekmez).',null);$('#bkurl').focus();return}
  msg('3D model üretiliyor… İlk seferde model indirilir, sonrası ekran kartına göre 10-90 sn sürer.','var(--mut)');
  try{const fd=new FormData();fd.append('image',file);
-  const r=await fetch('/api/generate?mc_resolution='+$('#genres').value+'&smooth='+$('#gensm').value,{method:'POST',body:fd});
+  const r=await fetch(bk+'/api/generate?mc_resolution='+$('#genres').value+'&smooth='+$('#gensm').value,{method:'POST',body:fd});
   if(!r.ok){let t=await r.text();try{t=JSON.parse(t).detail||t}catch(_){}throw new Error(t||r.statusText)}
   const buf=await r.arrayBuffer();
   new THREE.GLTFLoader().parse(buf,'',g=>{try{addModel(g.scene,base,true);if(!$('#msg').textContent)msg('Model hazır.','var(--ok)')}catch(e){msg('Üretilen model açılamadı: '+e.message)}},()=>msg('Üretilen model açılamadı.'));
- }catch(e){msg('Üretim başarısız: '+e.message)}}
+ }catch(e){msg('Üretim başarısız: '+(e instanceof TypeError&&bk?'sunucuya ulaşılamadı ('+bk+'). Sunucu açık mı? Adres doğru mu?':e.message))}}
 $('#load').onclick=()=>$('#file').click();
+(function bkInit(){const inp=$('#bkurl');if(!inp)return;if(LOCAL){$('#bkrow').hidden=true;return}inp.value=backendBase();
+ const test=async()=>{const v=inp.value.trim().replace(/\/+$/,'');backendSave(v);if(!v){msg('Sunucu adresi silindi.','var(--mut)','#bkmsg');return}
+  msg('Bağlanılıyor…','var(--mut)','#bkmsg');
+  try{const r=await fetch(v+'/api/health'),j=await r.json();msg('Bağlandı: '+(j.device||'?')+(j.model_loaded?' (model yüklü)':' (model ilk üretimde yüklenecek)'),'var(--ok)','#bkmsg')}
+  catch(e){msg('Ulaşılamadı. Sunucu çalışıyor mu? (scripts/run.bat) Tarayıcı izin sorarsa "İzin ver" de.',null,'#bkmsg')}};
+ $('#bktest').onclick=test;inp.onchange=test})();
 $('#file').onchange=e=>{if(e.target.files[0])loadFile(e.target.files[0]);e.target.value=''};
 let dd=0;const drop=$('#drop');
 vp.addEventListener('dragenter',e=>{if([...e.dataTransfer.types].includes('text/dreamdesign-shelf'))return;e.preventDefault();dd++;drop.style.display='flex'});

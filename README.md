@@ -40,6 +40,8 @@ The browser opens at <http://localhost:8000>. The first run downloads the model 
 
 > The installer scripts follow the manual steps we used to get TripoSR running on Windows with a 4 GB GPU. Linux/macOS scripts are less tested — please open an issue if something fails.
 
+**Using the online page with your local server:** start the server (`run.bat`), open the hosted page, and enter `http://localhost:8000` in *Server address* (Model tab), then press *Connect*. Chrome/Edge/Firefox allow this; Safari blocks it, so use <http://localhost:8000> directly there. If you host your own copy of the page, add its origin with `DD_ORIGINS=https://you.github.io`.
+
 Server settings (environment variables): `TSR_DEVICE=cpu`, `TSR_RES` (mesh resolution, default 192), `TSR_QCHUNK`, `TSR_SMOOTH`. If the GPU runs out of memory the server automatically retries at lower resolution.
 
 ## Keyboard shortcuts

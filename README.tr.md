@@ -40,6 +40,8 @@ Tarayıcı <http://localhost:8000> adresinde açılır. İlk çalıştırmada mo
 
 > Kurulum betikleri, 4 GB ekran kartlı Windows'ta TripoSR'ı çalıştırırken uyguladığımız adımlara dayanır. Linux/macOS betikleri daha az test edildi; sorun olursa issue aç.
 
+**Çevrimiçi sayfayı yerel sunucunla kullanmak:** sunucuyu başlat (`run.bat`), çevrimiçi sayfayı aç, Model sekmesindeki *Sunucu adresi* kutusuna `http://localhost:8000` yaz ve *Bağlan*'a bas. Chrome/Edge/Firefox buna izin verir; Safari engeller, orada doğrudan <http://localhost:8000> adresini kullan. Sayfayı kendi hesabında yayınlarsan `DD_ORIGINS=https://kullanici.github.io` ile adresini sunucuya tanıt.
+
 Sunucu ayarları (ortam değişkenleri): `TSR_DEVICE=cpu`, `TSR_RES` (ağ çözünürlüğü, varsayılan 192), `TSR_QCHUNK`, `TSR_SMOOTH`. Ekran kartı belleği yetmezse sunucu otomatik olarak daha düşük çözünürlükle yeniden dener.
 
 ## Kısayollar
