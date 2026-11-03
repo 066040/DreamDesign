@@ -43,12 +43,12 @@ function stateData(raw){const E=raw?(a=>a):arr64;
  const d={v:4,app:'dreamdesign',
  parts:parts.map(p=>{const g=p.mesh.geometry,ca=g.attributes.color,cp=(k,arr,C)=>raw?hcache(p,k,arr,C):C.from(arr);
   return{id:p.id,name:p.name,type:p.type,mat:p.mat,color:p.color,size:p.size.slice(),base:p.base.slice(),pos:p.pos.slice(),rot:p.rot.slice(),lock:p.lock,ground:p.ground,fill:p.fill,wall:p.wall,mid:p.mid.slice(),
-   useVC:p.useVC,hasVC:p.hasVC,vis:p.vis,uvk:p.uvk,an:!!p.analytic,P:E(cp('P',g.attributes.position.array,Float32Array)),I:E(cp('I',g.index.array,Uint32Array)),C:ca?E(cp('C',ca.array,Float32Array)):null,
+   useVC:p.useVC,hasVC:p.hasVC,vis:p.vis,uvk:p.uvk,rad:p.rad,an:!!p.analytic,P:E(cp('P',g.attributes.position.array,Float32Array)),I:E(cp('I',g.index.array,Uint32Array)),C:ca?E(cp('C',ca.array,Float32Array)):null,
    orig:raw&&p.orig?{pos:p.orig.pos,base:p.orig.base,size:p.orig.size,position:p.orig.position,mid:p.orig.mid}:undefined}}),
  joints:joints.map(J=>({id:J.id,parent:J.parent.id,child:J.child.id,type:J.type,min:J.min,max:J.max,val:J.val,axisP:va(J.axisP),pivotP:va(J.pivotP),posL:va(J.posL),qL:vq(J.qL)})),
  poses:poses.map(p=>({name:p.name,vals:Object.assign({},p.vals)})),
  shelf:raw?shelf.slice():shelf.map(s=>({name:s.name,mat:s.mat,color:s.color,dims:s.dims,P:E(s.P),I:E(s.I),C:s.C?E(s.C):null})),
- measures:measures.map(m=>({pa:m.pa.id,la:[m.la.x,m.la.y,m.la.z],pb:m.pb.id,lb:[m.lb.x,m.lb.y,m.lb.z]})),
+ measures:measures.map(m=>Object.assign({pa:m.pa.id,la:[m.la.x,m.la.y,m.la.z],pb:m.pb.id,lb:[m.lb.x,m.lb.y,m.lb.z]},m.pc?{pc:m.pc.id,lc:[m.lc.x,m.lc.y,m.lc.z]}:{})),
  sk:JSON.stringify(sk.shapes)};
  return d}
 function projectData(){return stateData(false)}
@@ -57,7 +57,7 @@ function restoreParts(d,raw){
  if(cage)cageEnd(false);joints.length=0;[...parts].forEach(removePart);sel=null;
  let mx=0;const byId={};
  d.parts.forEach(s=>{const P=raw?Float32Array.from(s.P):f32(s.P),C=s.C?(raw?Float32Array.from(s.C):f32(s.C)):null,I=raw?Uint32Array.from(s.I):u32(s.I),geo=geoFrom(P,C,I),
-  p=baseOpts({type:s.type,name:s.name,mat:s.mat,color:s.color,size:s.size.slice(),base:s.base.slice(),pos:s.pos.slice(),rot:s.rot.slice(),lock:s.lock,ground:s.ground,fill:s.fill,wall:s.wall,mid:s.mid.slice(),useVC:s.useVC,hasVC:s.hasVC,vis:s.vis!==false,uvk:s.uvk||0});
+  p=baseOpts({type:s.type,name:s.name,mat:s.mat,color:s.color,size:s.size.slice(),base:s.base.slice(),pos:s.pos.slice(),rot:s.rot.slice(),lock:s.lock,ground:s.ground,fill:s.fill,wall:s.wall,mid:s.mid.slice(),useVC:s.useVC,hasVC:s.hasVC,vis:s.vis!==false,uvk:s.uvk||0,rad:s.rad});
   p.id=s.id;mx=Math.max(mx,s.id);register(p,geo);regUV(p);byId[s.id]=p;
   if(s.an&&geos[s.type]){p.analytic={V0:{box:1,cyl:Math.PI/4,sph:Math.PI/6,cone:Math.PI/12}[s.type],Cv:s.type==='cone'?[0,0,-.25]:[0,0,0]};
    p.edge=new THREE.LineSegments(new THREE.EdgesGeometry(geo,25),new THREE.LineBasicMaterial({color:lin(0x0b0f17),transparent:true,opacity:.6}));p.mesh.add(p.edge)}
@@ -70,7 +70,8 @@ function restoreJoints(d){joints.length=0;poses.length=0;let jm=0;
   joints.push({id:s.id,parent:pa,child:ch,type:s.type,min:s.min,max:s.max,val:s.val,axisP:jv(s.axisP),pivotP:jv(s.pivotP),posL:jv(s.posL),qL:new THREE.Quaternion(...s.qL)});jm=Math.max(jm,s.id)});
  jid=Math.max(jid,jm+1);(d.poses||[]).forEach(p=>poses.push({name:p.name,vals:Object.assign({},p.vals)}));jointList();drawJointMarks()}
 function restoreMeasures(d){measures.length=0;
- (d.measures||[]).forEach(m=>{const pa=parts.find(p=>p.id===m.pa),pb=parts.find(p=>p.id===m.pb);if(pa&&pb)measures.push({pa,la:jv(m.la),pb,lb:jv(m.lb)})});mpend=null;mpendP=null;mpendMark.visible=false;drawMeasures(true)}
+ (d.measures||[]).forEach(m=>{const pa=parts.find(p=>p.id===m.pa),pb=parts.find(p=>p.id===m.pb),pc=m.pc!=null?parts.find(p=>p.id===m.pc):null;if(!pa||!pb||(m.pc!=null&&!pc))return;
+  const o={pa,la:jv(m.la),pb,lb:jv(m.lb)};if(pc){o.pc=pc;o.lc=jv(m.lc)}measures.push(o)});mpend=null;mpendP=null;mpendMark.visible=false;drawMeasures(true)}
 function restoreShelf(d,raw){shelf.length=0;if(raw){d.shelf.forEach(s=>shelf.push(s));shelfDraw();return}(d.shelf||[]).forEach(s=>shelf.push(shelfEntry(s.name,raw?s.P:f32(s.P),s.C?(raw?s.C:f32(s.C)):null,raw?s.I:u32(s.I),s.mat,s.color)));shelfDraw()}
 function restoreSketch(d){let sh=[];try{sh=JSON.parse(d.sk||'[]')}catch(_){}sk.shapes=sh;sk.cur=null;sk.drag=null;sh.forEach(s=>{if(s.id>=sk.sid)sk.sid=s.id+1});
  if(!sk.shapes.some(s=>s.id===sk.selId))sk.selId=null;sk.selEdge=-1;skProps();skDraw()}
@@ -178,7 +179,7 @@ addEventListener('keydown',e=>{
  if(k==='1')view('x');else if(k==='2')view('y');else if(k==='3')view('z');else if(k==='0')view('iso');
  else if(k==='w'){disp=disp==='tri'?'solid':'tri';$('#disp').value=disp;look()}
  else if(k==='f')fit();else if(k==='p')setOrtho(!isOrtho);else if(k==='d')skOpen(true);
- else if(k==='q')setMode('sec');else if(k==='g')setMode('move');else if(k==='r')setMode('rot');else if(k==='s')setMode('scl');else if(k==='e')setMode('grab');else if(k==='k')setMode('cage');else if(k==='m')setMode('meas');
+ else if(k==='q')setMode('sec');else if(k==='g')setMode('move');else if(k==='r')setMode('rot');else if(k==='s')setMode('scl');else if(k==='e')setMode('grab');else if(k==='k')setMode('cage');else if(k==='m')setMode('meas');else if(k==='b')setMode('edge');else if(k==='h')setMode('hole');
  else if(k==='delete'||k==='backspace')remove()});
 new ResizeObserver(()=>{const w=vp.clientWidth,h=vp.clientHeight;if(!w||!h)return;ren.setSize(w,h,false);persp.aspect=w/h;persp.updateProjectionMatrix();updOrtho();ctl.handleResize()}).observe(vp);
 

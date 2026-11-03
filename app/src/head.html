@@ -70,8 +70,9 @@ summary{cursor:pointer;font-weight:600}
  <div id="vp">
   <div id="bar">
    <div class="grp" id="modes">
-    <button data-mode="sec" class="on" title="Q">Seç</button><button data-mode="move" title="G">Taşı</button><button data-mode="rot" title="R">Döndür</button><button data-mode="scl" title="S">Ölçekle</button><button data-mode="cage" title="K">Kafes</button><button data-mode="grab" title="E">Esnet</button><button data-mode="meas" title="M">Ölç</button>
+    <button data-mode="sec" class="on" title="Q">Seç</button><button data-mode="move" title="G">Taşı</button><button data-mode="rot" title="R">Döndür</button><button data-mode="scl" title="S">Ölçekle</button><button data-mode="cage" title="K">Kafes</button><button data-mode="grab" title="E">Esnet</button><button data-mode="edge" title="B">Kenar</button><button data-mode="hole" title="H">Delik</button><button data-mode="meas" title="M">Ölç</button>
    </div>
+   <div class="grp" id="mtype" hidden><button data-mt="d" class="on" title="İki nokta arası">Uzaklık</button><button data-mt="a" title="Üç nokta: ikinci tıklanan tepe noktasıdır">Açı</button></div>
    <div class="grp"><button data-v="x" title="Tuş: 1">X</button><button data-v="y" title="Tuş: 2">Y</button><button data-v="z" title="Tuş: 3">Z</button><button data-v="iso" title="Tuş: 0">İzo</button><button id="fit" title="Tuş: F">Sığdır</button><button id="ortho" title="Tuş: P">Dik</button></div>
    <div class="grp"><select id="disp" title="Görünüm biçimi (Tuş: W)" style="width:auto;border:0;background:none"><option value="solid">Boyalı</option><option value="tri">İskelet (üçgen)</option><option value="outline">Ana hat</option><option value="contour">Kesit çizgileri</option><option value="center">Orta hat</option></select><button id="spin">360° dön</button></div>
    <div class="grp"><button id="skopen" title="Tuş: D">Çizim alanı</button></div>
@@ -132,7 +133,7 @@ summary{cursor:pointer;font-weight:600}
      <div class="two"><div><label>Çözünürlük</label><select id="mvres"><option value="64">64 (hızlı)</option><option value="96" selected>96</option><option value="144">144 (ince)</option></select></div><div><label class="chk" style="margin-top:26px"><input type="checkbox" id="mvsym">Sağ-sol simetrik</label></div></div>
      <button id="mvgo" class="wide" style="margin-top:8px">Modeli oluştur</button><div class="msg" id="mvmsg"></div></div>
     <div class="sec"><h3>Parça ekle</h3>
-     <div class="grp" style="flex-wrap:wrap"><button data-add="box">Kutu</button><button data-add="cyl">Silindir</button><button data-add="sph">Küre</button><button data-add="cone">Koni</button></div></div>
+     <div class="grp" style="flex-wrap:wrap"><button data-add="box">Kutu</button><button data-add="cyl">Silindir</button><button data-add="sph">Küre</button><button data-add="cone">Koni</button><button id="addrbox" title="Köşeleri yuvarlatılmış kutu (kasa için)">Yuvarlak kutu</button></div></div>
     <div class="sec"><h3>Montaj ağacı</h3><div id="list" class="list"></div></div>
     <div class="sec"><h3>Seçili parça</h3><div id="props"></div></div>
     <div class="sec"><h3>Toplam</h3><div id="tot"></div>
@@ -140,7 +141,26 @@ summary{cursor:pointer;font-weight:600}
      <label class="chk"><input type="checkbox" id="showdim" checked>Seçili parçanın ölçü çizgilerini göster</label></div>
    </div>
    <div class="page" id="p-edit">
-    <details open id="d-cage"><summary>Kafes (önerilen biçim verme)</summary>
+    <details open id="d-edge"><summary>Kenar / köşe çek ve bük</summary>
+     <p class="note">Üstte "Kenar" modunu seç (B). Fareyi keskin bir kenarın ya da köşenin üstüne getir: turuncu yanar. Tut ve sürükle: yalnız o kenar ya da köşe gelir, bitişik yüzler eğilir, karşı taraf yerinde kalır. Tıklarsan kenar seçilir, aşağıdan sayıyla da uygulayabilirsin.</p>
+     <label>Biçim</label><div class="grp" id="edmode"><button data-em="move" class="on">Kaydır (düz)</button><button data-em="bend">Bük (yay)</button></div>
+     <label>Etki derinliği: <span id="edrv">100</span>%</label><input type="range" id="edreach" min="5" max="100" value="100">
+     <label class="chk"><input type="checkbox" id="edaxis">Sürüklemeyi en yakın eksene kilitle</label>
+     <div class="msg mut" id="edsel">Kenar seçilmedi.</div>
+     <label>Sayıyla: yer değiştirme (mm, dünya) · X, Y, Z</label><div class="tri"><input type="number" id="edx" value="0" step="1"><input type="number" id="edy" value="0" step="1"><input type="number" id="edz" value="0" step="1"></div>
+     <label>ya da bükme açısı (°) ve yönü (yalnız "Bük")</label><div class="two"><div><input type="number" id="edang" value="0" step="5" min="0" max="180"></div><div><select id="eddir"></select></div></div>
+     <div class="btnrow"><button class="wide" id="edapply">Seçili kenara uygula</button></div>
+     <div class="msg" id="edmsg"></div></details>
+    <details id="d-hole"><summary>Delik aç / doldur</summary>
+     <p class="note">Üstte "Delik" modunu seç (H) ve yüzeye tıkla: yer, yüzeye dik olarak işaretlenir. Ölçüleri düzelt, "Uygula"ya bas. Gerçek katı işlemidir: hacim ve kütle doğru çıkar.</p>
+     <div class="grp" id="hlop"><button data-ho="cut" class="on">Del</button><button data-ho="add">Doldur (çıkıntı)</button></div>
+     <div class="two"><div><label>Çap (mm)</label><input type="number" id="hld" value="5" min="0.1" step="0.5"></div><div><label>Derinlik (mm, 0 = boydan boya)</label><input type="number" id="hldep" value="0" min="0" step="0.5"></div></div>
+     <label>Merkez (mm, dünya) · X, Y, Z</label><div class="tri"><input type="number" id="hlx" step="0.5"><input type="number" id="hly" step="0.5"><input type="number" id="hlz" step="0.5"></div>
+     <label>Yön</label><select id="hldir"><option value="n">Yüzeye dik</option><option value="x">X ekseni</option><option value="y">Y ekseni</option><option value="z">Z ekseni</option></select>
+     <label class="chk"><input type="checkbox" id="hlsnap" checked>Tıklanan noktayı 0,5 mm'ye yuvarla</label>
+     <div class="btnrow"><button class="wide" id="hlgo">Uygula</button></div>
+     <div class="msg" id="hlmsg"></div></details>
+    <details id="d-cage"><summary>Kafes (önerilen biçim verme)</summary>
      <p class="note">Modelin etrafına bir nokta kafesi kurulur. Noktaları tutup çekersen model pürüzsüzce şekillenir: tavanı alçalt, burnu uzat, kulpu uzat… Üstteki "Kafes" moduna geçince başlar.</p>
      <label>Kafes yoğunluğu (X · Y · Z nokta)</label><div class="tri"><input type="number" id="cgx" min="2" max="10" value="4"><input type="number" id="cgy" min="2" max="10" value="4"><input type="number" id="cgz" min="2" max="10" value="4"></div>
      <div class="btnrow"><button class="sm" id="cgbuild">Kafesi kur / yenile</button><button class="sm" id="cgall">Tümünü seç</button><button class="sm" id="cgnone">Seçimi bırak</button></div>
@@ -172,11 +192,15 @@ summary{cursor:pointer;font-weight:600}
      <div class="btnrow"><button class="wide" id="docut">Kes</button></div>
      <p class="note">Kesit yüzeyi basit yelpaze ile kapatılır (hacim doğru çıkar; çok girintili kesitte yüzey görüntüsü kusurlu olabilir). Kesilen parçalar ayrı ayrı taşınır, ölçeklenir, kafeslenir.</p></details>
     <details><summary>Birleştir ve çoğalt</summary>
-     <label>Birleştirilecek diğer parça</label><select id="mgsel"></select>
-     <label>Kaynak toleransı (mm)</label><input type="number" id="mgtol" value="1" min="0" step="0.5">
-     <div class="btnrow"><button class="sm" id="domerge">Birleştir</button><button class="sm" id="doclone">Kopyala</button></div>
+     <label>Diğer parça</label><select id="mgsel"></select>
+     <label>Katı işlem (seçili parça ile diğer parça)</label>
+     <div class="btnrow" style="margin-top:0"><button class="sm" data-bool="union" title="İkisini tek katı yap, çakışan hacim bir kez sayılır">Birleştir ∪</button><button class="sm" data-bool="subtract" title="Diğer parçayı seçili parçadan oy">Çıkar −</button><button class="sm" data-bool="intersect" title="Yalnız ortak hacim kalsın">Kesişim ∩</button></div>
+     <label class="chk"><input type="checkbox" id="bkeep">Diğer parçayı koru</label>
+     <div class="msg" id="bmsg"></div>
+     <label>Hızlı ağ birleştirme · kaynak toleransı (mm)</label><input type="number" id="mgtol" value="1" min="0" step="0.5">
+     <div class="btnrow"><button class="sm" id="domerge">Ağları ekle (hızlı)</button><button class="sm" id="doclone">Kopyala</button></div>
      <label>Ayna kopya (dünya düzlemi)</label><div class="btnrow" style="margin-top:0"><button class="sm" data-mirror="0">X=0</button><button class="sm" data-mirror="1">Y=0</button><button class="sm" data-mirror="2">Z=0</button></div>
-     <p class="note">Birleştirme parçaları tek ağ yapar; çakışan hacim için gerçek boolean yoktur (kütle çift sayılır).</p></details>
+     <p class="note">Katı işlemler kapalı (su geçirmez) yüzey ister; ilk kullanımda hesap modülü indirilir. "Ağları ekle" yalnız ağları yan yana koyar, çakışan hacim iki kez sayılır.</p></details>
     <details><summary>Kesit / orta hat ayarı</summary>
      <div class="two"><div><label>Eksen</label><select id="ctax"><option value="0">X</option><option value="1">Y</option><option value="2" selected>Z</option></select></div>
       <div><label>Aralık (mm)</label><input type="number" id="ctstep" value="25" min="2"></div></div>
@@ -225,7 +249,7 @@ summary{cursor:pointer;font-weight:600}
      <div class="btnrow" style="margin-top:0"><button class="sm" id="exstl">STL</button><button class="sm" id="exobj">OBJ</button><button class="sm" id="exglb">GLB</button></div>
      <p class="note">STL ve OBJ milimetre ve Z-yukarı verir (CAD/3D baskı için). GLB renk ve malzemeyi taşır.</p></div>
     <div class="sec"><h3>Ölçüm</h3>
-     <p class="note">Üstte "Ölç" modunu seç, modelde iki noktaya tıkla (köşelere yapışır).</p>
+     <p class="note">Üstte "Ölç" modunu seç, modelde iki noktaya tıkla (köşelere yapışır). Açı için üstte "Açı"yı seç ve üç noktaya tıkla: ikinci nokta tepedir.</p>
      <div class="btnrow"><button class="sm" id="mclear">Ölçümleri sil</button></div></div>
     <div class="sec"><h3>El hareketi (kamera)</h3>
      <p class="note">Bilgisayar kamerasıyla. Başparmak+işaret parmağını birleştir: tek elle sürükle = döndür (Esnet modunda: tut ve çek), iki elle aç/kapa = yakınlaştır, ikisini birlikte oynat = kaydır. Yalnız yerel sunucuda (localhost) çalışır; ilk açılışta model dosyası indirilir.</p>

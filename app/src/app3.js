@@ -138,7 +138,7 @@ $('#cgsc').onclick=()=>{if(!cage||!cage.sel.size)return;const s=['x','y','z'].ma
  cageHist();cageApplyLocal(M,Float64Array.from(cage.C));cageSettle();cageSelChanged();['x','y','z'].forEach(a=>$('#cgs'+a).value=100)};
 
 /* ================= yüzey temizliği, kesme, birleştirme ================= */
-function replaceGeometry(p,P,C,I){pushUndo(p);const g=p.mesh.geometry;
+function replaceGeometry(p,P,C,I){pushUndo(p);const g=p.mesh.geometry;g.deleteAttribute('normal');
  g.setAttribute('position',new THREE.BufferAttribute(P,3));if(C)g.setAttribute('color',new THREE.BufferAttribute(C,3));else g.deleteAttribute('color');
  g.setIndex(new THREE.BufferAttribute(I,1));g.computeVertexNormals();regUV(p);commitShape(p);refresh();look()}
 $('#smn').oninput=e=>$('#smv').textContent=e.target.value;

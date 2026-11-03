@@ -211,7 +211,7 @@ function restore(s){const p=s.p;if(!parts.includes(p))return;const g=p.mesh.geom
  const same=g.attributes.position.array.length===s.pos.length&&g.index.array.length===s.idx.length;
  if(same){g.attributes.position.array.set(s.pos);g.attributes.position.needsUpdate=true;g.index.array.set(s.idx);g.index.needsUpdate=true;
   if(s.col&&g.attributes.color){g.attributes.color.array.set(s.col);g.attributes.color.needsUpdate=true}}
- else{g.setAttribute('position',new THREE.BufferAttribute(Float32Array.from(s.pos),3));g.setIndex(new THREE.BufferAttribute(Uint32Array.from(s.idx),1));
+ else{g.deleteAttribute('normal');if(g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(s.pos.length/3*2),2));g.setAttribute('position',new THREE.BufferAttribute(Float32Array.from(s.pos),3));g.setIndex(new THREE.BufferAttribute(Uint32Array.from(s.idx),1));
   if(s.col)g.setAttribute('color',new THREE.BufferAttribute(Float32Array.from(s.col),3));else g.deleteAttribute('color')}
  g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();if(g.attributes.uv)regUV(p);
  p.base=s.base.slice();p.size=s.size.slice();p.pos=s.position.slice();p.mid=s.mid.slice();p.topo=null;p.analytic=null;p.gv++;

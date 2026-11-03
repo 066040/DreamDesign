@@ -374,4 +374,105 @@ class Gestures{
   if(!down.length&&cur.length)ev.push({type:'cursor',x:cur[0].tip.x,y:cur[0].tip.y});
   cur.forEach((c,i)=>this.h[i]={down:c.down});
   return ev}}
+
+/* ---------- Kenar ve köşe özellikleri (Kenar aracı) ----------
+   Keskin kenarlar: iki yüzün normalleri arasındaki açı > deg. Ardışık, aynı doğrultudaki keskin kenarlar tek "kenar zinciri" olur.
+   Köşe: üç ya da daha çok keskin kenarın buluştuğu, ya da zincirin keskin döndüğü kaynaklı nokta. */
+function features(P,I,diag,deg){deg=deg||30;const topo=buildTopo(P,I,diag),wid=topo.wid,W=topo.W,cosT=Math.cos(deg*Math.PI/180);
+ const map=new Map(),EA=[],EB=[],N1=[],N2=[],H=[],T=I.length/3,FN=new Float64Array(T*3);
+ for(let t=0;t<T;t++){const a=I[3*t]*3,b=I[3*t+1]*3,c=I[3*t+2]*3,ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2],vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];
+  let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz);if(l<1e-20)continue;nx/=l;ny/=l;nz/=l;FN[3*t]=nx;FN[3*t+1]=ny;FN[3*t+2]=nz;
+  for(let e=0;e<3;e++){const wu=wid[I[3*t+e]],wv=wid[I[3*t+(e+1)%3]];if(wu===wv)continue;const key=Math.min(wu,wv)*W+Math.max(wu,wv),k=map.get(key);
+   if(k===undefined){map.set(key,EA.length);EA.push(wu);EB.push(wv);N1.push(nx,ny,nz);N2.push(0,0,0);H.push(0)}
+   else if(H[k]===0){N2[3*k]=nx;N2[3*k+1]=ny;N2[3*k+2]=nz;H[k]=1}else H[k]=2}}
+ const pos=w=>{const r=topo.rep[w]*3;return[P[r],P[r+1],P[r+2]]};
+ const cr=[],cadj=new Map();
+ for(let k=0;k<EA.length;k++){if(H[k]!==1)continue;const d=N1[3*k]*N2[3*k]+N1[3*k+1]*N2[3*k+1]+N1[3*k+2]*N2[3*k+2];if(d>=cosT)continue;
+  const i=cr.length;cr.push(k);for(const w of[EA[k],EB[k]]){let l=cadj.get(w);if(!l){l=[];cadj.set(w,l)}l.push(i)}}
+ const other=(i,w)=>EA[cr[i]]===w?EB[cr[i]]:EA[cr[i]];
+ const dirOf=(a,b)=>{const A=pos(a),B=pos(b),d=[B[0]-A[0],B[1]-A[1],B[2]-A[2]],l=Math.hypot(...d)||1;return d.map(v=>v/l)};
+ const cosTurn=Math.cos(25*Math.PI/180),corner=new Set();
+ for(const[w,l]of cadj){if(l.length!==2){corner.add(w);continue}
+  const d1=dirOf(other(l[0],w),w),d2=dirOf(w,other(l[1],w));if(d1[0]*d2[0]+d1[1]*d2[1]+d1[2]*d2[2]<cosTurn)corner.add(w)}
+ const used=new Uint8Array(cr.length),chains=[];
+ const walk=(start,first)=>{const ws=[start],es=[];let w=start,i=first;
+  for(;;){used[i]=1;es.push(cr[i]);w=other(i,w);ws.push(w);if(corner.has(w)||w===start)break;const l=cadj.get(w),nx=l[0]===i?l[1]:l[0];if(nx===undefined||used[nx])break;i=nx}
+  return{ws,es}};
+ for(const w of corner)for(const i of cadj.get(w))if(!used[i])chains.push(walk(w,i));
+ for(let i=0;i<cr.length;i++)if(!used[i]){const k=cr[i];chains.push(walk(EA[k],i))}
+ const out=chains.map(({ws,es})=>{const n1=[0,0,0],n2=[0,0,0];let len=0;
+  es.forEach((k,q)=>{let a=[N1[3*k],N1[3*k+1],N1[3*k+2]],b=[N2[3*k],N2[3*k+1],N2[3*k+2]];
+   const dt=(x,y)=>x[0]*y[0]+x[1]*y[1]+x[2]*y[2];if(q&&dt(a,n1)+dt(b,n2)<dt(b,n1)+dt(a,n2)){const t=a;a=b;b=t}
+   for(let j=0;j<3;j++){n1[j]+=a[j];n2[j]+=b[j]}});
+  for(let i=0;i+1<ws.length;i++){const A=pos(ws[i]),B=pos(ws[i+1]);len+=Math.hypot(B[0]-A[0],B[1]-A[1],B[2]-A[2])}
+  const nm=v=>{const l=Math.hypot(...v);return l>.5*es.length?v.map(x=>x/l):null};
+  return{ws,closed:ws[0]===ws[ws.length-1],n1:nm(n1),n2:nm(n2),len,segs:es.length}});
+ /* köşelerde birleşen yüzlerin (yön kümelenmiş) normalleri */
+ const cn=new Map();for(const w of corner)cn.set(w,[]);
+ for(let t=0;t<T;t++){const n=[FN[3*t],FN[3*t+1],FN[3*t+2]];if(!n[0]&&!n[1]&&!n[2])continue;
+  for(let e=0;e<3;e++){const l=cn.get(wid[I[3*t+e]]);if(!l)continue;if(!l.some(m=>m[0]*n[0]+m[1]*n[1]+m[2]*n[2]>=cosT))l.push(n)}}
+ const corners=[...corner].map(w=>({w,normals:cn.get(w)}));
+ return{topo,chains:out,corners,pos}}
+/* Kenar/köşe çekme ağırlığı: yüz normalleri boyunca 0 (karşı uç) → 1 (seçilen kenar) doğrusal; çarpım.
+   Düz yüzler düz kalır (eğilir), karşı yüzler yerinde durur. reach (0–1]: etkinin ne kadar içeri gideceği.
+   along: {a,e,L} açık zincirde kenar boyunca dışarıda kalan kısmı parça sınırına doğru sönümler. */
+function edgeWeights(P,normals,reach,along){const n=P.length/3,w=new Float32Array(n).fill(1);reach=Math.min(1,Math.max(.02,reach||1));
+ const ramp=(s,lo,hi)=>{let t=hi-lo>1e-12?(s-lo)/(hi-lo):1;t=(t-(1-reach))/reach;return t<0?0:t>1?1:t};
+ normals.forEach(nv=>{let lo=1e30,hi=-1e30;const s=new Float64Array(n);
+  for(let i=0;i<n;i++){const v=P[3*i]*nv[0]+P[3*i+1]*nv[1]+P[3*i+2]*nv[2];s[i]=v;if(v<lo)lo=v;if(v>hi)hi=v}
+  for(let i=0;i<n;i++)w[i]*=ramp(s[i],lo,hi)});
+ if(along){const{a,e,L}=along;let lo=1e30,hi=-1e30;const u=new Float64Array(n);
+  for(let i=0;i<n;i++){const v=(P[3*i]-a[0])*e[0]+(P[3*i+1]-a[1])*e[1]+(P[3*i+2]-a[2])*e[2];u[i]=v;if(v<lo)lo=v;if(v>hi)hi=v}
+  for(let i=0;i<n;i++){const v=u[i];let k=1;if(v<0)k=lo<-1e-9?1-v/lo:0;else if(v>L)k=hi>L+1e-9?1-(v-L)/(hi-L):0;w[i]*=k<0?0:k}}
+ return w}
+/* Yay (çember parçası) profili: kiriş L, sehim h. x∈[0,L] için yüksekliğin h'ye oranı (uçlarda 0, ortada 1) */
+function arcFrac(x,L,h){if(x<=0||x>=L||L<=0)return 0;if(h<1e-9)return 4*(x/L)*(1-x/L);
+ const R=(L*L/4+h*h)/(2*h),dx=x-L/2;return Math.max(0,(Math.sqrt(Math.max(R*R-dx*dx,0))-(R-h))/h)}
+/* yay bilgisi: yarıçap, merkez açı (°), yay boyu */
+function arcInfo(L,h){if(h<1e-9)return{R:Infinity,deg:0,len:L};const R=(L*L/4+h*h)/(2*h),th=4*Math.atan(2*h/L);return{R,deg:th*180/Math.PI,len:R*th}}
+/* İki yüz arasındaki iç açı (°): dış normaller n1, n2 */
+function dihedral(n1,n2){const d=Math.max(-1,Math.min(1,n1[0]*n2[0]+n1[1]*n2[1]+n1[2]*n2[2]));return 180-Math.acos(d)*180/Math.PI}
+/* Üç nokta açısı (° , B tepe) */
+function angle3(A,B,C){const u=[A[0]-B[0],A[1]-B[1],A[2]-B[2]],v=[C[0]-B[0],C[1]-B[1],C[2]-B[2]],l=Math.hypot(...u)*Math.hypot(...v);
+ if(l<1e-12)return 0;return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1]+u[2]*v[2])/l)))*180/Math.PI}
+/* Ağı sıklaştır: her üçgen 4'e bölünür (orta noktalar, şekil değişmez) */
+function subdivide(P,C,I){const n=P.length/3,mid=new Map(),NP=Array.from(P),NC=C?Array.from(C):null,J=[];
+ const m=(a,b)=>{const k=a<b?a*n+b:b*n+a;let v=mid.get(k);if(v!==undefined)return v;v=NP.length/3;
+  for(let j=0;j<3;j++)NP.push((P[3*a+j]+P[3*b+j])/2);if(NC)for(let j=0;j<3;j++)NC.push((C[3*a+j]+C[3*b+j])/2);mid.set(k,v);return v};
+ for(let t=0;t<I.length;t+=3){const a=I[t],b=I[t+1],c=I[t+2],ab=m(a,b),bc=m(b,c),ca=m(c,a);J.push(a,ab,ca,ab,b,bc,ca,bc,c,ab,bc,ca)}
+ return{P:Float32Array.from(NP),C:NC?Float32Array.from(NC):null,I:Uint32Array.from(J)}}
+/* Keskin kenarlarda köşe noktalarını ayır: boolean sonrası yüzeyler düz ve keskin görünür */
+function splitSharp(P,C,I,deg){const cosT=Math.cos((deg||30)*Math.PI/180),n=P.length/3,T=I.length/3,FN=new Float64Array(T*3),inc=[];
+ for(let i=0;i<n;i++)inc.push([]);
+ for(let t=0;t<T;t++){const a=I[3*t]*3,b=I[3*t+1]*3,c=I[3*t+2]*3,ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2],vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];
+  let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;FN[3*t]=nx/l;FN[3*t+1]=ny/l;FN[3*t+2]=nz/l;for(let e=0;e<3;e++)inc[I[3*t+e]].push(t)}
+ const NP=[],NC=C?[]:null,J=new Uint32Array(I.length);
+ for(let v=0;v<n;v++){const cl=[];
+  for(const t of inc[v]){const nx=FN[3*t],ny=FN[3*t+1],nz=FN[3*t+2];let g=cl.find(c=>c.n[0]*nx+c.n[1]*ny+c.n[2]*nz>=cosT);
+   if(!g){g={n:[nx,ny,nz],id:NP.length/3};cl.push(g);NP.push(P[3*v],P[3*v+1],P[3*v+2]);if(NC)NC.push(C[3*v],C[3*v+1],C[3*v+2])}
+   for(let e=0;e<3;e++)if(I[3*t+e]===v)J[3*t+e]=g.id}}
+ return{P:Float32Array.from(NP),C:NC?Float32Array.from(NC):null,I:J}}
+/* Köşeleri yuvarlatılmış kutu (mm). r: köşe yarıçapı. Köşelerde açısal olarak eşit aralıklı ızgara. */
+function roundedBox(sx,sy,sz,r,seg){seg=seg||6;const h=[sx/2,sy/2,sz/2];r=Math.max(0,Math.min(r||0,h[0],h[1],h[2]));
+ const mx=Math.max(sx,sy,sz),co=hh=>{const flat=hh-r,n=Math.max(2,Math.ceil(2*flat/(mx/24))),c=[];
+  if(r>0)for(let k=0;k<seg;k++)c.push(-(flat+r*Math.tan(Math.PI/4*(seg-k)/seg)));
+  for(let k=0;k<=n;k++)c.push(-flat+2*flat*k/n);
+  if(r>0)for(let k=1;k<=seg;k++)c.push(flat+r*Math.tan(Math.PI/4*k/seg));
+  return c.filter((v,i,a)=>i===0||Math.abs(v-a[i-1])>1e-9)};
+ const C=[co(h[0]),co(h[1]),co(h[2])],P=[],I=[];
+ for(let a=0;a<3;a++)for(const s of[-1,1]){const u=(a+1)%3,v=(a+2)%3,cu=C[u],cv=C[v],base=P.length/3;
+  for(let j=0;j<cv.length;j++)for(let i=0;i<cu.length;i++){const p=[0,0,0];p[a]=s*h[a];p[u]=cu[i];p[v]=cv[j];
+   if(r>0){const c=p.map((x,k)=>Math.max(-(h[k]-r),Math.min(h[k]-r,x))),d=p.map((x,k)=>x-c[k]),l=Math.hypot(...d);if(l>1e-12)for(let k=0;k<3;k++)p[k]=c[k]+d[k]/l*r}
+   P.push(...p)}
+  const nu=cu.length;for(let j=0;j+1<cv.length;j++)for(let i=0;i+1<nu;i++){const q=base+j*nu+i,A=q,B=q+1,Cc=q+nu+1,D=q+nu;
+   if(s>0)I.push(A,B,Cc,A,Cc,D);else I.push(A,Cc,B,A,D,Cc)}}
+ return{P:Float32Array.from(P),I:Uint32Array.from(I)}}
+/* Silindir ağı (delik / çıkıntı aracı): taban merkezi o, eksen yönü d (birim), boy L, yarıçap r */
+function cylMesh(o,d,L,r,seg){seg=seg||48;let a=Math.abs(d[0])<.9?[1,0,0]:[0,1,0];
+ const u=[d[1]*a[2]-d[2]*a[1],d[2]*a[0]-d[0]*a[2],d[0]*a[1]-d[1]*a[0]],ul=Math.hypot(...u);for(let k=0;k<3;k++)u[k]/=ul;
+ const v=[d[1]*u[2]-d[2]*u[1],d[2]*u[0]-d[0]*u[2],d[0]*u[1]-d[1]*u[0]],P=[],I=[];
+ for(const z of[0,L])for(let i=0;i<seg;i++){const t=2*Math.PI*i/seg,c=Math.cos(t)*r,s=Math.sin(t)*r;for(let k=0;k<3;k++)P.push(o[k]+u[k]*c+v[k]*s+d[k]*z)}
+ const b=P.length/3;for(let k=0;k<3;k++)P.push(o[k]);for(let k=0;k<3;k++)P.push(o[k]+d[k]*L);
+ for(let i=0;i<seg;i++){const j=(i+1)%seg;I.push(i,j,seg+j,i,seg+j,seg+i,b,j,i,b+1,seg+i,seg+j)}
+ return{P:Float32Array.from(P),I:Uint32Array.from(I)}}
 //</pure>

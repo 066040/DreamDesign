@@ -7,7 +7,7 @@ function histCapture(){const d=stateData(true),S={d,sp:sigOf(d.parts),sj:sigOf([
 function histBytes(){const seen=new Set();let n=0;[...Hist.undo,...Hist.redo,Hist.cur].forEach(S=>{if(!S)return;S.d.parts.forEach(p=>[p.P,p.I,p.C].forEach(a=>{if(a&&!seen.has(a)){seen.add(a);n+=a.byteLength}}))});return n}
 function histBtn(){const u=$('#hundo'),r=$('#hredo');if(u)u.disabled=!Hist.undo.length;if(r)r.disabled=!Hist.redo.length;
  const a=$('#skundo'),b=$('#skredo');if(a)a.disabled=!Hist.undo.length&&!(sk.cur&&sk.cur.pts.length);if(b)b.disabled=!Hist.redo.length}
-function histMark(){if(Hist.busy||(typeof cage!=='undefined'&&cage)||grab||tcActive||sk.drag)return;
+function histMark(){if(Hist.busy||(typeof cage!=='undefined'&&cage)||grab||(typeof edrag!=='undefined'&&edrag)||tcActive||sk.drag)return;
  let S;try{S=histCapture()}catch(e){console.warn('geri-al görüntüsü alınamadı',e);return}
  if(!Hist.cur){Hist.cur=S;histBtn();return}
  if(S.sig===Hist.cur.sig)return;

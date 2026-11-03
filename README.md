@@ -13,12 +13,16 @@
 - **Model from several views** – give a front, side and/or top photo or drawing; DreamDesign intersects the silhouettes into a real, measured solid. One view only? It inflates the shape and you tell it how deep it should be.
 - **Photo to 3D (optional backend)** – drop in a single photo and [TripoSR](https://github.com/VAST-AI-Research/TripoSR) builds a 3D model locally on your own GPU (works on 4 GB cards, or CPU).
 - **Reshape like clay** – a lattice *cage* lets you pull the roof down, stretch a nose or a mug handle, with left/right symmetry. There is also local grab-and-pull, numeric move/scale, and 90° re-orientation.
+- **Pull and bend a single edge or corner** – hover a sharp edge or corner, grab it and drag: only that edge moves, the faces next to it tilt and stay flat, the far side stays put. Switch to *Bend* and the edge becomes a true circular arc; the arc angle, radius and sag are shown live, or type an angle (e.g. 30°) and apply.
+- **Holes and bosses** – click a face, type the diameter and depth (or through), and drill; or add a cylindrical boss. Real solid operations, so volume and mass stay correct.
+- **Real boolean operations** – union, subtract and intersect between parts (via [manifold](https://github.com/elalish/manifold), loaded on first use).
 - **Cut, merge, mirror, clone** – exact plane cuts with caps, welding, mirrored copies.
 - **See it your way** – painted, triangle skeleton, silhouette outline, section lines, centre line; perspective or true orthographic; one-key X/Y/Z views; grid and live dimensions.
 - **Sketch → solid** – 2D sketch area with lines, rectangles, circles and typed dimensions; extrude or revolve into a part, or trace a photo outline at real size.
 - **Assemble** – a shelf of parts you drag onto the model (they snap to the surface); revolute and sliding joints with poses.
 - **Engineering numbers** – volume, mass per material, centre of gravity, hover power / disk loading / endurance / stall speed for aircraft concepts.
-- **Measure** – click two points on the model; measurements stay attached to their part.
+- **Measure** – click two points for a distance, or three points for an angle; measurements stay attached to their part. Hovering an edge shows its length and the angle between its faces.
+- **Rounded box** – a box with a real corner radius in mm, handy for device enclosures.
 - **Undo/redo everything** – `Ctrl+Z` / `Ctrl+Y` cover edits, sketches, joints and measurements.
 - **Import / export** – GLB, OBJ, STL in; STL, OBJ, GLB and a project file out.
 - **Hand gestures (experimental)** – orbit, zoom and pan with your webcam via MediaPipe (local server only).
@@ -52,12 +56,13 @@ Server settings (environment variables): `TSR_DEVICE=cpu`, `TSR_RES` (mesh resol
 | `F` | fit to view | `E` | grab-and-pull |
 | `P` | perspective ⇄ orthographic | `K` | lattice cage |
 | `W` | triangle skeleton on/off | `M` | measure |
+| `B` | pull / bend an edge or corner | `H` | hole / boss |
 | `D` | sketch area | `Ctrl+Z` / `Ctrl+Y` | undo / redo |
 
 ## Honest limits
 
 - A **single photo cannot show the back of an object.** TripoSR guesses it; the result is a plausible model, not a measurement. Use two or three views for measured results.
-- No true boolean operations yet (overlapping parts are counted twice in mass); cut caps can be imperfect on very concave cross-sections.
+- Boolean operations and holes need closed (watertight) surfaces; AI-generated meshes may need *Surface clean-up* first. Cut caps can be imperfect on very concave cross-sections. Fillets are only available through the rounded box, not on arbitrary edges yet.
 - The sketcher has no constraint solver and no holes.
 - Mass and volume assume closed surfaces, so AI-generated meshes give approximate values.
 - Hand gestures have only been exercised with simulated input, not on many real webcams.
@@ -88,14 +93,14 @@ Edit files in `app/src/`, rebuild, and commit the regenerated `docs/index.html` 
 1. English interface (i18n) and more languages
 2. Template fitting – start from a car / aircraft / humanoid skeleton and fit it to your silhouettes
 3. Pluggable, stronger image-to-3D backends (local or cloud)
-4. Real boolean operations, sketch constraints, holes
+4. Fillets / chamfers on any edge, sketch constraints, holes inside sketches
 5. Mobile / touch polish, example projects
 
 Ideas and pull requests are welcome.
 
 ## Credits
 
-[three.js](https://threejs.org) (MIT) · [TripoSR](https://github.com/VAST-AI-Research/TripoSR) (MIT) · [MediaPipe](https://developers.google.com/mediapipe) (Apache-2.0) · [rembg](https://github.com/danielgatis/rembg) (MIT) · scikit-image, trimesh, FastAPI.
+[three.js](https://threejs.org) (MIT) · [manifold](https://github.com/elalish/manifold) (Apache-2.0) · [TripoSR](https://github.com/VAST-AI-Research/TripoSR) (MIT) · [MediaPipe](https://developers.google.com/mediapipe) (Apache-2.0) · [rembg](https://github.com/danielgatis/rembg) (MIT) · scikit-image, trimesh, FastAPI.
 
 ## License
 

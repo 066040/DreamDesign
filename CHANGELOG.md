@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 – edges, holes, booleans
+- **Edge / corner tool (`B`)**: grab a single sharp edge or corner and drag. *Move* tilts the neighbouring faces (they stay flat, the far side stays put); *Bend* turns the edge into an exact circular arc. Live arc angle, radius, sag and arc length; numeric input by vector or by bend angle; reach slider; axis lock.
+- Hovering an edge shows its length and the angle between its two faces; curved edges also show their arc angle and radius.
+- **Holes and bosses (`H`)**: click a face, set diameter, depth (or through) and position in mm; drill or add a boss.
+- **Real boolean operations**: union, subtract, intersect between parts (manifold-3d, WASM, loaded on first use). Volume and mass are exact; the old weld-only merge is kept as "fast mesh merge".
+- **Three-point angle measurement**, saved with the project.
+- **Rounded box** primitive with a true corner radius in mm (rebuild after resizing).
+- Fix: normals/UVs were not resized when a mesh's vertex count changed on undo.
+
 ## 0.1.0 – first public beta
 - Model from front/side/top silhouettes (intersection) or a single inflated view.
 - Optional photo-to-3D server (TripoSR): correct upright orientation, X–Y centring, base on Z=0, floater removal, smoothing, low-VRAM chunking with automatic fallback.

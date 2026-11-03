@@ -13,12 +13,16 @@
 - **Çoklu görünümden model** – ön, yan ve/veya üst fotoğraf ya da çizim ver; siluetler kesiştirilip gerçek ölçülü bir katı çıkar. Tek görünüm varsa şekil şişirilir, derinliği sen belirlersin.
 - **Fotoğraftan 3D (isteğe bağlı sunucu)** – tek fotoğraf at, [TripoSR](https://github.com/VAST-AI-Research/TripoSR) kendi ekran kartında modeli üretir (4 GB kartta da çalışır, ekran kartı yoksa işlemci ile).
 - **Kil gibi şekillendir** – nokta *kafesi* ile tavanı alçalt, burnu ya da kulpu uzat; sol-sağ simetri var. Ayrıca tutup çekme, sayısal taşı/ölçekle, 90° yön çevirme.
+- **Tek bir kenarı ya da köşeyi çek ve bük** – keskin bir kenarın ya da köşenin üstüne gel, tut ve sürükle: yalnız o kenar gelir, bitişik yüzler düz kalarak eğilir, karşı taraf yerinde kalır. *Bük*'e geçince kenar gerçek bir çember yayı olur; yay açısı, yarıçap ve sehim canlı görünür, ya da açıyı yazıp (ör. 30°) uygularsın.
+- **Delik ve çıkıntı** – yüzeye tıkla, çapı ve derinliği (ya da boydan boya) yaz, del; ya da silindirik çıkıntı ekle. Gerçek katı işlemi: hacim ve kütle doğru kalır.
+- **Gerçek boolean işlemleri** – parçalar arasında birleştir, çıkar, kesişim ([manifold](https://github.com/elalish/manifold), ilk kullanımda yüklenir).
 - **Kes, birleştir, ayna kopya, kopyala** – kapaklı tam düzlem kesimi, birleştirme.
 - **İstediğin gibi gör** – boyalı, üçgen iskelet, ana hat, kesit çizgileri, orta hat; perspektif ya da gerçek dik görünüm; tek tuşla X/Y/Z; ızgara ve canlı ölçüler.
 - **Çizim → katı** – çizgi, dikdörtgen, daire ve yazılan ölçülerle 2B çizim; ekstrüde ya da döndürerek parça yap, fotoğraf ana hattını gerçek boyutta çıkar.
 - **Montaj** – parçaları modele sürükleyip bırak (yüzeye oturur); dönel ve kayar eklemler, pozlar.
 - **Mühendislik hesapları** – hacim, malzemeye göre kütle, ağırlık merkezi; hava aracı için asılı kalma gücü, kanat yükü, süre, tutunma hızı.
-- **Ölçüm** – modelde iki noktaya tıkla; ölçüler parçasına bağlı kalır.
+- **Ölçüm** – uzaklık için iki, açı için üç noktaya tıkla; ölçüler parçasına bağlı kalır. Bir kenarın üstüne gelince boyu ve yüzleri arasındaki açı görünür.
+- **Yuvarlak kutu** – köşe yarıçapı gerçek mm olan kutu; cihaz kasaları için.
 - **Her şeyi geri al** – `Ctrl+Z` / `Ctrl+Y` düzenleme, çizim, eklem ve ölçümleri kapsar.
 - **İçe/dışa aktar** – GLB, OBJ, STL açılır; STL, OBJ, GLB ve proje dosyası kaydedilir.
 - **El hareketi (deneysel)** – kamerayla döndür, yakınlaştır, kaydır (yalnız yerel sunucuda).
@@ -52,12 +56,13 @@ Sunucu ayarları (ortam değişkenleri): `TSR_DEVICE=cpu`, `TSR_RES` (ağ çöz�
 | `F` | görünüme sığdır | `E` | tutup çek |
 | `P` | perspektif ⇄ dik | `K` | kafes |
 | `W` | üçgen iskelet aç/kapat | `M` | ölç |
+| `B` | kenar / köşe çek, bük | `H` | delik / çıkıntı |
 | `D` | çizim alanı | `Ctrl+Z` / `Ctrl+Y` | geri al / ileri al |
 
 ## Dürüst sınırlar
 
 - **Tek fotoğraf nesnenin arkasını göstermez.** TripoSR arka yüzü tahmin eder; sonuç makul bir modeldir, ölçüm değildir. Ölçülü sonuç için iki ya da üç görünüm kullan.
-- Henüz gerçek boolean işlemi yok (çakışan parçaların kütlesi iki kez sayılır); çok girintili kesitlerde kesim kapağı kusurlu olabilir.
+- Boolean işlemleri ve delik kapalı (su geçirmez) yüzey ister; yapay zeka ağlarında önce *Yüzey temizliği* gerekebilir. Çok girintili kesitlerde kesim kapağı kusurlu olabilir. Yuvarlatma şimdilik yalnız yuvarlak kutuda var, her kenarda değil.
 - Çizim alanında kısıt çözücü ve delik yok.
 - Hacim ve kütle kapalı yüzey varsayar; yapay zeka ağlarında yaklaşık çıkar.
 - El hareketi çok sayıda gerçek kamerada denenmedi.
@@ -78,7 +83,7 @@ python tests/test_meshfix.py   # gerekir: numpy trimesh scikit-image
 1. İngilizce arayüz (i18n) ve daha çok dil
 2. Şablon uydurma – araba / uçak / insansı iskeletinden başlayıp siluetlere oturtma
 3. Takılabilir, daha güçlü görüntüden-3D arka uçları (yerel ya da bulut)
-4. Gerçek boolean işlemleri, çizim kısıtları, delikler
+4. Her kenarda yuvarlatma / pah, çizim kısıtları, çizimde delikler
 5. Mobil / dokunmatik iyileştirmeler, örnek projeler
 
 ## Lisans

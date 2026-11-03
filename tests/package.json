@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "description": "Unit and UI (jsdom) tests for DreamDesign",
   "scripts": {
-    "test": "node test_pure.js && node test_ui.js"
+    "test": "node test_pure.js && node test_ui.js && node test_tools.js"
   },
   "devDependencies": {
     "jsdom": "^22.1.0",
+    "manifold-3d": "^3.5.4",
     "three": "0.128.0"
   }
 }
