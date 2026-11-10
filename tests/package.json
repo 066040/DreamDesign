@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Unit and UI (jsdom) tests for DreamDesign",
   "scripts": {
-    "test": "node test_pure.js && node test_ui.js && node test_tools.js"
+    "test": "node test_pure.js && node test_ui.js && node test_tools.js && node test_quote.js && node test_simple.js"
   },
   "devDependencies": {
     "jsdom": "^22.1.0",

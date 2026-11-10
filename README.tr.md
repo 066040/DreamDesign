@@ -8,6 +8,19 @@
 
 > **Durum: beta (v0.1).** Çalışıyor ve test edildi ama genç bir proje. Arayüz şimdilik **yalnızca Türkçe**; İngilizce arayüz yol haritasının ilk maddesi.
 
+## Basit mod: hiç bilmeyen biri için
+
+DreamDesign ilk açılışta **Basit** modda açılır (sol üstte *Basit / Gelişmiş* anahtarı; seçim hatırlanır, `?mod=basit` ya da `?mod=gelismis` ile de seçilir). Teknik kelime yok, büyük düğmeler var:
+
+- **Şekil ekle:** kutu, yuvarlak kutu, silindir, küre, koni ya da dosyadan aç.
+- **Ölçüsünü yaz** (mm): genişlik, derinlik, yükseklik; istersen hepsi aynı oranda değişsin.
+- **Renk seç**, **yerini değiştir** (yalnız tabla üstünde), **döndür**, **yan yatır**, **kopyala**, **sil**.
+- **Kaba çevir:** içini oyup üstü açık kap yapar (kalemlik, saksı). **Delik aç:** yere tıkla, çapı yaz. **Köşeleri yuvarla.**
+- **Hepsini tek parça yap:** üst üste konan şekilleri birleştirir.
+- Altta her zaman **tahmini baskı fiyatı** ve **Fiyat al ve sipariş ver**.
+
+Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey olduğu yerde durur.
+
 ## Neler yapabilirsin
 
 - **Çoklu görünümden model** – ön, yan ve/veya üst fotoğraf ya da çizim ver; siluetler kesiştirilip gerçek ölçülü bir katı çıkar. Tek görünüm varsa şekil şişirilir, derinliği sen belirlersin.
@@ -22,10 +35,24 @@
 - **Montaj** – parçaları modele sürükleyip bırak (yüzeye oturur); dönel ve kayar eklemler, pozlar.
 - **Mühendislik hesapları** – hacim, malzemeye göre kütle, ağırlık merkezi; hava aracı için asılı kalma gücü, kanat yükü, süre, tutunma hızı.
 - **Ölçüm** – uzaklık için iki, açı için üç noktaya tıkla; ölçüler parçasına bağlı kalır. Bir kenarın üstüne gelince boyu ve yüzleri arasındaki açı görünür.
+- **Baskıya hazırla (Baskı sekmesi)** – yazıcını seç (P1S, A1 mini, Ender-3, Prusa MK4… ya da kendi ölçün); sığıyor mu gör, sığmıyorsa tek tıkla küçült. Destek isteyen yerler kırmızı görünür, destek gramı ve tablaya değen alan hesaplanır. *En az destekle yatır* parçayı en az destek isteyen yöne çevirir. Tahmini baskı fiyatı ve tek tıkla *Fiyat sayfasında aç ve sipariş ver*.
 - **Yuvarlak kutu** – köşe yarıçapı gerçek mm olan kutu; cihaz kasaları için.
 - **Her şeyi geri al** – `Ctrl+Z` / `Ctrl+Y` düzenleme, çizim, eklem ve ölçümleri kapsar.
 - **İçe/dışa aktar** – GLB, OBJ, STL açılır; STL, OBJ, GLB ve proje dosyası kaydedilir.
 - **El hareketi (deneysel)** – kamerayla döndür, yakınlaştır, kaydır (yalnız yerel sunucuda).
+
+## Fiyat al sayfası (3D baskı siparişi)
+
+**[docs/bastir.html](https://066040.github.io/DreamDesign/bastir.html)**: bilgisayardan anlamayan birinin bile kullanabileceği sade bir sayfa. Modelini (STL/OBJ) yükle, boyutunu kaydırıcıyla ya da mm yazarak ayarla, malzeme (PLA, PETG, ASA), renk, sağlamlık ve adet seç; fiyat anında değişir.
+
+- Hacim ve yüzey alanından gram, baskı süresi ve TL hesaplanır. Fiyat tablosu `app/src/quote/price.js` içindeki `QUOTE_CFG`'de, kendi maliyetine göre düzenle.
+- Yazıcıya (varsayılan Bambu Lab P1S, 256 mm) sığmayan model otomatik küçültülür; açık yüzey ve cm/inç ile kaydedilmiş dosya uyarısı var.
+- "Pahalı mı geldi?" önerisi: tek tıkla daha hafif doluluk ya da %80 boyut.
+- Havada kalan yerler için destek gramı fiyata eklenir; "Daha az destekle yatır" ile modeli en ucuz yöne çevirir.
+- DreamDesign'daki *Baskı → Fiyat sayfasında aç* modeli, malzemeyi ve sağlamlığı bu sayfaya aktarır.
+- Sipariş: `QUOTE_CFG.whatsapp` numarasına özetle WhatsApp mesajı açılır, ölçeklenmiş STL indirilir. Sayfa bir siteye `<iframe>` ile gömülürse sipariş ve STL `postMessage({type:'3ddream-order', ...})` ile üst sayfaya gider.
+
+Derleme: `node app/src/quote/build.js` → `docs/bastir.html`.
 
 ## Hızlı başlangıç
 

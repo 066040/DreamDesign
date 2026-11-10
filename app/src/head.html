@@ -25,9 +25,50 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 #lbls span{position:absolute;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 #lbls span.m{border-color:var(--acc);color:var(--acc)}
 #side{width:360px;display:flex;flex-direction:column;background:var(--panel);border-left:1px solid var(--line);min-height:0}
-#tabs{display:flex;flex-wrap:wrap;gap:2px;padding:6px;border-bottom:1px solid var(--line)}
-#tabs button{padding:5px 8px;font-size:13px}
+#tabs{display:flex;gap:1px;padding:6px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:thin}
+#tabs button{padding:5px 6px;font-size:13px;flex:1 0 auto}
 #pages{flex:1;overflow:auto;padding:14px}
+/* ---------- Basit mod: büyük yazı, büyük düğmeler, teknik kelime yok ---------- */
+#mtoggle button{font-weight:600}
+body.simple #bar .grp:not(.keep),body.simple #tabs,body.simple #pages{display:none!important}
+body.simple #simple{display:flex!important}
+#simple{flex:1;flex-direction:column;min-height:0;overflow:auto;font-size:15px}
+.s-sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.s-sec h3{font-size:16px;margin:0 0 10px}
+.s-help{color:var(--mut);margin:0 0 6px}
+.s-guide{margin:12px 16px 2px;padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--acc) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--acc) 35%,var(--line))}
+.s-guide ol{margin:6px 0 10px;padding-left:20px}.s-guide li{margin:2px 0}
+.s-shapes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.s-shapes button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid var(--line);border-radius:10px;font-size:13px;min-height:78px}
+.s-shapes button:hover{border-color:var(--acc);background:var(--bg)}
+.s-shapes svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.s-sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#simple label{display:block;margin:0;color:var(--mut);font-size:13px;position:relative}
+#simple label input[type=number]{margin-top:3px;font-size:16px;padding:8px 32px 8px 8px;min-height:42px;background:var(--panel)}
+#simple label span{position:absolute;right:8px;bottom:12px;color:var(--mut);font-size:12px}
+#simple label.s-chk{display:flex;gap:8px;align-items:center;margin:10px 0 0;font-size:14px;color:var(--ink)}
+#simple label.s-chk input{width:18px;height:18px;flex:none}
+.s-sub{font-weight:600;margin:14px 0 6px}
+.s-colors{display:flex;flex-wrap:wrap;gap:8px}
+.s-colors button{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);padding:0}
+.s-colors button[aria-checked=true]{outline:3px solid var(--acc);outline-offset:2px}
+.s-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.s-acts button{border:1px solid var(--line);border-radius:8px;padding:9px 8px;min-height:42px;text-align:left}
+.s-acts button:hover{border-color:var(--acc)}
+.s-acts button[aria-pressed=true],.s-acts button[aria-expanded=true]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.s-acts .s-danger{color:var(--warn)}
+.s-panel{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.s-panel p{margin:0 0 8px}
+.s-panel label+label,.s-panel label+.s-btn,.s-panel .s-chk+label,.s-panel .s-chk+.s-btn{margin-top:8px}
+.s-btn{display:block;width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px;font-weight:600;font-size:15px}
+.s-btn:hover{border-color:var(--acc)}
+.s-pri{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.s-pri:hover{filter:brightness(1.07);background:var(--acc)}
+.s-msg{margin-top:8px;min-height:1em;font-size:14px}
+.s-price{margin-top:auto;position:sticky;bottom:0;padding:12px 16px 14px;background:var(--panel);border-top:1px solid var(--line);display:grid;gap:8px}
+.s-price span{color:var(--mut);font-size:13px;display:block}
+.s-price strong{font-size:28px;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
+.s-price small{color:var(--mut);font-size:13px}
 .page{display:none}.page.on{display:block}
 h3{margin:0 0 8px;font-size:14px}
 .sec{margin-bottom:18px}
@@ -69,6 +110,7 @@ summary{cursor:pointer;font-weight:600}
 <div id="app">
  <div id="vp">
   <div id="bar">
+   <div class="grp keep" id="mtoggle" role="radiogroup" aria-label="Arayüz"><button data-ui="simple" role="radio">Basit</button><button data-ui="adv" role="radio">Gelişmiş</button></div>
    <div class="grp" id="modes">
     <button data-mode="sec" class="on" title="Q">Seç</button><button data-mode="move" title="G">Taşı</button><button data-mode="rot" title="R">Döndür</button><button data-mode="scl" title="S">Ölçekle</button><button data-mode="cage" title="K">Kafes</button><button data-mode="grab" title="E">Esnet</button><button data-mode="edge" title="B">Kenar</button><button data-mode="hole" title="H">Delik</button><button data-mode="meas" title="M">Ölç</button>
    </div>
@@ -76,7 +118,7 @@ summary{cursor:pointer;font-weight:600}
    <div class="grp"><button data-v="x" title="Tuş: 1">X</button><button data-v="y" title="Tuş: 2">Y</button><button data-v="z" title="Tuş: 3">Z</button><button data-v="iso" title="Tuş: 0">İzo</button><button id="fit" title="Tuş: F">Sığdır</button><button id="ortho" title="Tuş: P">Dik</button></div>
    <div class="grp"><select id="disp" title="Görünüm biçimi (Tuş: W)" style="width:auto;border:0;background:none"><option value="solid">Boyalı</option><option value="tri">İskelet (üçgen)</option><option value="outline">Ana hat</option><option value="contour">Kesit çizgileri</option><option value="center">Orta hat</option></select><button id="spin">360° dön</button></div>
    <div class="grp"><button id="skopen" title="Tuş: D">Çizim alanı</button></div>
-   <div class="grp"><button id="hundo" title="Geri al (Ctrl+Z)">↶ Geri al</button><button id="hredo" title="İleri al (Ctrl+Y)">↷ İleri al</button></div>
+   <div class="grp keep"><button id="hundo" title="Geri al (Ctrl+Z)">↶ Geri al</button><button id="hredo" title="İleri al (Ctrl+Y)">↷ İleri al</button></div>
    <div class="grp" id="mgrp" hidden><button id="mclear2" title="Tüm ölçüleri sil">Ölçüleri sil ✕</button></div>
   </div>
   <div id="lbls"></div>
@@ -113,7 +155,77 @@ summary{cursor:pointer;font-weight:600}
   </div>
  </div>
  <aside id="side">
-  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="file">Dosya</button></div>
+  <div id="simple" hidden>
+   <div class="s-guide" id="sGuide" hidden>
+    <b>Hoş geldin!</b>
+    <ol><li>Aşağıdan bir şekil ekle.</li><li>Ölçülerini milimetre olarak yaz.</li><li>Rengini seç, sonra "Fiyat al" de.</li></ol>
+    <button class="s-btn s-pri" id="sGuideOk">Anladım</button>
+   </div>
+   <section class="s-sec">
+    <h3>Şekil ekle</h3>
+    <div class="s-shapes">
+     <button data-add="box"><svg viewBox="0 0 40 40"><path d="M8 13l12-6 12 6v14l-12 6-12-6z M8 13l12 6 12-6 M20 19v14"/></svg>Kutu</button>
+     <button data-add="rbox"><svg viewBox="0 0 40 40"><rect x="7" y="9" width="26" height="22" rx="7"/></svg>Yuvarlak kutu</button>
+     <button data-add="cyl"><svg viewBox="0 0 40 40"><ellipse cx="20" cy="10" rx="11" ry="4"/><path d="M9 10v20c0 2.2 4.9 4 11 4s11-1.8 11-4V10"/></svg>Silindir</button>
+     <button data-add="sph"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12"/><ellipse cx="20" cy="20" rx="12" ry="4"/></svg>Küre</button>
+     <button data-add="cone"><svg viewBox="0 0 40 40"><path d="M20 6L9 30c0 2.2 4.9 4 11 4s11-1.8 11-4z"/></svg>Koni</button>
+     <button id="sOpen"><svg viewBox="0 0 40 40"><path d="M7 12h10l3 3h13v17H7z"/></svg>Dosyadan aç</button>
+    </div>
+   </section>
+   <section class="s-sec" id="sSel">
+    <h3 id="sSelName">Şekil seçili değil</h3>
+    <p class="s-help" id="sNoSel">Düzenlemek için bir şeklin üstüne tıkla.</p>
+    <div id="sEdit" hidden>
+     <div class="s-sizes">
+      <label>Genişlik<input type="number" id="sW" min="0.5" step="1" inputmode="decimal"><span>mm</span></label>
+      <label>Derinlik<input type="number" id="sD" min="0.5" step="1" inputmode="decimal"><span>mm</span></label>
+      <label>Yükseklik<input type="number" id="sH" min="0.5" step="1" inputmode="decimal"><span>mm</span></label>
+     </div>
+     <label class="s-chk"><input type="checkbox" id="sLock">Birini değiştirince hepsi aynı oranda değişsin</label>
+     <div class="s-sub">Renk</div>
+     <div class="s-colors" id="sColors" role="radiogroup" aria-label="Renk"></div>
+     <div class="s-sub">Ne yapmak istersin?</div>
+     <div class="s-acts">
+      <button id="sMove" aria-pressed="false">Yerini değiştir</button>
+      <button id="sTurn">Döndür (90°)</button>
+      <button id="sLay">Yan yatır</button>
+      <button id="sCopy">Kopyasını yap</button>
+      <button id="sCupBtn" aria-expanded="false">Kaba çevir</button>
+      <button id="sHoleBtn" aria-expanded="false">Delik aç</button>
+      <button id="sRoundBtn" aria-expanded="false">Köşeleri yuvarla</button>
+      <button id="sDel" class="s-danger">Sil</button>
+     </div>
+     <div class="s-panel" id="sCup" hidden>
+      <p>İçini oyar, üstü açık bir kap yapar. Kalemlik, saksı, kutu için.</p>
+      <label>Duvar kalınlığı<input type="number" id="sWall" value="2" min="0.8" step="0.2"><span>mm</span></label>
+      <button class="s-btn s-pri" id="sCupGo">Kaba çevir</button>
+     </div>
+     <div class="s-panel" id="sHole" hidden>
+      <p id="sHoleTip">Şimdi şeklin üstünde delik açmak istediğin yere tıkla.</p>
+      <label>Delik çapı<input type="number" id="sHoleD" value="5" min="0.5" step="0.5"><span>mm</span></label>
+      <label class="s-chk"><input type="checkbox" id="sHoleThru" checked>Boydan boya delsin</label>
+      <label id="sHoleDepL" hidden>Derinlik<input type="number" id="sHoleDep" value="5" min="0.5" step="0.5"><span>mm</span></label>
+      <button class="s-btn s-pri" id="sHoleGo" disabled>Deliği aç</button>
+     </div>
+     <div class="s-panel" id="sRound" hidden>
+      <p id="sRoundTip">Kutunun keskin köşelerini yuvarlatır.</p>
+      <label>Köşe yuvarlaklığı<input type="number" id="sRad" value="4" min="0" step="0.5"><span>mm</span></label>
+      <button class="s-btn s-pri" id="sRoundGo">Yuvarla</button>
+     </div>
+    </div>
+    <div class="s-msg" id="sMsg" role="status"></div>
+   </section>
+   <section class="s-sec" id="sJoinSec" hidden>
+    <h3>Şekilleri birleştir</h3>
+    <p class="s-help">Üst üste koyduğun şekilleri tek parça yapar.</p>
+    <button class="s-btn" id="sJoin">Hepsini tek parça yap</button>
+   </section>
+   <div class="s-price">
+    <div><span>Tahmini baskı fiyatı</span><strong id="sPrice">—</strong><small id="sPriceInfo">Önce bir şekil ekle.</small></div>
+    <button class="s-btn s-pri" id="sOrder" disabled>Fiyat al ve sipariş ver</button>
+   </div>
+  </div>
+  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="print">Baskı</button><button data-tab="file">Dosya</button></div>
   <div id="pages">
    <div class="page on" id="p-model">
     <div class="sec"><h3>Model yükle</h3>
@@ -240,6 +352,23 @@ summary{cursor:pointer;font-weight:600}
      <div class="two"><div><label>Kanat alanı (m²)</label><input type="number" id="wa" value="9" step="0.5"></div><div><label>Seyir hızı (m/s)</label><input type="number" id="wv" value="55"></div></div>
      <div class="two"><div><label>CL maks. (iniş)</label><input type="number" id="wcl" value="1.5" step="0.1"></div><div><label>Sürtünme CD0</label><input type="number" id="wcd" value="0.03" step="0.005"></div></div>
      <div id="wout"></div></div>
+   </div>
+   <div class="page" id="p-print">
+    <div class="sec"><h3>Yazıcı</h3>
+     <select id="prPrinter" aria-label="Yazıcı"></select>
+     <div class="two" id="prCustom" hidden style="grid-template-columns:repeat(3,1fr)"><div><label>X (mm)</label><input type="number" id="prBx" value="200" min="10"></div><div><label>Y (mm)</label><input type="number" id="prBy" value="200" min="10"></div><div><label>Z (mm)</label><input type="number" id="prBz" value="200" min="10"></div></div>
+     <label class="chk"><input type="checkbox" id="prAll">Görünen tüm parçalar (yoksa yalnız seçili)</label>
+     <div id="prFit"></div></div>
+    <div class="sec"><h3>Destek</h3>
+     <label>Sarkma eşiği: <span id="prAngV">45°</span></label><input type="range" id="prAng" min="30" max="70" step="5" value="45">
+     <p class="note">Dik duvardan bu açıdan fazla eğik, altı boş yüzeyler destek ister. Çoğu yazıcı için 45° iyi bir başlangıç.</p>
+     <label class="chk"><input type="checkbox" id="prShow" checked>Destek isteyen yerleri kırmızı göster</label>
+     <div id="prOut"></div>
+     <div class="btnrow"><button class="sm" id="prBest">En az destekle yatır</button><button class="sm" id="prDown">Tablaya oturt</button></div></div>
+    <div class="sec"><h3>Tahmini baskı fiyatı</h3>
+     <div class="two"><div><label>Malzeme</label><select id="prMat"></select></div><div><label>Sağlamlık</label><select id="prInf"></select></div></div>
+     <div id="prPrice"></div>
+     <div class="btnrow"><button class="sm" id="prOrder">Fiyat sayfasında aç ve sipariş ver</button></div><div class="msg" id="prMsg"></div></div>
    </div>
    <div class="page" id="p-file">
     <div class="sec"><h3>Proje</h3><div class="btnrow" style="margin-top:0"><button class="sm" id="psave">Projeyi kaydet</button><button class="sm" id="pload">Proje aç…</button></div><input id="pfile" type="file" accept=".json,.atolye" hidden>

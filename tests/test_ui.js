@@ -7,7 +7,7 @@ const run=(name,code)=>{try{return T(code)}catch(e){fails++;console.log('FAIL',n
 
 let r=run('temel',`
  const o={};o.n=parts.length;o.zbox=parts[0].pos[2];o.lib=shelf.length;o.tabs=document.querySelectorAll('.page').length;return o`);
-ok(r&&r.n===2&&near(r.zbox,35,1e-6)&&r.lib===4&&r.tabs===6,'temel sahne, raf 4, 6 sekme '+JSON.stringify(r));
+ok(r&&r.n===2&&near(r.zbox,35,1e-6)&&r.lib===4&&r.tabs===7,'temel sahne, raf 4, 7 sekme '+JSON.stringify(r));
 
 /* içe aktarma: ofsetli, eğik olmayan "araba" + kopuk kırıntı */
 r=run('import',`
@@ -310,6 +310,31 @@ r=run('mv',`
  mv.views={};mvDo();o.empty=document.querySelector('#mvmsg').textContent;
  doUndo();return o`);
 ok(r&&r.n===1&&near(r.dims[0],200,.08)&&near(r.dims[1],400,.08)&&near(r.dims[2],100,.1)&&Math.abs(r.minz)<8&&Math.abs(r.cx)<5&&Math.abs(r.cy)<5,'çoklu görünümden model: ölçü, ortalama, taban '+JSON.stringify(r));
+
+/* Baskı sekmesi: mantar (ince sap + geniş şapka) */
+r=run('baski',`
+ const o={};const a=new THREE.BoxGeometry(10,10,20);a.translate(0,0,10);const b=new THREE.BoxGeometry(40,40,5);b.translate(0,0,22.5);
+ const m=catMesh([a,b].map(g=>({P:Float32Array.from(g.attributes.position.array),I:Uint32Array.from(g.index.array)})));
+ const p=addPlain(m.P,m.I,'mantar');p.pos[0]+=500;apply(p);histMark();select(p);openTab('print');
+ o.on=document.querySelector('#p-print').classList.contains('on');o.out=document.querySelector('#prOut').textContent;o.ov=prOv.visible;o.sup=prLast.r.supV;
+ o.price=document.querySelector('#prPrice').textContent;o.fit=document.querySelector('#prFit').textContent;
+ document.querySelector('#prBest').click();const w=worldArrays(p);o.after=printAnalyze(w.P,w.I,[0,0,-1],45).supV;const bx=worldBox(p);
+ o.minz=bx.mn[2];o.h=bx.mx[2]-bx.mn[2];o.cx=(bx.mn[0]+bx.mx[0])/2;o.msg=document.querySelector('#prMsg').textContent;
+ o.again=(document.querySelector('#prBest').click(),document.querySelector('#prMsg').textContent);
+ doUndo();const P=()=>parts.find(q=>q.name==='mantar');select(P());const w2=worldArrays(P());o.undone=printAnalyze(w2.P,w2.I,[0,0,-1],45).supV;
+ document.querySelector('#prPrinter').value='custom';['#prBx','#prBy','#prBz'].forEach(s=>document.querySelector(s).value='20');document.querySelector('#prPrinter').dispatchEvent(new Event('change'));
+ o.nofit=document.querySelector('#prFit').textContent;document.querySelector('#prShrink').click();const b2=worldBox(P());o.shr=Math.max(b2.mx[0]-b2.mn[0],b2.mx[1]-b2.mn[1],b2.mx[2]-b2.mn[2]);
+ o.fit2=document.querySelector('#prFit').textContent;
+ P().pos[2]+=30;apply(P());prUpdate();o.air=document.querySelector('#prOut').textContent;document.querySelector('#prDown').click();o.z=worldBox(P()).mn[2];
+ openTab('model');o.hid=!prOv.visible;return o`);
+ok(r&&r.on&&/Destek isteyen/.test(r.out)&&r.ov&&near(r.sup,32000,1e-3),'mantarda destek bulundu ve kırmızı gösterildi: '+(r&&r.sup));
+ok(r&&/TL/.test(r.price)&&/sığıyor/.test(r.fit),'fiyat ve sığma gösterildi');
+ok(r&&r.after<r.sup/20&&Math.abs(r.minz)<1e-3&&near(r.h,25,1e-4)&&near(r.cx,500,1e-3)&&/Döndürüldü/.test(r.msg),'en az destekle yatır: ters çevrildi, tablada, yeri korundu '+JSON.stringify(r&&[r.after,r.minz,r.h,r.cx]));
+ok(r&&/zaten/.test(r.again),'ikinci kez: yön zaten iyi');
+ok(r&&near(r.undone,32000,1e-3),'geri al eski yöne döndürdü');
+ok(r&&/Sığmıyor/.test(r.nofit)&&r.shr<=20+1e-6&&/sığıyor/.test(r.fit2),'küçük yazıcıda sığmadı, küçültünce sığdı ('+(r&&r.shr.toFixed(2))+' mm)');
+ok(r&&/yukarıda/.test(r.air)&&Math.abs(r.z)<1e-6,'havadaki parça uyarısı ve tablaya oturtma');
+ok(r&&r.hid,'başka sekmede kırmızı vurgu gizlenir');
 
 ok(h.errs.length===0,'çalışma sırasında yakalanmamış hata yok '+h.errs.join('|'));
 console.log(fails?('HATA '+fails):'TÜMÜ GEÇTİ');process.exit(fails?1:0);

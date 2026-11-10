@@ -8,6 +8,10 @@
 
 > **Status: beta (v0.1).** It works and is tested, but it is young. The interface is currently **Turkish only** (English UI is the first roadmap item); the docs are bilingual. Your browser's "translate page" works well in the meantime.
 
+## Simple mode for complete beginners
+
+DreamDesign opens in **Basit** (simple) mode; the *Basit / Gelişmiş* switch at the top left toggles it (remembered; also `?mod=basit` / `?mod=gelismis`). Big buttons, no jargon: add a box, rounded box, cylinder, sphere or cone (or open a file); type its size in mm; pick a colour; move it on the bed, turn it, lay it down, copy or delete it; *make it a cup* (hollow with an open top), *drill a hole* where you click, *round the corners*; *join everything into one part*. A live print price and an order button are always at the bottom. Same geometry code as the advanced mode.
+
 ## What you can do
 
 - **Model from several views** – give a front, side and/or top photo or drawing; DreamDesign intersects the silhouettes into a real, measured solid. One view only? It inflates the shape and you tell it how deep it should be.
@@ -22,10 +26,24 @@
 - **Assemble** – a shelf of parts you drag onto the model (they snap to the surface); revolute and sliding joints with poses.
 - **Engineering numbers** – volume, mass per material, centre of gravity, hover power / disk loading / endurance / stall speed for aircraft concepts.
 - **Measure** – click two points for a distance, or three points for an angle; measurements stay attached to their part. Hovering an edge shows its length and the angle between its faces.
+- **Prepare for printing (Baskı tab)** – pick your printer (P1S, A1 mini, Ender-3, Prusa MK4… or custom); see whether it fits and shrink to fit in one click. Faces that need support are shown in red, with support grams and bed contact area. *Lay with least support* turns the part to the orientation that needs the least support. Live print price and one-click hand-off to the quote page for ordering.
 - **Rounded box** – a box with a real corner radius in mm, handy for device enclosures.
 - **Undo/redo everything** – `Ctrl+Z` / `Ctrl+Y` cover edits, sketches, joints and measurements.
 - **Import / export** – GLB, OBJ, STL in; STL, OBJ, GLB and a project file out.
 - **Hand gestures (experimental)** – orbit, zoom and pan with your webcam via MediaPipe (local server only).
+
+## Instant print quote page
+
+**[docs/bastir.html](https://066040.github.io/DreamDesign/bastir.html)** (Turkish UI) is a deliberately simple page for people with no 3D experience: upload an STL/OBJ, resize it with a slider or typed millimetres, pick material (PLA, PETG, ASA), colour, strength and quantity, and the price updates live.
+
+- Volume and surface area give grams, print time and price; edit the price table in `QUOTE_CFG` (`app/src/quote/price.js`).
+- Models too big for the printer (default Bambu Lab P1S, 256 mm) are scaled to fit; open meshes and files saved in cm/inch are flagged.
+- A one-click "too expensive?" suggestion (lighter infill or 80% size).
+- Support material for overhangs is priced in; "lay with less support" turns the model to the cheapest orientation.
+- DreamDesign's *Baskı → open in quote page* hands the model, material and strength over to this page.
+- Ordering opens WhatsApp to `QUOTE_CFG.whatsapp` with a summary and downloads the scaled STL. Embedded in an `<iframe>`, it posts the order and STL to the parent page via `postMessage({type:'3ddream-order', ...})`.
+
+Build: `node app/src/quote/build.js` → `docs/bastir.html`.
 
 ## Quick start
 

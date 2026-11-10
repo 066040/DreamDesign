@@ -20,6 +20,7 @@ module.exports=function(htmlPath){
   THREE.PMREMGenerator=class{fromScene(){return{texture:{}}}dispose(){}}`,'stub');
  w.__errs=[];w.addEventListener('error',e=>w.__errs.push(e.message));
  Object.defineProperty(w.HTMLElement.prototype,'clientWidth',{get(){return 800}});Object.defineProperty(w.HTMLElement.prototype,'clientHeight',{get(){return 600}});
+ try{w.localStorage.setItem('dd-ui','adv')}catch(_){} // eski testler gelişmiş arayüzü (ve örnek sahneyi) varsayar
  run(main,'main.js');
  return{w,run,T:code=>run('(()=>{'+code+'})()','test'),errs:w.__errs};
 }

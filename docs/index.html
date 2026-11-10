@@ -25,9 +25,50 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 #lbls span{position:absolute;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 #lbls span.m{border-color:var(--acc);color:var(--acc)}
 #side{width:360px;display:flex;flex-direction:column;background:var(--panel);border-left:1px solid var(--line);min-height:0}
-#tabs{display:flex;flex-wrap:wrap;gap:2px;padding:6px;border-bottom:1px solid var(--line)}
-#tabs button{padding:5px 8px;font-size:13px}
+#tabs{display:flex;gap:1px;padding:6px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:thin}
+#tabs button{padding:5px 6px;font-size:13px;flex:1 0 auto}
 #pages{flex:1;overflow:auto;padding:14px}
+/* ---------- Basit mod: büyük yazı, büyük düğmeler, teknik kelime yok ---------- */
+#mtoggle button{font-weight:600}
+body.simple #bar .grp:not(.keep),body.simple #tabs,body.simple #pages{display:none!important}
+body.simple #simple{display:flex!important}
+#simple{flex:1;flex-direction:column;min-height:0;overflow:auto;font-size:15px}
+.s-sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.s-sec h3{font-size:16px;margin:0 0 10px}
+.s-help{color:var(--mut);margin:0 0 6px}
+.s-guide{margin:12px 16px 2px;padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--acc) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--acc) 35%,var(--line))}
+.s-guide ol{margin:6px 0 10px;padding-left:20px}.s-guide li{margin:2px 0}
+.s-shapes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.s-shapes button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid var(--line);border-radius:10px;font-size:13px;min-height:78px}
+.s-shapes button:hover{border-color:var(--acc);background:var(--bg)}
+.s-shapes svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.s-sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#simple label{display:block;margin:0;color:var(--mut);font-size:13px;position:relative}
+#simple label input[type=number]{margin-top:3px;font-size:16px;padding:8px 32px 8px 8px;min-height:42px;background:var(--panel)}
+#simple label span{position:absolute;right:8px;bottom:12px;color:var(--mut);font-size:12px}
+#simple label.s-chk{display:flex;gap:8px;align-items:center;margin:10px 0 0;font-size:14px;color:var(--ink)}
+#simple label.s-chk input{width:18px;height:18px;flex:none}
+.s-sub{font-weight:600;margin:14px 0 6px}
+.s-colors{display:flex;flex-wrap:wrap;gap:8px}
+.s-colors button{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);padding:0}
+.s-colors button[aria-checked=true]{outline:3px solid var(--acc);outline-offset:2px}
+.s-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.s-acts button{border:1px solid var(--line);border-radius:8px;padding:9px 8px;min-height:42px;text-align:left}
+.s-acts button:hover{border-color:var(--acc)}
+.s-acts button[aria-pressed=true],.s-acts button[aria-expanded=true]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.s-acts .s-danger{color:var(--warn)}
+.s-panel{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.s-panel p{margin:0 0 8px}
+.s-panel label+label,.s-panel label+.s-btn,.s-panel .s-chk+label,.s-panel .s-chk+.s-btn{margin-top:8px}
+.s-btn{display:block;width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px;font-weight:600;font-size:15px}
+.s-btn:hover{border-color:var(--acc)}
+.s-pri{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.s-pri:hover{filter:brightness(1.07);background:var(--acc)}
+.s-msg{margin-top:8px;min-height:1em;font-size:14px}
+.s-price{margin-top:auto;position:sticky;bottom:0;padding:12px 16px 14px;background:var(--panel);border-top:1px solid var(--line);display:grid;gap:8px}
+.s-price span{color:var(--mut);font-size:13px;display:block}
+.s-price strong{font-size:28px;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
+.s-price small{color:var(--mut);font-size:13px}
 .page{display:none}.page.on{display:block}
 h3{margin:0 0 8px;font-size:14px}
 .sec{margin-bottom:18px}
@@ -69,6 +110,7 @@ summary{cursor:pointer;font-weight:600}
 <div id="app">
  <div id="vp">
   <div id="bar">
+   <div class="grp keep" id="mtoggle" role="radiogroup" aria-label="Arayüz"><button data-ui="simple" role="radio">Basit</button><button data-ui="adv" role="radio">Gelişmiş</button></div>
    <div class="grp" id="modes">
     <button data-mode="sec" class="on" title="Q">Seç</button><button data-mode="move" title="G">Taşı</button><button data-mode="rot" title="R">Döndür</button><button data-mode="scl" title="S">Ölçekle</button><button data-mode="cage" title="K">Kafes</button><button data-mode="grab" title="E">Esnet</button><button data-mode="edge" title="B">Kenar</button><button data-mode="hole" title="H">Delik</button><button data-mode="meas" title="M">Ölç</button>
    </div>
@@ -76,7 +118,7 @@ summary{cursor:pointer;font-weight:600}
    <div class="grp"><button data-v="x" title="Tuş: 1">X</button><button data-v="y" title="Tuş: 2">Y</button><button data-v="z" title="Tuş: 3">Z</button><button data-v="iso" title="Tuş: 0">İzo</button><button id="fit" title="Tuş: F">Sığdır</button><button id="ortho" title="Tuş: P">Dik</button></div>
    <div class="grp"><select id="disp" title="Görünüm biçimi (Tuş: W)" style="width:auto;border:0;background:none"><option value="solid">Boyalı</option><option value="tri">İskelet (üçgen)</option><option value="outline">Ana hat</option><option value="contour">Kesit çizgileri</option><option value="center">Orta hat</option></select><button id="spin">360° dön</button></div>
    <div class="grp"><button id="skopen" title="Tuş: D">Çizim alanı</button></div>
-   <div class="grp"><button id="hundo" title="Geri al (Ctrl+Z)">↶ Geri al</button><button id="hredo" title="İleri al (Ctrl+Y)">↷ İleri al</button></div>
+   <div class="grp keep"><button id="hundo" title="Geri al (Ctrl+Z)">↶ Geri al</button><button id="hredo" title="İleri al (Ctrl+Y)">↷ İleri al</button></div>
    <div class="grp" id="mgrp" hidden><button id="mclear2" title="Tüm ölçüleri sil">Ölçüleri sil ✕</button></div>
   </div>
   <div id="lbls"></div>
@@ -113,7 +155,77 @@ summary{cursor:pointer;font-weight:600}
   </div>
  </div>
  <aside id="side">
-  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="file">Dosya</button></div>
+  <div id="simple" hidden>
+   <div class="s-guide" id="sGuide" hidden>
+    <b>Hoş geldin!</b>
+    <ol><li>Aşağıdan bir şekil ekle.</li><li>Ölçülerini milimetre olarak yaz.</li><li>Rengini seç, sonra "Fiyat al" de.</li></ol>
+    <button class="s-btn s-pri" id="sGuideOk">Anladım</button>
+   </div>
+   <section class="s-sec">
+    <h3>Şekil ekle</h3>
+    <div class="s-shapes">
+     <button data-add="box"><svg viewBox="0 0 40 40"><path d="M8 13l12-6 12 6v14l-12 6-12-6z M8 13l12 6 12-6 M20 19v14"/></svg>Kutu</button>
+     <button data-add="rbox"><svg viewBox="0 0 40 40"><rect x="7" y="9" width="26" height="22" rx="7"/></svg>Yuvarlak kutu</button>
+     <button data-add="cyl"><svg viewBox="0 0 40 40"><ellipse cx="20" cy="10" rx="11" ry="4"/><path d="M9 10v20c0 2.2 4.9 4 11 4s11-1.8 11-4V10"/></svg>Silindir</button>
+     <button data-add="sph"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12"/><ellipse cx="20" cy="20" rx="12" ry="4"/></svg>Küre</button>
+     <button data-add="cone"><svg viewBox="0 0 40 40"><path d="M20 6L9 30c0 2.2 4.9 4 11 4s11-1.8 11-4z"/></svg>Koni</button>
+     <button id="sOpen"><svg viewBox="0 0 40 40"><path d="M7 12h10l3 3h13v17H7z"/></svg>Dosyadan aç</button>
+    </div>
+   </section>
+   <section class="s-sec" id="sSel">
+    <h3 id="sSelName">Şekil seçili değil</h3>
+    <p class="s-help" id="sNoSel">Düzenlemek için bir şeklin üstüne tıkla.</p>
+    <div id="sEdit" hidden>
+     <div class="s-sizes">
+      <label>Genişlik<input type="number" id="sW" min="0.5" step="1" inputmode="decimal"><span>mm</span></label>
+      <label>Derinlik<input type="number" id="sD" min="0.5" step="1" inputmode="decimal"><span>mm</span></label>
+      <label>Yükseklik<input type="number" id="sH" min="0.5" step="1" inputmode="decimal"><span>mm</span></label>
+     </div>
+     <label class="s-chk"><input type="checkbox" id="sLock">Birini değiştirince hepsi aynı oranda değişsin</label>
+     <div class="s-sub">Renk</div>
+     <div class="s-colors" id="sColors" role="radiogroup" aria-label="Renk"></div>
+     <div class="s-sub">Ne yapmak istersin?</div>
+     <div class="s-acts">
+      <button id="sMove" aria-pressed="false">Yerini değiştir</button>
+      <button id="sTurn">Döndür (90°)</button>
+      <button id="sLay">Yan yatır</button>
+      <button id="sCopy">Kopyasını yap</button>
+      <button id="sCupBtn" aria-expanded="false">Kaba çevir</button>
+      <button id="sHoleBtn" aria-expanded="false">Delik aç</button>
+      <button id="sRoundBtn" aria-expanded="false">Köşeleri yuvarla</button>
+      <button id="sDel" class="s-danger">Sil</button>
+     </div>
+     <div class="s-panel" id="sCup" hidden>
+      <p>İçini oyar, üstü açık bir kap yapar. Kalemlik, saksı, kutu için.</p>
+      <label>Duvar kalınlığı<input type="number" id="sWall" value="2" min="0.8" step="0.2"><span>mm</span></label>
+      <button class="s-btn s-pri" id="sCupGo">Kaba çevir</button>
+     </div>
+     <div class="s-panel" id="sHole" hidden>
+      <p id="sHoleTip">Şimdi şeklin üstünde delik açmak istediğin yere tıkla.</p>
+      <label>Delik çapı<input type="number" id="sHoleD" value="5" min="0.5" step="0.5"><span>mm</span></label>
+      <label class="s-chk"><input type="checkbox" id="sHoleThru" checked>Boydan boya delsin</label>
+      <label id="sHoleDepL" hidden>Derinlik<input type="number" id="sHoleDep" value="5" min="0.5" step="0.5"><span>mm</span></label>
+      <button class="s-btn s-pri" id="sHoleGo" disabled>Deliği aç</button>
+     </div>
+     <div class="s-panel" id="sRound" hidden>
+      <p id="sRoundTip">Kutunun keskin köşelerini yuvarlatır.</p>
+      <label>Köşe yuvarlaklığı<input type="number" id="sRad" value="4" min="0" step="0.5"><span>mm</span></label>
+      <button class="s-btn s-pri" id="sRoundGo">Yuvarla</button>
+     </div>
+    </div>
+    <div class="s-msg" id="sMsg" role="status"></div>
+   </section>
+   <section class="s-sec" id="sJoinSec" hidden>
+    <h3>Şekilleri birleştir</h3>
+    <p class="s-help">Üst üste koyduğun şekilleri tek parça yapar.</p>
+    <button class="s-btn" id="sJoin">Hepsini tek parça yap</button>
+   </section>
+   <div class="s-price">
+    <div><span>Tahmini baskı fiyatı</span><strong id="sPrice">—</strong><small id="sPriceInfo">Önce bir şekil ekle.</small></div>
+    <button class="s-btn s-pri" id="sOrder" disabled>Fiyat al ve sipariş ver</button>
+   </div>
+  </div>
+  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="print">Baskı</button><button data-tab="file">Dosya</button></div>
   <div id="pages">
    <div class="page on" id="p-model">
     <div class="sec"><h3>Model yükle</h3>
@@ -240,6 +352,23 @@ summary{cursor:pointer;font-weight:600}
      <div class="two"><div><label>Kanat alanı (m²)</label><input type="number" id="wa" value="9" step="0.5"></div><div><label>Seyir hızı (m/s)</label><input type="number" id="wv" value="55"></div></div>
      <div class="two"><div><label>CL maks. (iniş)</label><input type="number" id="wcl" value="1.5" step="0.1"></div><div><label>Sürtünme CD0</label><input type="number" id="wcd" value="0.03" step="0.005"></div></div>
      <div id="wout"></div></div>
+   </div>
+   <div class="page" id="p-print">
+    <div class="sec"><h3>Yazıcı</h3>
+     <select id="prPrinter" aria-label="Yazıcı"></select>
+     <div class="two" id="prCustom" hidden style="grid-template-columns:repeat(3,1fr)"><div><label>X (mm)</label><input type="number" id="prBx" value="200" min="10"></div><div><label>Y (mm)</label><input type="number" id="prBy" value="200" min="10"></div><div><label>Z (mm)</label><input type="number" id="prBz" value="200" min="10"></div></div>
+     <label class="chk"><input type="checkbox" id="prAll">Görünen tüm parçalar (yoksa yalnız seçili)</label>
+     <div id="prFit"></div></div>
+    <div class="sec"><h3>Destek</h3>
+     <label>Sarkma eşiği: <span id="prAngV">45°</span></label><input type="range" id="prAng" min="30" max="70" step="5" value="45">
+     <p class="note">Dik duvardan bu açıdan fazla eğik, altı boş yüzeyler destek ister. Çoğu yazıcı için 45° iyi bir başlangıç.</p>
+     <label class="chk"><input type="checkbox" id="prShow" checked>Destek isteyen yerleri kırmızı göster</label>
+     <div id="prOut"></div>
+     <div class="btnrow"><button class="sm" id="prBest">En az destekle yatır</button><button class="sm" id="prDown">Tablaya oturt</button></div></div>
+    <div class="sec"><h3>Tahmini baskı fiyatı</h3>
+     <div class="two"><div><label>Malzeme</label><select id="prMat"></select></div><div><label>Sağlamlık</label><select id="prInf"></select></div></div>
+     <div id="prPrice"></div>
+     <div class="btnrow"><button class="sm" id="prOrder">Fiyat sayfasında aç ve sipariş ver</button></div><div class="msg" id="prMsg"></div></div>
    </div>
    <div class="page" id="p-file">
     <div class="sec"><h3>Proje</h3><div class="btnrow" style="margin-top:0"><button class="sm" id="psave">Projeyi kaydet</button><button class="sm" id="pload">Proje aç…</button></div><input id="pfile" type="file" accept=".json,.atolye" hidden>
@@ -744,6 +873,140 @@ function cylMesh(o,d,L,r,seg){seg=seg||48;let a=Math.abs(d[0])<.9?[1,0,0]:[0,1,0
  for(let i=0;i<seg;i++){const j=(i+1)%seg;I.push(i,j,seg+j,i,seg+j,seg+i,b,j,i,b+1,seg+i,seg+j)}
  return{P:Float32Array.from(P),I:Uint32Array.from(I)}}
 //</pure>
+
+/* ================= 3D baskı fiyat hesabı (saf, DOM'suz) =================
+   Tüm ölçüler mm, hacim mm³, kütle g, para TL.
+   FİYATLARI BURADAN DEĞİŞTİR: QUOTE_CFG kendi maliyetine göre ayarlanmalı. */
+const QUOTE_CFG={
+ brand:'3D Dream',
+ currency:'TL',
+ whatsapp:'',                // siparişlerin geleceği numara, ülke koduyla: '905xxxxxxxxx'. Boşsa sipariş gönderilemez.
+ bed:[256,256,256],          // yazıcının basabildiği en büyük kutu (Bambu Lab P1S)
+ bedMargin:6,                // kenarlardan bırakılan pay
+ wallMm:1.6,                 // duvar + alt/üst kabuğun ortalama kalınlığı
+ gramsPerHour:18,            // ortalama baskı hızı (gram/saat), kabaca
+ warmupH:.25,                // ısınma, kalibrasyon
+ setupFee:40,                // sipariş başına hazırlık (dilimleme, tabla, paketleme)
+ hourRate:12,                // makine saati (elektrik + yıpranma)
+ minPrice:120,               // en düşük sipariş tutarı
+ roundTo:5,                  // fiyatı yukarı yuvarla (5 TL)
+ overhang:45,                // dik duvardan bu açıdan fazla sarkan yüzey destek ister (derece)
+ supportFill:.15,            // destek yapısının doluluk oranı (destek hacmi tahmininin ne kadarı malzeme)
+ materials:{
+  PLA :{name:'PLA', density:1.24,perGram:2.5,note:'Ev içi kullanım. En ekonomik, renk seçeneği en çok olan malzeme.'},
+  PETG:{name:'PETG',density:1.27,perGram:3.0,note:'Daha dayanıklı ve esnek. Suya ve darbeye karşı iyidir.'},
+  ASA :{name:'ASA', density:1.07,perGram:4.0,note:'Güneşe ve sıcağa dayanıklı. Araç içi ve dış mekân parçaları için.'}
+ },
+ infills:[
+  {key:'light', name:'Hafif',      value:.10,note:'Süs eşyası, figür, kutu. En ucuzu.'},
+  {key:'normal',name:'Normal',     value:.20,note:'Günlük kullanım için çoğu zaman yeterli.'},
+  {key:'strong',name:'Çok sağlam', value:.45,note:'Yük taşıyan, vidalanan, sık kullanılan parçalar.'}
+ ],
+ colors:[
+  {name:'Beyaz',hex:'#f2f2ee'},{name:'Siyah',hex:'#26282c'},{name:'Gri',hex:'#8d939b'},
+  {name:'Kırmızı',hex:'#c8352e'},{name:'Mavi',hex:'#2a63c9'},{name:'Yeşil',hex:'#2f9a5a'},
+  {name:'Sarı',hex:'#e8b923'},{name:'Turuncu',hex:'#e46d24'}
+ ]
+};
+
+/* İndekssiz üçgen dizisi (her 9 sayı bir üçgen) için hacim, yüzey alanı ve sınır kutusu.
+   Hacim işaretli dört yüzlü toplamı: kapalı yüzeyde kesin sonuç verir. */
+function meshStats(pos){
+ let V=0,A=0;const mn=[Infinity,Infinity,Infinity],mx=[-Infinity,-Infinity,-Infinity];
+ for(let i=0;i+8<pos.length;i+=9){
+  const ax=pos[i],ay=pos[i+1],az=pos[i+2],bx=pos[i+3],by=pos[i+4],bz=pos[i+5],cx=pos[i+6],cy=pos[i+7],cz=pos[i+8];
+  V+=(ax*(by*cz-bz*cy)+ay*(bz*cx-bx*cz)+az*(bx*cy-by*cx))/6;
+  const ex=bx-ax,ey=by-ay,ez=bz-az,fx=cx-ax,fy=cy-ay,fz=cz-az;
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx;A+=.5*Math.sqrt(nx*nx+ny*ny+nz*nz);
+ }
+ for(let i=0;i+2<pos.length;i+=3)for(let k=0;k<3;k++){const v=pos[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
+ const size=mn[0]===Infinity?[0,0,0]:[mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2]];
+ return{vol:Math.abs(V),signedVol:V,area:A,min:mn,max:mx,size,tris:Math.floor(pos.length/9)};
+}
+
+/* Yüzey kapalı mı? Aynı konumdaki köşeler birleştirilir; her kenar tam 2 üçgende olmalı.
+   open: tek üçgende kalan kenar (delik), bad: 2'den fazla üçgende kalan kenar. */
+function meshCheck(pos){
+ let mn=Infinity,mx=-Infinity;for(let i=0;i<pos.length;i++){const v=pos[i];if(v<mn)mn=v;if(v>mx)mx=v}
+ const q=1/Math.max((mx-mn)*1e-6,1e-9),ids=new Map(),edges=new Map();let n=0;
+ const id=i=>{const k=Math.round(pos[i]*q)+','+Math.round(pos[i+1]*q)+','+Math.round(pos[i+2]*q);let v=ids.get(k);if(v===undefined){v=n++;ids.set(k,v)}return v};
+ let degenerate=0;
+ for(let i=0;i+8<pos.length;i+=9){const a=id(i),b=id(i+3),c=id(i+6);
+  if(a===b||b===c||a===c){degenerate++;continue}
+  for(const [u,v] of [[a,b],[b,c],[c,a]]){const k=u<v?u*4294967296+v:v*4294967296+u;edges.set(k,(edges.get(k)||0)+1)}}
+ let open=0,bad=0;for(const c of edges.values()){if(c===1)open++;else if(c>2)bad++}
+ return{open,bad,degenerate,closed:open===0&&bad===0,edges:edges.size};
+}
+
+/* Dosyada birim yok (STL). Ölçüler çok küçük ya da çok büyükse uyarı için tahmin. */
+function guessUnit(size){const m=Math.max(size[0],size[1],size[2]);
+ if(m>0&&m<12)return'small';   // büyük ihtimal cm ya da inç
+ if(m>2000)return'large';
+ return'ok';}
+
+/* Model yazıcıya sığıyor mu, sığmıyorsa hangi oranda küçültülmeli (yatay iki eksen döndürülebilir) */
+function fitInfo(size,cfg){cfg=cfg||QUOTE_CFG;const m=cfg.bedMargin,b=cfg.bed.map(v=>v-m);
+ const [w,h,d]=size; // w: genişlik, h: yükseklik, d: derinlik
+ const flat=[Math.max(w,d),Math.min(w,d)],bedFlat=[Math.max(b[0],b[2]),Math.min(b[0],b[2])];
+ const fits=flat[0]<=bedFlat[0]+1e-9&&flat[1]<=bedFlat[1]+1e-9&&h<=b[1]+1e-9;
+ const scale=Math.min(bedFlat[0]/Math.max(flat[0],1e-9),bedFlat[1]/Math.max(flat[1],1e-9),b[1]/Math.max(h,1e-9));
+ return{fits,maxScale:scale};}
+
+/* ================= Baskıya hazırlık: sarkma, destek, taban =================
+   P: köşeler, I: üçgen indeksleri (yoksa P sıralı üçgendir). down: aşağı bakan birim yön
+   (DreamDesign Z yukarı → [0,0,-1]; fiyat sayfası Y yukarı → [0,-1,0]).
+   ang: dik duvardan sarkma eşiği (derece). flags verilirse destek isteyen üçgenler 1 olur.
+   supV: altındaki boşluk sütunlarının hacmi (destek için kaba ama tutarlı ölçü, mm³). */
+function printAnalyze(P,I,down,ang,flags){down=down||[0,0,-1];const s=Math.sin((ang==null?45:ang)*Math.PI/180),[dx,dy,dz]=down;
+ const T=I?I.length/3:Math.floor(P.length/9),vi=I?(t,k)=>3*I[3*t+k]:(t,k)=>9*t+3*k,h=v=>-(dx*P[v]+dy*P[v+1]+dz*P[v+2]);
+ let mn=Infinity,mx=-Infinity;for(let i=0;i+2<P.length;i+=3){const z=h(i);if(z<mn)mn=z;if(z>mx)mx=z}
+ const tol=Math.max(.2,(mx-mn)*1e-4);let ovA=0,supV=0,baseA=0,A=0;
+ for(let t=0;t<T;t++){const a=vi(t,0),b=vi(t,1),c=vi(t,2);
+  const ex=P[b]-P[a],ey=P[b+1]-P[a+1],ez=P[b+2]-P[a+2],fx=P[c]-P[a],fy=P[c+1]-P[a+1],fz=P[c+2]-P[a+2];
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx,L=Math.sqrt(nx*nx+ny*ny+nz*nz);if(L<1e-12)continue;
+  const area=L/2,dn=(dx*nx+dy*ny+dz*nz)/L,za=h(a),zb=h(b),zc=h(c);A+=area;
+  if(Math.max(za,zb,zc)<=mn+tol){if(dn>.99)baseA+=area;continue}  // tablaya değen yüz
+  if(dn>s){ovA+=area;supV+=area*dn*((za+zb+zc)/3-mn);if(flags)flags[t]=1}}
+ return{ovA,supV,baseA,A,height:mx-mn,needs:ovA>A*1e-3}}
+
+/* En az destekle basılacak yönü bul. Adaylar: 6 eksen ve en büyük düz yüzler (tabana yatırılır).
+   Puan: destek hacmi + yükseklik payı − taban alanı payı. Şimdiki yön %3'ten fazla kötü değilse korunur. */
+function bestDown(P,I,cur,ang){cur=cur||[0,0,-1];
+ const T=I?I.length/3:Math.floor(P.length/9),vi=I?(t,k)=>3*I[3*t+k]:(t,k)=>9*t+3*k,bins=new Map();
+ for(let t=0;t<T;t++){const a=vi(t,0),b=vi(t,1),c=vi(t,2);
+  const ex=P[b]-P[a],ey=P[b+1]-P[a+1],ez=P[b+2]-P[a+2],fx=P[c]-P[a],fy=P[c+1]-P[a+1],fz=P[c+2]-P[a+2];
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx,L=Math.sqrt(nx*nx+ny*ny+nz*nz);if(L<1e-12)continue;
+  const k=Math.round(nx/L*40)+','+Math.round(ny/L*40)+','+Math.round(nz/L*40);let e=bins.get(k);if(!e){e={a:0,n:[0,0,0]};bins.set(k,e)}
+  e.a+=L/2;e.n[0]+=nx/2;e.n[1]+=ny/2;e.n[2]+=nz/2}
+ const cands=[cur.slice(),[0,0,-1],[0,0,1],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]];
+ [...bins.values()].sort((x,y)=>y.a-x.a).slice(0,8).forEach(e=>{const l=Math.hypot(...e.n);if(l>0)cands.push(e.n.map(v=>v/l))});
+ const uniq=[];cands.forEach(d=>{const l=Math.hypot(...d)||1,u=d.map(v=>v/l);if(!uniq.some(q=>q[0]*u[0]+q[1]*u[1]+q[2]*u[2]>.9995))uniq.push(u)});
+ const score=r=>r.supV+.02*r.A*r.height-.5*r.baseA*Math.sqrt(r.A)*.1;
+ const res=uniq.map(d=>{const r=printAnalyze(P,I,d,ang);return{d,r,s:score(r)}});
+ const now=res[0];let best=now;res.forEach(x=>{if(x.s<best.s)best=x});
+ if(best!==now&&best.s>now.s-Math.abs(now.s)*.03)best=now;
+ return{down:best.d,res:best.r,cur:now.r,changed:best!==now}}
+
+/* Fiyat tahmini. stats: ölçek 1'deki meshStats; o: {scale, material, infill, qty, supportVol (ölçek 1, mm³)} */
+function estimate(stats,o,cfg){cfg=cfg||QUOTE_CFG;
+ const s=o.scale||1,qty=Math.max(1,Math.round(o.qty||1)),mat=cfg.materials[o.material]||cfg.materials.PLA;
+ const infill=typeof o.infill==='number'?o.infill:(cfg.infills.find(f=>f.key===o.infill)||cfg.infills[1]).value;
+ const vol=stats.vol*s*s*s,area=stats.area*s*s;
+ const shell=Math.min(vol,area*cfg.wallMm),solid=shell+infill*(vol-shell);
+ const supGrams=(o.supportVol||0)*s*s*s*cfg.supportFill/1000*mat.density;
+ const grams=solid/1000*mat.density+supGrams,hours=cfg.warmupH+grams/cfg.gramsPerHour;
+ const perPiece=grams*mat.perGram+hours*cfg.hourRate;
+ let total=cfg.setupFee+perPiece*qty;
+ total=Math.max(cfg.minPrice,Math.ceil(total/cfg.roundTo)*cfg.roundTo);
+ return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
+}
+
+/* Biçimleme: Türkçe sayı yazımı */
+function fmtNum(v,d){d=d||0;return Number(v).toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function fmtHours(h){const m5=Math.round(h*60/5)*5;if(m5<60)return Math.max(5,m5)+' dakika';const H=Math.floor(h),M=Math.round((h-H)*60/5)*5;
+ return M===60?(H+1)+' saat':M?H+' saat '+M+' dakika':H+' saat'}
+
+if(typeof module!=='undefined')module.exports={QUOTE_CFG,meshStats,meshCheck,guessUnit,fitInfo,estimate,printAnalyze,bestDown,fmtNum,fmtHours};
 
 /* ================= DreamDesign – çekirdek: sahne, malzeme, parçalar, içe aktarma ================= */
 const Zax=new THREE.Vector3(0,0,1);
@@ -2166,6 +2429,215 @@ setMode=function(m){const prev=mode;_setMode(m);
  if(m==='hole'){openTab('edit');$('#d-hole').open=true;msg('Yüzeye tıkla: delik yeri.','var(--mut)','#hlmsg')}
  if(m==='meas')setMType(mType);
  holePreview()};
+
+/* ================= Baskı sekmesi: yazıcıya sığma, sarkma/destek, en iyi yön, tahmini fiyat, sipariş ================= */
+const PRINTERS={p1s:{name:'Bambu Lab P1S / X1C / A1',bed:[256,256,256]},a1m:{name:'Bambu Lab A1 mini',bed:[180,180,180]},
+ ender:{name:'Creality Ender-3 V3',bed:[220,220,250]},k1c:{name:'Creality K1C',bed:[220,220,250]},mk4:{name:'Prusa MK4',bed:[250,210,220]},
+ cc:{name:'Elegoo Centauri Carbon',bed:[256,256,256]},custom:{name:'Kendi ölçüm…',bed:[200,200,200]}};
+$('#prPrinter').innerHTML=Object.entries(PRINTERS).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join('');
+$('#prMat').innerHTML=Object.entries(QUOTE_CFG.materials).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join('');
+$('#prInf').innerHTML=QUOTE_CFG.infills.map(i=>`<option value="${i.key}"${i.key==='normal'?' selected':''}>${esc(i.name)}</option>`).join('');
+const prOvMat=new THREE.MeshBasicMaterial({color:lin(0xe5484d),transparent:true,opacity:.6,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,depthWrite:false});
+const prOv=new THREE.Mesh(new THREE.BufferGeometry(),prOvMat);prOv.renderOrder=6;prOv.visible=false;prOv.frustumCulled=false;scene.add(prOv);
+let prLast=null,prT=0;
+const prOpen=()=>$('#p-print').classList.contains('on');
+function prBed(){const k=$('#prPrinter').value;$('#prCustom').hidden=k!=='custom';
+ return k==='custom'?['#prBx','#prBy','#prBz'].map(s=>Math.max(1,+$(s).value||200)):PRINTERS[k].bed}
+function prTargets(){return $('#prAll').checked?parts.filter(p=>p.vis):(sel&&sel.vis?[sel]:[])}
+/* tüm hedeflerin dünya ağı, gerçek hacim ve yüzey alanı */
+function prMesh(list){const m=catMesh(list.map(p=>worldArrays(p)));let vol=0,area=0;
+ list.forEach(p=>{const mi=massInfo(p),g=p.mesh.geometry,sc=p.mesh.scale;vol+=mi.vol;area+=areaStats(g.attributes.position.array,g.index.array,[sc.x,sc.y,sc.z]).A});
+ return{P:m.P,I:m.I,vol,area}}
+function prUpdate(){clearTimeout(prT);prT=0;
+ if(!prOpen()){prOv.visible=false;return}
+ const list=prTargets(),out=$('#prOut'),fit=$('#prFit'),pr=$('#prPrice');$('#prBest').disabled=list.length!==1;$('#prOrder').disabled=!list.length;
+ $('#prAngV').textContent=$('#prAng').value+'°';
+ if(!list.length){fit.innerHTML='<p class="note">Bir parça seç ya da "Görünen tüm parçalar"ı işaretle.</p>';out.innerHTML='';pr.innerHTML='';prOv.visible=false;prLast=null;return}
+ const M=prMesh(list),bed=prBed(),ang=+$('#prAng').value,T=M.I.length/3,flags=new Uint8Array(T);
+ /* sığma: X–Y'de 90° çevirmeye izin ver */
+ let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];for(let i=0;i<M.P.length;i+=3)for(let k=0;k<3;k++){const v=M.P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
+ const sz=[0,1,2].map(k=>mx[k]-mn[k]),fl=[Math.max(sz[0],sz[1]),Math.min(sz[0],sz[1])],bf=[Math.max(bed[0],bed[1]),Math.min(bed[0],bed[1])];
+ const fits=fl[0]<=bf[0]&&fl[1]<=bf[1]&&sz[2]<=bed[2],k=Math.min(bf[0]/fl[0],bf[1]/fl[1],bed[2]/sz[2]);
+ fit.innerHTML=kv('Baskı ölçüsü',sz.map(v=>f(v,1)).join(' × ')+' mm')+kv('Tabla',bed.join(' × ')+' mm')+
+  (fits?'<p class="note" style="color:var(--ok)">Yazıcıya sığıyor.</p>':`<p class="note" style="color:var(--warn)">Sığmıyor: en fazla %${f(Math.floor(k*1000)/10,1)} boyutta sığar.</p>`+(list.length===1?'<div class="btnrow"><button class="sm" id="prShrink">Sığacak kadar küçült</button></div>':''));
+ if(!fits&&list.length===1)$('#prShrink').onclick=()=>{const p=list[0],s=Math.floor(k*1000)/1000;p.size=p.size.map(v=>v*s);apply(p);if(p.ground)sit(p);refresh();look();histMark();prUpdate()};
+ /* sarkma ve destek: tabla dünyada Z=0, aşağı −Z */
+ const r=printAnalyze(M.P,M.I,[0,0,-1],ang,flags);
+ const off=mn[2]>.5?`<p class="note" style="color:var(--warn)">Parça tabladan ${f(mn[2],1)} mm yukarıda. "Tablaya oturt" ile indir.</p>`:'';
+ out.innerHTML=off+(r.needs?kv('Destek isteyen yüzey',f(r.ovA/100,1)+' cm² (%'+f(r.ovA/r.A*100,1)+')')+kv('Destek malzemesi ≈',f(r.supV*QUOTE_CFG.supportFill/1000*QUOTE_CFG.materials[$('#prMat').value].density,1)+' g')
+  :'<p class="note" style="color:var(--ok)">Destek gerekmiyor.</p>')+kv('Tablaya değen alan',f(r.baseA/100,1)+' cm²')+
+  (r.baseA<Math.min(100,r.A*.01)?'<p class="note" style="color:var(--warn)">Tabana çok az değiyor; baskı sırasında devrilebilir. Kenar (brim) ya da başka bir yön düşün.</p>':'');
+ /* kırmızı vurgu: işaretli üçgenler */
+ const n=flags.reduce((a,v)=>a+v,0),pos=new Float32Array(n*9);let o=0;
+ for(let t=0;t<T;t++)if(flags[t])for(let c=0;c<3;c++){const v=3*M.I[3*t+c];pos[o++]=M.P[v];pos[o++]=M.P[v+1];pos[o++]=M.P[v+2]}
+ prOv.geometry.dispose();prOv.geometry=new THREE.BufferGeometry();prOv.geometry.setAttribute('position',new THREE.BufferAttribute(pos,3));
+ prOv.visible=n>0&&$('#prShow').checked;
+ /* fiyat */
+ const e=estimate({vol:M.vol,area:M.area},{scale:1,material:$('#prMat').value,infill:$('#prInf').value,qty:1,supportVol:r.supV});
+ pr.innerHTML=fits?kv('Tahmini fiyat',f(e.total,0)+' '+QUOTE_CFG.currency)+kv('Malzeme',f(e.grams,e.grams<10?1:0)+' g'+(e.supGrams>.5?' (destek '+f(e.supGrams,0)+' g)':''))+kv('Baskı süresi ≈',fmtHours(e.hours))+
+  '<p class="note">'+esc(QUOTE_CFG.brand)+' fiyat tablosuyla. Hacim kapalı yüzey varsayar.</p>':'<p class="note">Sığmayan parçanın fiyatı hesaplanmaz.</p>';
+ prLast={list,r,e,fits}}
+function prSoon(){if(!prOpen())return;clearTimeout(prT);prT=setTimeout(prUpdate,120)}
+
+/* En az destekle yatır: seçili parçayı en iyi yöne döndür (ölçek ve açı ayarları korunur, geometri döner) */
+function prOrient(p,down){apply(p);const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(...down).normalize(),new THREE.Vector3(0,0,-1));
+ const b0=worldBox(p),cx=(b0.mn[0]+b0.mx[0])/2,cy=(b0.mn[1]+b0.mx[1])/2;
+ const Rn=new THREE.Matrix4().makeRotationFromQuaternion(q),Rp=new THREE.Matrix4().makeRotationFromEuler(p.mesh.rotation),S=new THREE.Matrix4().makeScale(p.mesh.scale.x,p.mesh.scale.y,p.mesh.scale.z);
+ const L=new THREE.Matrix4().copy(S).invert().multiply(new THREE.Matrix4().copy(Rp).invert()).multiply(Rn).multiply(Rp).multiply(S);
+ if(p.edge){p.mesh.remove(p.edge);p.edge.geometry.dispose();p.edge=null}
+ pushUndo(p);p.mesh.geometry.applyMatrix4(L);const m=new THREE.Vector3(...p.mid).applyMatrix4(L);p.mid=[m.x,m.y,m.z];
+ p.ground=true;commitShape(p);const b1=worldBox(p);p.pos[0]+=cx-(b1.mn[0]+b1.mx[0])/2;p.pos[1]+=cy-(b1.mn[1]+b1.mx[1])/2;p.pos[2]-=b1.mn[2];apply(p);
+ refresh();look()}
+$('#prBest').onclick=()=>{const list=prTargets();if(list.length!==1)return;const p=list[0],w=worldArrays(p),ang=+$('#prAng').value;
+ const b=bestDown(w.P,w.I,[0,0,-1],ang);
+ if(!b.changed){msg(b.cur.needs?'Daha iyi bir yön bulunamadı; bu yön zaten en az destekli.':'Bu yön zaten iyi: destek gerekmiyor.','var(--mut)','#prMsg');prUpdate();return}
+ prOrient(p,b.down);histMark();
+ const s=QUOTE_CFG.supportFill/1000*QUOTE_CFG.materials[$('#prMat').value].density;
+ msg('Döndürüldü. Destek '+f(b.cur.supV*s,0)+' g → '+f(b.res.supV*s,0)+' g. Beğenmezsen Ctrl+Z.','var(--ok)','#prMsg');prUpdate()};
+$('#prDown').onclick=()=>{const list=prTargets();if(!list.length)return;let z=Infinity;list.forEach(p=>z=Math.min(z,worldBox(p).mn[2]));
+ list.forEach(p=>{p.pos[2]-=z;apply(p)});refresh();look();histMark();prUpdate()};
+
+/* Fiyat sayfasında aç: STL'yi bastir.html'e aktar (ikisi aynı klasörde) */
+let prPending=null;
+addEventListener('message',e=>{const d=e.data;if(!d||d.type!=='dd-quote-ready'||!prPending||e.source!==prPending.win)return;
+ const x=prPending;prPending=null;x.win.postMessage({type:'dd-quote-model',name:x.name,stl:x.stl,material:x.material,infill:x.infill},'*');msg('Fiyat sayfası açıldı.','var(--ok)','#prMsg')});
+$('#prOrder').onclick=()=>{const list=prTargets();if(!list.length)return;const m=catMesh(list.map(p=>worldArrays(p)));
+ const name=(list.length===1?list[0].name:'dreamdesign').replace(/[^\wçğıöşüÇĞİÖŞÜ -]/g,'').trim().replace(/\s+/g,'-')+'.stl';
+ const win=open('bastir.html#dd','_blank');
+ if(!win){msg('Tarayıcı yeni pencereyi engelledi. Açılır pencerelere izin verip tekrar dene.',null,'#prMsg');return}
+ prPending={win,name,stl:(b=>b instanceof ArrayBuffer?b:b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength))(stlBinary(m.P,m.I)),material:$('#prMat').value,infill:$('#prInf').value};msg('Fiyat sayfası açılıyor…','var(--mut)','#prMsg')};
+
+['#prPrinter','#prAll','#prShow','#prMat','#prInf','#prBx','#prBy','#prBz'].forEach(s=>$(s).addEventListener('change',prUpdate));
+$('#prAng').addEventListener('input',prSoon);
+const _openTab=openTab;openTab=function(t){_openTab(t);if(t==='print')prUpdate();else prOv.visible=false};
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
+const _refreshPr=refresh;refresh=function(){_refreshPr();prSoon()};
+const _selectPr=select;select=function(p){_selectPr(p);prSoon()};
+addEventListener('pointerup',()=>prSoon());
+
+/* ================= Basit mod: bilgisayardan anlamayan biri de kullanabilsin =================
+   Var olan araçların (şekil ekle, ölçü, delik, katı işlemler, köşe yuvarlama, baskı fiyatı) üstünde sade bir panel.
+   Hesaplar gelişmiş modla aynı koddan gelir. Mod seçimi tarayıcıda hatırlanır; ?mod=basit / ?mod=gelismis ile de seçilir. */
+const S_COLORS=[['Beyaz','#f2f2ee'],['Siyah','#2b2d31'],['Gri','#8d939b'],['Kırmızı','#d23a32'],['Mavi','#2f6fdb'],['Yeşil','#2f9a5a'],['Sarı','#e8b923'],['Turuncu','#e46d24'],['Mor','#8a5cd6']];
+const S_DEF={box:[40,40,40],rbox:[50,40,30],cyl:[40,40,60],sph:[40,40,40],cone:[40,40,50]};
+const S_NAME={box:'Kutu',rbox:'Yuvarlak kutu',cyl:'Silindir',sph:'Küre',cone:'Koni',model:'Model'};
+let uiMode='simple',sBusy=false,sT=0,sCom=null;
+const sDemo=parts.slice(); /* gelişmiş modun açılış örnekleri: basit modda ilk açılışta temizlenir */
+const sStore={get(){try{return localStorage.getItem('dd-ui')}catch(_){return null}},set(v){try{localStorage.setItem('dd-ui',v)}catch(_){}}};
+function sMsg(t,c){const m=$('#sMsg');m.textContent=t||'';m.style.color=c||'var(--mut)'}
+
+function setUI(m){uiMode=m==='adv'?'adv':'simple';document.body.classList.toggle('simple',uiMode==='simple');$('#simple').hidden=uiMode!=='simple';
+ document.querySelectorAll('#mtoggle button').forEach(b=>{const on=b.dataset.ui===uiMode;b.classList.toggle('on',on);b.setAttribute('aria-checked',String(on))});
+ sStore.set(uiMode);look();
+ if(uiMode==='simple'){if(!['sec','move','hole'].includes(mode))setMode('sec');tc.showZ=false;
+  if(sDemo.length&&parts.length&&parts.every(p=>sDemo.includes(p))&&!Hist.undo.length){sDemo.slice().forEach(removePart);sDemo.length=0;select(null);histReset();view('iso')}
+  if(sCom===null)sCom=$('#showcom').checked;$('#showcom').checked=false;stats();sPanel();sPrice();
+  $('#hint').textContent='Sol tuşla sürükle: etrafında dön · Tekerlek: yakınlaştır · Bir şekle tıkla: seç · Kare = 100 mm';
+  let seen=null;try{seen=localStorage.getItem('dd-guide')}catch(_){}$('#sGuide').hidden=!!seen}
+ else{tc.showZ=true;if(sCom!==null){$('#showcom').checked=sCom;sCom=null;stats()}$('#hint').textContent='Sol tuş (boşlukta): her yöne döndür · Sağ tuş: kaydır · Tekerlek: yakınlaştır · Kare = 100 mm · Model veya fotoğrafı bu alana bırak'}}
+document.querySelectorAll('#mtoggle button').forEach(b=>b.onclick=()=>setUI(b.dataset.ui));
+$('#sGuideOk').onclick=()=>{$('#sGuide').hidden=true;try{localStorage.setItem('dd-guide','1')}catch(_){}};
+
+/* ---------- şekil ekle: tablanın üstünde, öncekilerin yanına ---------- */
+function sFreeX(w){let x=-Infinity;parts.filter(p=>p.vis).forEach(p=>{x=Math.max(x,worldBox(p).mx[0])});return isFinite(x)?x+10+w/2:0}
+function sAdd(type){const sz=S_DEF[type].slice(),pos=[sFreeX(sz[0]),0,0];
+ const p=type==='rbox'?addRBox(sz,6,pos):add(type,sz,pos);
+ p.name=S_NAME[type]+' '+p.id;const c=S_COLORS[(parts.length-1)%S_COLORS.length][1];sColor(p,c);
+ if(p.ground)sit(p);refresh();look();histMark();view('iso');sMsg(S_NAME[type]+' eklendi. Ölçülerini aşağıya yazabilirsin.','var(--ok)');return p}
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>sAdd(b.dataset.add));
+$('#sOpen').onclick=()=>$('#file').click();
+if(!MATS.PLA)MATS.PLA={d:1.24,c:'#e8e8e8',m:0,r:.5,tint:1};
+/* basit modda her şekil PLA plastik ve seçilen renkte */
+function sColor(p,hex){p.color=hex;if(p.mat!=='PLA'){p.mat='PLA';if(p.solidMat)p.solidMat.dispose();p.solidMat=makeMat(p)}else if(p.solidMat)p.solidMat.color.copy(lin(hex));look()}
+
+/* ---------- seçili şeklin paneli ---------- */
+function sPanel(){if(uiMode!=='simple')return;const p=sel&&parts.includes(sel)?sel:null;
+ $('#sEdit').hidden=!p;$('#sNoSel').hidden=!!p;$('#sSelName').textContent=p?p.name:'Şekil seçili değil';
+ $('#sJoinSec').hidden=parts.filter(q=>q.vis).length<2;$('#sOrder').disabled=!parts.some(q=>q.vis);
+ if(!p){['#sCup','#sHole','#sRound'].forEach(id=>$(id).hidden=true);sAria();return}
+ [['#sW',0],['#sD',1],['#sH',2]].forEach(([id,k])=>{if(document.activeElement!==$(id))$(id).value=Math.round(p.size[k]*10)/10});
+ const box=$('#sColors');if(box.dataset.for!==String(p.id)||box.dataset.col!==p.color){box.dataset.for=p.id;box.dataset.col=p.color;box.innerHTML='';
+  S_COLORS.forEach(([n,h])=>{const b=document.createElement('button');b.style.background=h;b.title=n;b.setAttribute('aria-label',n);b.setAttribute('role','radio');
+   b.setAttribute('aria-checked',String(p.color.toLowerCase()===h));b.onclick=()=>{sColor(p,h);histMark();sPanel()};box.append(b)})}
+ const isBox=p.type==='box'||p.type==='rbox';$('#sRoundGo').disabled=!isBox;
+ $('#sRoundTip').textContent=isBox?'Kutunun keskin köşelerini yuvarlatır.':'Köşe yuvarlama şimdilik yalnız kutuda çalışıyor.';
+ $('#sMove').setAttribute('aria-pressed',String(mode==='move'));sAria()}
+function sAria(){[['#sCupBtn','#sCup'],['#sHoleBtn','#sHole'],['#sRoundBtn','#sRound']].forEach(([b,pn])=>$(b).setAttribute('aria-expanded',String(!$(pn).hidden)))}
+function sOpenPanel(id){['#sCup','#sHole','#sRound'].forEach(x=>{if(x!==id)$(x).hidden=true});$(id).hidden=!$(id).hidden;
+ if(id==='#sHole'&&!$(id).hidden){setMode('hole');hole=null;$('#sHoleGo').disabled=true;$('#sHoleTip').textContent='Şimdi şeklin üstünde delik açmak istediğin yere tıkla.'}
+ else if(mode==='hole')setMode('sec');sAria()}
+$('#sCupBtn').onclick=()=>sOpenPanel('#sCup');$('#sHoleBtn').onclick=()=>sOpenPanel('#sHole');$('#sRoundBtn').onclick=()=>sOpenPanel('#sRound');
+
+/* ölçüler: mm; "oranı koru" işaretliyse hepsi aynı oranda */
+[['#sW',0],['#sD',1],['#sH',2]].forEach(([id,k])=>$(id).addEventListener('change',()=>{const p=sel;if(!p)return;
+ const v=parseFloat(String($(id).value).replace(',','.'));if(!(v>0)){sPanel();return}
+ if($('#sLock').checked){const r=v/p.size[k];p.size=p.size.map(x=>x*r)}else p.size[k]=v;
+ if(p.type==='rbox')p.rad=Math.min(p.rad||0,Math.min(...p.size)/2);
+ apply(p);if(p.ground)sit(p);refresh();look();histMark();sPanel()}));
+
+$('#sMove').onclick=()=>{setMode(mode==='move'?'sec':'move');sMsg(mode==='move'?'Oklardan tutup şekli tabla üstünde kaydır. Bitince tekrar "Yerini değiştir"e bas.':'');sPanel()};
+$('#sTurn').onclick=()=>{if(sel){bakeTurn(sel,2);histMark();sPanel()}};
+$('#sLay').onclick=()=>{if(sel){bakeTurn(sel,0);histMark();sPanel()}};
+$('#sCopy').onclick=()=>{if(!sel)return;const a=sel;$('#doclone').click();if(sel&&sel!==a){sel.ground=true;sit(sel);refresh();look();histMark();sMsg('Kopyası yanına kondu.','var(--ok)')}};
+$('#sDel').onclick=()=>{if(!sel)return;const n=sel.name;remove();histMark();sMsg(n+' silindi. Yanlışlıkla sildiysen "Geri al".');sPanel()};
+
+/* kaba çevir: aynı şeklin küçültülmüş kopyasını yukarıdan oy (dışbükey şekillerde tam, diğerlerinde yaklaşık) */
+async function sCup(p,wall){const b=worldBox(p),sz=[0,1,2].map(k=>b.mx[k]-b.mn[k]);
+ if(wall*2>=Math.min(sz[0],sz[1])-0.5||wall>=sz[2]-0.5)throw new Error('Duvar bu şekil için çok kalın. Daha ince bir duvar yaz ya da şekli büyüt.');
+ const w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
+  eps=Math.max(1,sz[2]*.05),fz=(sz[2]-wall+eps)/sz[2],Q=new Float32Array(P.length);
+ for(let i=0;i<P.length;i+=3){Q[i]=cx+(P[i]-cx)*fx;Q[i+1]=cy+(P[i+1]-cy)*fy;Q[i+2]=b.mn[2]+wall+(P[i+2]-b.mn[2])*fz}
+ const R=await boolArrays(localArrays(p),{P:toLocal(p,Q),I:w.I},'subtract',Math.hypot(...p.base),[p.name,'İç']);
+ return replaceWith(p,R,p.name)}
+$('#sCupGo').onclick=async()=>{const p=sel;if(!p||sBusy)return;const wall=parseFloat($('#sWall').value);if(!(wall>0))return sMsg('Duvar kalınlığını yaz.','var(--warn)');
+ sBusy=true;sMsg('Hazırlanıyor…');try{const np=await sCup(p,wall);if(np.ground)sit(np);refresh();look();histMark();$('#sCup').hidden=true;sPanel();sMsg('Kap oldu. Duvar '+f(wall,1)+' mm.','var(--ok)')}
+ catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false}};
+
+/* delik: tıklanan yerden, yüzeye dik */
+$('#sHoleThru').onchange=()=>{$('#sHoleDepL').hidden=$('#sHoleThru').checked};
+const _holePlace=holePlace;holePlace=function(p,point,n){_holePlace(p,point,n);if(uiMode==='simple'){$('#sHoleGo').disabled=false;$('#sHoleTip').textContent='Yer seçildi (turuncu). İstersen başka bir yere tıkla, sonra "Deliği aç".';if(sel!==p)select(p)}};
+function sHoleSync(){$('#hld').value=$('#sHoleD').value;$('#hldep').value=$('#sHoleThru').checked?0:$('#sHoleDep').value;$('#hldir').value='n';
+ hOp='cut';document.querySelectorAll('#hlop button').forEach(x=>x.classList.toggle('on',x.dataset.ho==='cut'));holePreview()}
+['#sHoleD','#sHoleDep','#sHoleThru'].forEach(s=>$(s).addEventListener('input',sHoleSync));$('#sHoleThru').addEventListener('change',sHoleSync);
+$('#sHoleGo').onclick=async()=>{if(sBusy)return;sHoleSync();sBusy=true;sMsg('Delik açılıyor…');
+ try{const np=await holeDo();if(np){sMsg('Ø'+f(+$('#sHoleD').value,1)+' mm delik açıldı. Başka yere tıklayıp bir delik daha açabilirsin.','var(--ok)');$('#sHoleGo').disabled=true;hole=null;holePreview()}
+  else sMsg($('#hlmsg').textContent||'Delik açılamadı.','var(--warn)')}finally{sBusy=false;sPanel()}};
+
+/* köşe yuvarla: kutu → yuvarlak kutu (aynı ölçü ve yer) */
+$('#sRoundGo').onclick=()=>{const p=sel;if(!p)return;const r=Math.max(0,parseFloat($('#sRad').value)||0),mx=Math.min(...p.size)/2;
+ if(r>mx)sMsg('En fazla '+f(mx,1)+' mm olabilir; o kadar yuvarladım.','var(--mut)');
+ if(p.type==='rbox')rboxRebuild(p,Math.min(r,mx));
+ else if(p.type==='box'){const sz=p.size.slice(),pos=p.pos.slice(),c=p.color,name=p.name;removePart(p);const q=addRBox(sz,Math.min(r,mx),pos);q.name=name;sColor(q,c);if(q.ground)sit(q);select(q)}
+ else return;refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
+
+/* birleştir: görünen tüm şekilleri sırayla tek parçada topla */
+$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
+ try{let a=list[0];for(let i=1;i<list.length;i++){const r=await boolParts('union',a,list[i],false);if(!r)throw new Error($('#bmsg').textContent||'Birleştirilemedi.');a=r}
+  a.name='Birleşik parça';refresh();look();histMark();sMsg('Hepsi tek parça oldu.','var(--ok)')}
+ catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false;sPanel()}};
+
+/* ---------- canlı fiyat ve sipariş: Baskı sekmesiyle aynı hesap (PLA, normal, görünen tüm şekiller) ---------- */
+function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis),el=$('#sPrice'),inf=$('#sPriceInfo');
+ if(!list.length){el.textContent='—';inf.textContent='Önce bir şekil ekle.';return}
+ try{const M=prMesh(list),r=printAnalyze(M.P,M.I,[0,0,-1],QUOTE_CFG.overhang),bed=PRINTERS.p1s.bed;
+  let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];for(let i=0;i<M.P.length;i+=3)for(let k=0;k<3;k++){const v=M.P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
+  const sz=[0,1,2].map(k=>mx[k]-mn[k]),fl=[Math.max(sz[0],sz[1]),Math.min(sz[0],sz[1])];
+  if(fl[0]>bed[0]||fl[1]>bed[1]||sz[2]>bed[2]){el.textContent='Sığmıyor';inf.textContent='Yazıcı en fazla '+bed[0]+' mm basabilir. Şekilleri küçült.';return}
+  const e=estimate({vol:M.vol,area:M.area},{scale:1,material:'PLA',infill:'normal',qty:1,supportVol:r.supV});
+  el.textContent=f(e.total,0)+' '+QUOTE_CFG.currency;inf.textContent='PLA, yaklaşık '+f(e.grams,e.grams<10?1:0)+' g, '+fmtHours(e.hours)+' baskı. Malzeme ve rengi sonraki adımda değiştirebilirsin.'}
+ catch(err){el.textContent='—';inf.textContent=''}}
+function sPriceSoon(){if(uiMode!=='simple')return;clearTimeout(sT);sT=setTimeout(sPrice,150)}
+$('#sOrder').onclick=()=>{const all=$('#prAll').checked;$('#prAll').checked=true;$('#prMat').value='PLA';$('#prInf').value='normal';
+ $('#prOrder').click();$('#prAll').checked=all;const m=$('#prMsg').textContent;sMsg(m,/engelledi/.test(m)?'var(--warn)':'var(--mut)')};
+
+/* ---------- bağlantılar ---------- */
+const _selectS=select;select=function(p){_selectS(p);if(uiMode==='simple'){sPanel();sPriceSoon();if(mode==='hole'&&$('#sHole').hidden)setMode('sec')}};
+const _refreshS=refresh;refresh=function(){_refreshS();sPanel();sPriceSoon()};
+const _setModeS=setMode;setMode=function(m){_setModeS(m);if(uiMode==='simple'&&!['sec','move','hole'].includes(m)){_setModeS('sec')}if(typeof sPanel==='function')sPanel()};
+addEventListener('pointerup',()=>sPriceSoon());
+/* basit modda seçili şekil parlamasın: seçtiği renk aynen görünsün (seçimi ölçü çizgileri gösterir) */
+const _lookS=look;look=function(){_lookS();if(uiMode==='simple')parts.forEach(p=>p.solidMat.emissive.setHex(0))};
+{const q=new URLSearchParams(location.search).get('mod');setUI(q==='gelismis'?'adv':q==='basit'?'simple':(sStore.get()||'simple'))}
 
 </script>
 </html>
