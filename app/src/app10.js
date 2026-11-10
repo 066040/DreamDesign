@@ -67,11 +67,11 @@ $('#sDel').onclick=()=>{if(!sel)return;const n=sel.name;remove();histMark();sMsg
 /* kaba çevir: aynı şeklin küçültülmüş kopyasını yukarıdan oy (dışbükey şekillerde tam, diğerlerinde yaklaşık) */
 async function sCup(p,wall){const b=worldBox(p),sz=[0,1,2].map(k=>b.mx[k]-b.mn[k]);
  if(wall*2>=Math.min(sz[0],sz[1])-0.5||wall>=sz[2]-0.5)throw new Error('Duvar bu şekil için çok kalın. Daha ince bir duvar yaz ya da şekli büyüt.');
- const w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
+ const rc0=rcBegin(p),w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
   eps=Math.max(1,sz[2]*.05),fz=(sz[2]-wall+eps)/sz[2],Q=new Float32Array(P.length);
  for(let i=0;i<P.length;i+=3){Q[i]=cx+(P[i]-cx)*fx;Q[i+1]=cy+(P[i+1]-cy)*fy;Q[i+2]=b.mn[2]+wall+(P[i+2]-b.mn[2])*fz}
  const R=await boolArrays(localArrays(p),{P:toLocal(p,Q),I:w.I},'subtract',Math.hypot(...p.base),[p.name,'İç']);
- return replaceWith(p,R,p.name)}
+ const np=replaceWith(p,R,p.name);rcEnd(rc0,np,{op:'cup',wall,q:rc0.fr.q.toArray()});return np}
 $('#sCupGo').onclick=async()=>{const p=sel;if(!p||sBusy)return;const wall=parseFloat($('#sWall').value);if(!(wall>0))return sMsg('Duvar kalınlığını yaz.','var(--warn)');
  sBusy=true;sMsg('Hazırlanıyor…');try{const np=await sCup(p,wall);if(np.ground)sit(np);refresh();look();histMark();$('#sCup').hidden=true;sPanel();sMsg('Kap oldu. Duvar '+f(wall,1)+' mm.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false}};

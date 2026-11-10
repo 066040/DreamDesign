@@ -93,6 +93,23 @@ input[type=color]{height:30px;padding:2px}
 .wide{width:100%;border:1px solid var(--acc);color:var(--acc);font-weight:600}
 #msg,.msg{font-size:12px;margin-top:6px}
 .note{font-size:12px;color:var(--mut);margin:6px 0 0}
+.rc-list{list-style:none;margin:0;padding:0}
+.rc-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
+.rc-n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--line);font-size:12px;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.rc-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.rc-lock .rc-t{color:var(--mut)}
+.rc-row .sm{flex:none;padding:4px 8px}
+.rc-row .sm[aria-expanded=true]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.rc-del{color:var(--warn)}
+.rc-ed{margin:6px 0 8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.rc-ed label{display:block;position:relative;margin:0 0 8px;color:var(--mut);font-size:13px}
+.rc-ed label input{display:block;width:100%;margin-top:3px;padding-right:38px}
+.rc-ed label span{position:absolute;right:8px;bottom:8px;color:var(--mut);font-size:12px}
+#simple .rc-ed label{margin:0 0 8px}
+#simple .rc-ed label span{bottom:12px}
+.rc-go{display:flex;gap:6px}
+.rc-go button{flex:1}
+.rc-go .sm.s-pri{border-color:var(--acc)}
 details{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:600}
 .card{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:6px;cursor:grab;background:var(--bg)}
@@ -214,6 +231,8 @@ summary{cursor:pointer;font-weight:600}
       <label>Köşe yuvarlaklığı<input type="number" id="sRad" value="4" min="0" step="0.5"><span>mm</span></label>
       <button class="s-btn s-pri" id="sRoundGo">Yuvarla</button>
      </div>
+     <div class="s-sub" id="sRcT">Yaptıkların</div>
+     <div id="sRc"></div>
     </div>
     <div class="s-msg" id="sMsg" role="status"></div>
    </section>
@@ -250,6 +269,7 @@ summary{cursor:pointer;font-weight:600}
      <div class="grp" style="flex-wrap:wrap"><button data-add="box">Kutu</button><button data-add="cyl">Silindir</button><button data-add="sph">Küre</button><button data-add="cone">Koni</button><button id="addrbox" title="Köşeleri yuvarlatılmış kutu (kasa için)">Yuvarlak kutu</button></div></div>
     <div class="sec"><h3>Montaj ağacı</h3><div id="list" class="list"></div></div>
     <div class="sec"><h3>Seçili parça</h3><div id="props"></div></div>
+    <div class="sec"><h3>Yapılanlar</h3><div id="rcList"></div><div class="msg" id="rcMsg" role="status"></div></div>
     <div class="sec"><h3>Toplam</h3><div id="tot"></div>
      <label class="chk"><input type="checkbox" id="showcom" checked>Ağırlık merkezini göster</label>
      <label class="chk"><input type="checkbox" id="showdim" checked>Seçili parçanın ölçü çizgilerini göster</label></div>

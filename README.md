@@ -28,6 +28,7 @@ DreamDesign opens in **Basit** (simple) mode; the *Basit / Gelişmiş* switch at
 - **Measure** – click two points for a distance, or three points for an angle; measurements stay attached to their part. Hovering an edge shows its length and the angle between its faces.
 - **Prepare for printing (Baskı tab)** – pick your printer (P1S, A1 mini, Ender-3, Prusa MK4… or custom); see whether it fits and shrink to fit in one click. Faces that need support are shown in red, with support grams and bed contact area. *Lay with least support* turns the part to the orientation that needs the least support. Live print price and one-click hand-off to the quote page for ordering.
 - **Rounded box** – a box with a real corner radius in mm, handy for device enclosures.
+- **Step list (Yapılanlar)** – every part remembers how it was made: *Box 25 × 25 × 10 mm → Hole Ø3 → Chamfer 1 mm*. Change any step's size later, or remove a step, and the part is rebuilt from the start with the remaining steps applied again. Saved with the project and covered by undo.
 - **Undo/redo everything** – `Ctrl+Z` / `Ctrl+Y` cover edits, sketches, joints and measurements.
 - **Import / export** – GLB, OBJ, STL in; STL, OBJ, GLB and a project file out.
 - **Hand gestures (experimental)** – orbit, zoom and pan with your webcam via MediaPipe (local server only).
@@ -81,6 +82,7 @@ Server settings (environment variables): `TSR_DEVICE=cpu`, `TSR_RES` (mesh resol
 
 - A **single photo cannot show the back of an object.** TripoSR guesses it; the result is a plausible model, not a measurement. Use two or three views for measured results.
 - Boolean operations and holes need closed (watertight) surfaces; AI-generated meshes may need *Surface clean-up* first. Cut caps can be imperfect on very concave cross-sections. Fillets are only available through the rounded box, not on arbitrary edges yet.
+- The step list is a recipe on a mesh, not a full parametric CAD kernel. Recorded steps: ready-made shapes, holes and bosses, round/chamfer, make cup, resizing, 90° turns. Free-form edits (cage, grab, edge pull, cuts, booleans with another part, print auto-orientation) lock the steps before them: they stay visible but can no longer be changed. Holes keep their offset from the part's centre, not from an edge.
 - The sketcher has no constraint solver and no holes.
 - Mass and volume assume closed surfaces, so AI-generated meshes give approximate values.
 - Hand gestures have only been exercised with simulated input, not on many real webcams.

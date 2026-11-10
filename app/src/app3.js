@@ -174,7 +174,7 @@ $('#domerge').onclick=()=>{const a=sel,b=parts.find(q=>q.id===+$('#mgsel').value
  const m=derive(w.P,w.C,w.I,(a.name+'+'+b.name).slice(0,28),a,{pos:[0,0,0],rot:[0,0,0],scale:[1,1,1]});
  removePart(a);removePart(b);select(m);msg('Birleştirildi. Kaynak toleransı: '+tol+' mm.','var(--ok)')};
 $('#doclone').onclick=()=>{const p=sel;if(!p)return;const L=localArrays(p),xf=xformOf(p);xf.pos[0]+=p.size[0]*1.1;
- select(derive(L.P,L.C,L.I,(p.name+' kopya').slice(0,28),p,xf))};
+ const np=derive(L.P,L.C,L.I,(p.name+' kopya').slice(0,28),p,xf);rcClone(p,np);select(np)};
 document.querySelectorAll('[data-mirror]').forEach(b=>b.onclick=()=>{const p=sel;if(!p)return;const a=+b.dataset.mirror,w=worldArrays(p);
  for(let i=a;i<w.P.length;i+=3)w.P[i]=-w.P[i];for(let i=0;i<w.I.length;i+=3){const t=w.I[i+1];w.I[i+1]=w.I[i+2];w.I[i+2]=t}
  select(derive(w.P,w.C,w.I,(p.name+' ayna').slice(0,28),p,{pos:[0,0,0],rot:[0,0,0],scale:[1,1,1]}))});

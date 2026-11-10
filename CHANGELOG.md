@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased – step list (parametric history)
+- **Yapılanlar (step list)**: each part keeps a recipe (base shape + steps). Shown in the Model tab and in simple mode ("Yaptıkların"). *Değiştir* edits a step's size, *Sil* removes it; the part is rebuilt from its base with every remaining step re-applied, and stays where it was.
+- Recorded steps: primitives and rounded box, holes and bosses, round/chamfer, make cup, resize after other steps, 90° turns. Holes are tied to the surface they were drilled into, so a blind hole keeps its depth when the body's height changes.
+- Free-form edits lock earlier steps (still listed, no longer editable); new steps can be added on top of the locked shape.
+- A step that no longer fits (e.g. a hole left outside a shrunk body) reports which step failed and leaves the part unchanged.
+- Recipes are saved in project files, restored by undo/redo, and copied with *Kopyasını yap*.
+- Tests: `tests/test_history.js`.
+
 ## 0.3.0 – simple mode, instant print quote and print preparation
 - **Basit (simple) mode**, now the default: plain-Turkish panel for beginners (add shape, size in mm, colour, move on bed, turn, lay down, copy, delete, make cup, drill hole, round corners, join all, live price and order). Switch to Gelişmiş any time; choice is remembered, `?mod=` overrides. First visit clears the large advanced demo scene and shows a three-step guide.
 - **New Baskı (print) tab in DreamDesign**: printer presets and custom bed, fit check with shrink-to-fit, overhang/support analysis with red highlight, support grams and bed contact, *lay with least support* auto-orientation (undoable), tablaya oturt, live price, hand-off to the quote page.
