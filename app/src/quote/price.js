@@ -121,9 +121,9 @@ function estimate(stats,o,cfg){cfg=cfg||QUOTE_CFG;
  const supGrams=(o.supportVol||0)*s*s*s*cfg.supportFill/1000*mat.density;
  const grams=solid/1000*mat.density+supGrams,hours=cfg.warmupH+grams/cfg.gramsPerHour;
  const perPiece=grams*mat.perGram+hours*cfg.hourRate;
- let total=cfg.setupFee+perPiece*qty;
+ let total=cfg.setupFee+perPiece*qty;const raw=total;
  total=Math.max(cfg.minPrice,Math.ceil(total/cfg.roundTo)*cfg.roundTo);
- return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
+ return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice,raw};
 }
 
 /* Biçimleme: Türkçe sayı yazımı */

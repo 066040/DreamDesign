@@ -67,6 +67,9 @@ r=await arun('birleştir',`[...parts].forEach(removePart);select(null);${$('[dat
 ok(r&&r.vis&&r.n===1&&near(r.v,40*40*60,1e-3)&&/tek parça/.test(r.msg),'iki kutu birleşti: hacim '+(r&&r.v.toFixed(0))+' = 40×40×60');
 
 /* sığmayan model ve sipariş */
+r=run('küçülünce',`const p=parts[0],o=p.size.slice();const g=()=>{sPrice();return{p:${$('#sPrice')}.textContent,i:${$('#sPriceInfo')}.textContent}};
+ p.size=[80,80,80];apply(p);refresh();const big=g();p.size=[10,10,10];apply(p);refresh();const small=g();p.size=o;apply(p);refresh();return{big,small}`);
+ok(r&&r.big.p!==r.small.p&&/En düşük sipariş tutarı/.test(r.small.i)&&/hesap \d/.test(r.small.i),'küçülünce fiyat değişir; en düşük tutar uygulanınca açıkça yazar '+JSON.stringify(r));
 r=run('sığma',`const p=parts[0];p.size=[300,40,40];apply(p);refresh();sPrice();return{p:${$('#sPrice')}.textContent,i:${$('#sPriceInfo')}.textContent}`);
 ok(r&&r.p==='Sığmıyor'&&/256/.test(r.i),'yazıcıya sığmayan: açık uyarı');
 r=run('sipariş',`window.open=()=>null;${$('#sOrder')}.click();return ${$('#sMsg')}.textContent`);

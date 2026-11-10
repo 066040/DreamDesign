@@ -17,7 +17,7 @@ DreamDesign ilk açılışta **Basit** modda açılır (sol üstte *Basit / Geli
 - **Renk seç**, **yerini değiştir** (yalnız tabla üstünde), **döndür**, **yan yatır**, **kopyala**, **sil**.
 - **Kaba çevir:** içini oyup üstü açık kap yapar (kalemlik, saksı). **Delik aç:** yere tıkla, çapı yaz. **Köşeleri yuvarla.**
 - **Hepsini tek parça yap:** üst üste konan şekilleri birleştirir.
-- Altta her zaman **tahmini baskı fiyatı** ve **Fiyat al ve sipariş ver**.
+- Altta her zaman ince bir şeritte **tahmini fiyat** ve **Sipariş ver**; küçük parçalarda en düşük sipariş tutarı uygulandığı açıkça yazar.
 
 Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey olduğu yerde durur.
 
