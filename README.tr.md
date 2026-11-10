@@ -27,6 +27,17 @@
 - **İçe/dışa aktar** – GLB, OBJ, STL açılır; STL, OBJ, GLB ve proje dosyası kaydedilir.
 - **El hareketi (deneysel)** – kamerayla döndür, yakınlaştır, kaydır (yalnız yerel sunucuda).
 
+## Fiyat al sayfası (3D baskı siparişi)
+
+**[docs/bastir.html](https://066040.github.io/DreamDesign/bastir.html)**: bilgisayardan anlamayan birinin bile kullanabileceği sade bir sayfa. Modelini (STL/OBJ) yükle, boyutunu kaydırıcıyla ya da mm yazarak ayarla, malzeme (PLA, PETG, ASA), renk, sağlamlık ve adet seç; fiyat anında değişir.
+
+- Hacim ve yüzey alanından gram, baskı süresi ve TL hesaplanır. Fiyat tablosu `app/src/quote/price.js` içindeki `QUOTE_CFG`'de, kendi maliyetine göre düzenle.
+- Yazıcıya (varsayılan Bambu Lab P1S, 256 mm) sığmayan model otomatik küçültülür; açık yüzey ve cm/inç ile kaydedilmiş dosya uyarısı var.
+- "Pahalı mı geldi?" önerisi: tek tıkla daha hafif doluluk ya da %80 boyut.
+- Sipariş: `QUOTE_CFG.whatsapp` numarasına özetle WhatsApp mesajı açılır, ölçeklenmiş STL indirilir. Sayfa bir siteye `<iframe>` ile gömülürse sipariş ve STL `postMessage({type:'3ddream-order', ...})` ile üst sayfaya gider.
+
+Derleme: `node app/src/quote/build.js` → `docs/bastir.html`.
+
 ## Hızlı başlangıç
 
 ### 1. Sadece tasarım araçları (kurulum yok)

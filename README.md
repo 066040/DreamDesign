@@ -27,6 +27,17 @@
 - **Import / export** – GLB, OBJ, STL in; STL, OBJ, GLB and a project file out.
 - **Hand gestures (experimental)** – orbit, zoom and pan with your webcam via MediaPipe (local server only).
 
+## Instant print quote page
+
+**[docs/bastir.html](https://066040.github.io/DreamDesign/bastir.html)** (Turkish UI) is a deliberately simple page for people with no 3D experience: upload an STL/OBJ, resize it with a slider or typed millimetres, pick material (PLA, PETG, ASA), colour, strength and quantity, and the price updates live.
+
+- Volume and surface area give grams, print time and price; edit the price table in `QUOTE_CFG` (`app/src/quote/price.js`).
+- Models too big for the printer (default Bambu Lab P1S, 256 mm) are scaled to fit; open meshes and files saved in cm/inch are flagged.
+- A one-click "too expensive?" suggestion (lighter infill or 80% size).
+- Ordering opens WhatsApp to `QUOTE_CFG.whatsapp` with a summary and downloads the scaled STL. Embedded in an `<iframe>`, it posts the order and STL to the parent page via `postMessage({type:'3ddream-order', ...})`.
+
+Build: `node app/src/quote/build.js` → `docs/bastir.html`.
+
 ## Quick start
 
 ### 1. Just the design tools (no install)

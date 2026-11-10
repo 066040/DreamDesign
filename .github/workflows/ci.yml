@@ -16,6 +16,8 @@ jobs:
         run: |
           node app/src/build.js /tmp/index.html
           diff -q /tmp/index.html docs/index.html || (echo "docs/index.html is stale: run 'node app/src/build.js' and commit it" && exit 1)
+          node app/src/quote/build.js /tmp/bastir.html
+          diff -q /tmp/bastir.html docs/bastir.html || (echo "docs/bastir.html is stale: run 'node app/src/quote/build.js' and commit it" && exit 1)
       - run: npm ci
         working-directory: tests
       - run: npm test
