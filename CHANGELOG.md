@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.3.0 – instant print quote
+## 0.3.0 – instant print quote and print preparation
+- **New Baskı (print) tab in DreamDesign**: printer presets and custom bed, fit check with shrink-to-fit, overhang/support analysis with red highlight, support grams and bed contact, *lay with least support* auto-orientation (undoable), tablaya oturt, live price, hand-off to the quote page.
+- Shared `printAnalyze` / `bestDown` in `app/src/quote/price.js` (DreamDesign and quote page give the same price); support material is part of the price.
 - **New page `docs/bastir.html`**: upload STL/OBJ, resize (slider or mm), choose material, colour, strength and quantity, see the print price live. Plain Turkish, large touch targets, works on phones.
 - Price from mesh volume and surface area (shell + infill model), print-time estimate, editable price table (`QUOTE_CFG`).
 - Fit-to-printer, open-mesh and cm/inch warnings; "too expensive?" one-click suggestion.

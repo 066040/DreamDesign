@@ -154,6 +154,7 @@ dialog::backdrop{background:rgb(0 0 0/.45)}
     </div>
     <p class="help">Birini değiştirince diğerleri de aynı oranda değişir, şekil bozulmaz.</p>
     <div id="fitNote"></div>
+    <div id="supNote"></div>
     <div class="row">
      <button class="ghost" id="turn">Yan yatır</button>
      <button class="ghost" id="reset">Asıl boyutuna dön</button>
@@ -212,6 +213,8 @@ const QUOTE_CFG={
  hourRate:12,                // makine saati (elektrik + yıpranma)
  minPrice:120,               // en düşük sipariş tutarı
  roundTo:5,                  // fiyatı yukarı yuvarla (5 TL)
+ overhang:45,                // dik duvardan bu açıdan fazla sarkan yüzey destek ister (derece)
+ supportFill:.15,            // destek yapısının doluluk oranı (destek hacmi tahmininin ne kadarı malzeme)
  materials:{
   PLA :{name:'PLA', density:1.24,perGram:2.5,note:'Ev içi kullanım. En ekonomik, renk seçeneği en çok olan malzeme.'},
   PETG:{name:'PETG',density:1.27,perGram:3.0,note:'Daha dayanıklı ve esnek. Suya ve darbeye karşı iyidir.'},
@@ -272,17 +275,53 @@ function fitInfo(size,cfg){cfg=cfg||QUOTE_CFG;const m=cfg.bedMargin,b=cfg.bed.ma
  const scale=Math.min(bedFlat[0]/Math.max(flat[0],1e-9),bedFlat[1]/Math.max(flat[1],1e-9),b[1]/Math.max(h,1e-9));
  return{fits,maxScale:scale};}
 
-/* Fiyat tahmini. stats: ölçek 1'deki meshStats; o: {scale, material, infill, qty} */
+/* ================= Baskıya hazırlık: sarkma, destek, taban =================
+   P: köşeler, I: üçgen indeksleri (yoksa P sıralı üçgendir). down: aşağı bakan birim yön
+   (DreamDesign Z yukarı → [0,0,-1]; fiyat sayfası Y yukarı → [0,-1,0]).
+   ang: dik duvardan sarkma eşiği (derece). flags verilirse destek isteyen üçgenler 1 olur.
+   supV: altındaki boşluk sütunlarının hacmi (destek için kaba ama tutarlı ölçü, mm³). */
+function printAnalyze(P,I,down,ang,flags){down=down||[0,0,-1];const s=Math.sin((ang==null?45:ang)*Math.PI/180),[dx,dy,dz]=down;
+ const T=I?I.length/3:Math.floor(P.length/9),vi=I?(t,k)=>3*I[3*t+k]:(t,k)=>9*t+3*k,h=v=>-(dx*P[v]+dy*P[v+1]+dz*P[v+2]);
+ let mn=Infinity,mx=-Infinity;for(let i=0;i+2<P.length;i+=3){const z=h(i);if(z<mn)mn=z;if(z>mx)mx=z}
+ const tol=Math.max(.2,(mx-mn)*1e-4);let ovA=0,supV=0,baseA=0,A=0;
+ for(let t=0;t<T;t++){const a=vi(t,0),b=vi(t,1),c=vi(t,2);
+  const ex=P[b]-P[a],ey=P[b+1]-P[a+1],ez=P[b+2]-P[a+2],fx=P[c]-P[a],fy=P[c+1]-P[a+1],fz=P[c+2]-P[a+2];
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx,L=Math.sqrt(nx*nx+ny*ny+nz*nz);if(L<1e-12)continue;
+  const area=L/2,dn=(dx*nx+dy*ny+dz*nz)/L,za=h(a),zb=h(b),zc=h(c);A+=area;
+  if(Math.max(za,zb,zc)<=mn+tol){if(dn>.99)baseA+=area;continue}  // tablaya değen yüz
+  if(dn>s){ovA+=area;supV+=area*dn*((za+zb+zc)/3-mn);if(flags)flags[t]=1}}
+ return{ovA,supV,baseA,A,height:mx-mn,needs:ovA>A*1e-3}}
+
+/* En az destekle basılacak yönü bul. Adaylar: 6 eksen ve en büyük düz yüzler (tabana yatırılır).
+   Puan: destek hacmi + yükseklik payı − taban alanı payı. Şimdiki yön %3'ten fazla kötü değilse korunur. */
+function bestDown(P,I,cur,ang){cur=cur||[0,0,-1];
+ const T=I?I.length/3:Math.floor(P.length/9),vi=I?(t,k)=>3*I[3*t+k]:(t,k)=>9*t+3*k,bins=new Map();
+ for(let t=0;t<T;t++){const a=vi(t,0),b=vi(t,1),c=vi(t,2);
+  const ex=P[b]-P[a],ey=P[b+1]-P[a+1],ez=P[b+2]-P[a+2],fx=P[c]-P[a],fy=P[c+1]-P[a+1],fz=P[c+2]-P[a+2];
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx,L=Math.sqrt(nx*nx+ny*ny+nz*nz);if(L<1e-12)continue;
+  const k=Math.round(nx/L*40)+','+Math.round(ny/L*40)+','+Math.round(nz/L*40);let e=bins.get(k);if(!e){e={a:0,n:[0,0,0]};bins.set(k,e)}
+  e.a+=L/2;e.n[0]+=nx/2;e.n[1]+=ny/2;e.n[2]+=nz/2}
+ const cands=[cur.slice(),[0,0,-1],[0,0,1],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]];
+ [...bins.values()].sort((x,y)=>y.a-x.a).slice(0,8).forEach(e=>{const l=Math.hypot(...e.n);if(l>0)cands.push(e.n.map(v=>v/l))});
+ const uniq=[];cands.forEach(d=>{const l=Math.hypot(...d)||1,u=d.map(v=>v/l);if(!uniq.some(q=>q[0]*u[0]+q[1]*u[1]+q[2]*u[2]>.9995))uniq.push(u)});
+ const score=r=>r.supV+.02*r.A*r.height-.5*r.baseA*Math.sqrt(r.A)*.1;
+ const res=uniq.map(d=>{const r=printAnalyze(P,I,d,ang);return{d,r,s:score(r)}});
+ const now=res[0];let best=now;res.forEach(x=>{if(x.s<best.s)best=x});
+ if(best!==now&&best.s>now.s-Math.abs(now.s)*.03)best=now;
+ return{down:best.d,res:best.r,cur:now.r,changed:best!==now}}
+
+/* Fiyat tahmini. stats: ölçek 1'deki meshStats; o: {scale, material, infill, qty, supportVol (ölçek 1, mm³)} */
 function estimate(stats,o,cfg){cfg=cfg||QUOTE_CFG;
  const s=o.scale||1,qty=Math.max(1,Math.round(o.qty||1)),mat=cfg.materials[o.material]||cfg.materials.PLA;
  const infill=typeof o.infill==='number'?o.infill:(cfg.infills.find(f=>f.key===o.infill)||cfg.infills[1]).value;
  const vol=stats.vol*s*s*s,area=stats.area*s*s;
  const shell=Math.min(vol,area*cfg.wallMm),solid=shell+infill*(vol-shell);
- const grams=solid/1000*mat.density,hours=cfg.warmupH+grams/cfg.gramsPerHour;
+ const supGrams=(o.supportVol||0)*s*s*s*cfg.supportFill/1000*mat.density;
+ const grams=solid/1000*mat.density+supGrams,hours=cfg.warmupH+grams/cfg.gramsPerHour;
  const perPiece=grams*mat.perGram+hours*cfg.hourRate;
  let total=cfg.setupFee+perPiece*qty;
  total=Math.max(cfg.minPrice,Math.ceil(total/cfg.roundTo)*cfg.roundTo);
- return{vol,area,grams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
+ return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
 }
 
 /* Biçimleme: Türkçe sayı yazımı */
@@ -290,7 +329,7 @@ function fmtNum(v,d){d=d||0;return Number(v).toLocaleString('tr-TR',{minimumFrac
 function fmtHours(h){const m5=Math.round(h*60/5)*5;if(m5<60)return Math.max(5,m5)+' dakika';const H=Math.floor(h),M=Math.round((h-H)*60/5)*5;
  return M===60?(H+1)+' saat':M?H+' saat '+M+' dakika':H+' saat'}
 
-if(typeof module!=='undefined')module.exports={QUOTE_CFG,meshStats,meshCheck,guessUnit,fitInfo,estimate,fmtNum,fmtHours};
+if(typeof module!=='undefined')module.exports={QUOTE_CFG,meshStats,meshCheck,guessUnit,fitInfo,estimate,printAnalyze,bestDown,fmtNum,fmtHours};
 
 /* ================= Fiyat al sayfası: yükle → boyutla → malzeme seç → sipariş ================= */
 (function(){
@@ -340,15 +379,16 @@ function positionsOf(obj){/* her türlü geometriyi tek indekssiz üçgen dizisi
  obj.traverse(o=>{if(!o.isMesh||!o.geometry)return;let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);parts.push(g.attributes.position.array)});
  const n=parts.reduce((a,p)=>a+p.length,0),out=new Float32Array(n);let k=0;parts.forEach(p=>{out.set(p,k);k+=p.length});return out}
 
+function parseModel(ext,buf){let pos;
+ if(ext==='stl')pos=positionsOf(new THREE.Mesh(new THREE.STLLoader().parse(buf)));
+ else pos=positionsOf(new THREE.OBJLoader().parse(new TextDecoder().decode(buf)));
+ if(!pos.length||pos.length<9)throw new Error('boş');
+ rotate(pos,'x',-1);/* STL/OBJ dosyaları genelde Z yukarı: Y yukarıya çevir */
+ return pos}
 function loadFile(f){if(!f)return;const ext=(f.name.split('.').pop()||'').toLowerCase();
  if(!['stl','obj'].includes(ext)){toast('Bu dosya türü açılmıyor. STL ya da OBJ dosyası seç.');return}
  const r=new FileReader();r.onerror=()=>toast('Dosya okunamadı.');
- r.onload=()=>{try{let pos;
-   if(ext==='stl')pos=positionsOf(new THREE.Mesh(new THREE.STLLoader().parse(r.result)));
-   else pos=positionsOf(new THREE.OBJLoader().parse(new TextDecoder().decode(r.result)));
-   if(!pos.length||pos.length<9)throw new Error('boş');
-   /* STL/OBJ dosyaları genelde Z yukarı: Y yukarıya çevir */
-   rotate(pos,'x',-1);setModel(f.name,pos)}catch(e){toast('Dosya açılamadı. Bozuk ya da boş olabilir.')}};
+ r.onload=()=>{try{setModel(f.name,parseModel(ext,r.result))}catch(e){toast('Dosya açılamadı. Bozuk ya da boş olabilir.')}};
  r.readAsArrayBuffer(f)}
 
 function rotate(pos,axis,sgn){/* 90° döndür (sgn: +1/-1) */
@@ -370,6 +410,8 @@ function setModel(name,pos){seat(pos);st.name=name;st.orig=pos;st.pos=Float32Arr
  fileNotes(!fi.fits);update(true);frame()}
 
 function rebuild(){const pos=st.pos;st.base=meshStats(pos);
+ /* destek: Y yukarı, aşağı −Y. En iyi yön de bir kez hesaplanır */
+ st.sup=printAnalyze(pos,null,[0,-1,0],C.overhang);st.best=st.sup.needs?bestDown(pos,null,[0,-1,0],C.overhang):null;
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.computeVertexNormals();
  if(mesh){scene.remove(mesh);mesh.geometry.dispose()}mesh=new THREE.Mesh(g,modelMat);scene.add(mesh)}
 
@@ -424,7 +466,7 @@ $('qMinus').onclick=()=>{st.qty=Math.max(1,st.qty-1);update()};
 $('qPlus').onclick=()=>{st.qty=Math.min(99,st.qty+1);update()};
 
 /* ---------- Hesap ve ekran ---------- */
-const opts=over=>Object.assign({scale:effScale(),material:st.material,infill:st.infill,qty:st.qty},over||{});
+const opts=over=>Object.assign({scale:effScale(),material:st.material,infill:st.infill,qty:st.qty,supportVol:st.sup?st.sup.supV:0},over||{});
 function update(){if(!st.base)return;
  st.pct=Math.round(Math.min(1000,Math.max(1,st.pct))*10)/10;
  const s=effScale();mesh.scale.setScalar(s);
@@ -432,14 +474,25 @@ function update(){if(!st.base)return;
  const sz=curSize();[['w',0],['h',1],['d',2]].forEach(([id,k])=>{if(document.activeElement!==$(id))$(id).value=Math.round(sz[k]*10)/10});
  $('dims').textContent=fmtNum(sz[0],1)+' × '+fmtNum(sz[2],1)+' × '+fmtNum(sz[1],1)+' mm';
  fitNote();
- const e=estimate(st.base,opts());st.est=e;
+ const e=estimate(st.base,opts());st.est=e;supNote(e);
  const fits=fitInfo(sz).fits;
  const pe=$('price');pe.textContent=fits?fmtNum(e.total)+' '+C.currency:'—';
  if(fits&&e.total!==st.lastTotal){pe.classList.remove('flash');void pe.offsetWidth;pe.classList.add('flash')}st.lastTotal=e.total;
- $('priceInfo').textContent=fits?'Yaklaşık '+fmtNum(e.grams*e.qty,e.grams<10?1:0)+' g malzeme, '+fmtHours(e.hours*e.qty)+' baskı'+(e.qty>1?' ('+e.qty+' adet)':'')+(e.minApplied?'. En düşük sipariş tutarı uygulandı.':''):'Yazıcıya sığmayan boyutun fiyatı hesaplanmaz.';
+ $('priceInfo').textContent=fits?'Yaklaşık '+fmtNum(e.grams*e.qty,e.grams<10?1:0)+' g malzeme'+(e.supGrams>.5?' (destek dahil)':'')+', '+fmtHours(e.hours*e.qty)+' baskı'+(e.qty>1?' ('+e.qty+' adet)':'')+(e.minApplied?'. En düşük sipariş tutarı uygulandı.':''):'Yazıcıya sığmayan boyutun fiyatı hesaplanmaz.';
  $('order').disabled=!fits;
  cheaperHint(fits,e)}
 
+function supNote(e){/* havada kalan yerler: destek gramı ve daha az destekli yön önerisi */
+ const box=$('supNote');box.innerHTML='';if(!st.sup||!st.sup.needs||e.supGrams<.5)return;
+ const d=document.createElement('div');d.className='note';
+ d.innerHTML='<b>Bazı yerler havada kalıyor.</b> Altlarına sonradan sökülen destek basılacak (yaklaşık '+fmtNum(e.supGrams*e.qty,e.supGrams<10?1:0)+' g, fiyata dahil).';
+ const b=st.best;if(b&&b.changed){const s=effScale()**3*C.supportFill/1000*C.materials[st.material].density,save=(b.cur.supV-b.res.supV)*s*st.qty;
+  if(save>=.5){const btn=document.createElement('button');btn.className='ghost';btn.textContent='Daha az destekle yatır ('+fmtNum(save,save<10?1:0)+' g daha az)';
+   btn.onclick=()=>{const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(...b.down),new THREE.Vector3(0,-1,0)),v=new THREE.Vector3(),p=st.pos;
+    for(let i=0;i<p.length;i+=3){v.set(p[i],p[i+1],p[i+2]).applyQuaternion(q);p[i]=v.x;p[i+1]=v.y;p[i+2]=v.z}
+    seat(p);rebuild();update(true);frame();toast('Model en az destek isteyen yöne çevrildi.')};
+   d.append(document.createElement('br'),btn)}}
+ box.append(d)}
 function cheaperHint(fits,e){/* "Pahalı mı geldi?" — tek tıkla daha ucuz seçenek */
  const b=$('cheaper');b.hidden=true;if(!fits||e.minApplied)return;
  let alt=null;
@@ -471,6 +524,14 @@ $('orderForm').onsubmit=e=>{if(e.submitter&&e.submitter.value!=='send')return;
  const txt='Merhaba, '+C.brand+' sipariş:\n'+summary().map(([k,v])=>k+': '+v).join('\n')+'\nAd: '+name+'\nTelefon: '+phone+(order.note?'\nNot: '+order.note:'')+'\n(Dosyayı bu mesaja ekliyorum: '+fileName+')';
  open('https://wa.me/'+C.whatsapp+'?text='+encodeURIComponent(txt),'_blank');
  toast('WhatsApp açılıyor. İnen '+fileName+' dosyasını mesaja ekle.')};
+
+/* DreamDesign'dan gelen model: bastir.html#dd penceresi açılınca hazır olduğunu bildirir, modeli bekler */
+function setRadios(){radios($('mats'),Object.keys(C.materials).map(k=>({key:k,...C.materials[k]})),()=>st.material,k=>{st.material=k;update()});
+ radios($('infills'),C.infills,()=>st.infill,k=>{st.infill=k;update()})}
+addEventListener('message',e=>{const d=e.data;if(!d||d.type!=='dd-quote-model'||(window.opener&&e.source!==window.opener))return;
+ try{if(C.materials[d.material])st.material=d.material;if(C.infills.some(i=>i.key===d.infill))st.infill=d.infill;setRadios();
+  setModel(d.name||'dreamdesign.stl',parseModel('stl',d.stl));toast('Model DreamDesign\'dan geldi.')}catch(err){toast('DreamDesign modeli açılamadı.')}});
+if(location.hash==='#dd'&&window.opener)try{window.opener.postMessage({type:'dd-quote-ready'},'*')}catch(e){}
 
 let tt;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4200)}
 window.__quote={st,setModel,update,estimate:()=>st.est};

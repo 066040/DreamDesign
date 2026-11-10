@@ -14,6 +14,8 @@ const QUOTE_CFG={
  hourRate:12,                // makine saati (elektrik + yıpranma)
  minPrice:120,               // en düşük sipariş tutarı
  roundTo:5,                  // fiyatı yukarı yuvarla (5 TL)
+ overhang:45,                // dik duvardan bu açıdan fazla sarkan yüzey destek ister (derece)
+ supportFill:.15,            // destek yapısının doluluk oranı (destek hacmi tahmininin ne kadarı malzeme)
  materials:{
   PLA :{name:'PLA', density:1.24,perGram:2.5,note:'Ev içi kullanım. En ekonomik, renk seçeneği en çok olan malzeme.'},
   PETG:{name:'PETG',density:1.27,perGram:3.0,note:'Daha dayanıklı ve esnek. Suya ve darbeye karşı iyidir.'},
@@ -74,17 +76,53 @@ function fitInfo(size,cfg){cfg=cfg||QUOTE_CFG;const m=cfg.bedMargin,b=cfg.bed.ma
  const scale=Math.min(bedFlat[0]/Math.max(flat[0],1e-9),bedFlat[1]/Math.max(flat[1],1e-9),b[1]/Math.max(h,1e-9));
  return{fits,maxScale:scale};}
 
-/* Fiyat tahmini. stats: ölçek 1'deki meshStats; o: {scale, material, infill, qty} */
+/* ================= Baskıya hazırlık: sarkma, destek, taban =================
+   P: köşeler, I: üçgen indeksleri (yoksa P sıralı üçgendir). down: aşağı bakan birim yön
+   (DreamDesign Z yukarı → [0,0,-1]; fiyat sayfası Y yukarı → [0,-1,0]).
+   ang: dik duvardan sarkma eşiği (derece). flags verilirse destek isteyen üçgenler 1 olur.
+   supV: altındaki boşluk sütunlarının hacmi (destek için kaba ama tutarlı ölçü, mm³). */
+function printAnalyze(P,I,down,ang,flags){down=down||[0,0,-1];const s=Math.sin((ang==null?45:ang)*Math.PI/180),[dx,dy,dz]=down;
+ const T=I?I.length/3:Math.floor(P.length/9),vi=I?(t,k)=>3*I[3*t+k]:(t,k)=>9*t+3*k,h=v=>-(dx*P[v]+dy*P[v+1]+dz*P[v+2]);
+ let mn=Infinity,mx=-Infinity;for(let i=0;i+2<P.length;i+=3){const z=h(i);if(z<mn)mn=z;if(z>mx)mx=z}
+ const tol=Math.max(.2,(mx-mn)*1e-4);let ovA=0,supV=0,baseA=0,A=0;
+ for(let t=0;t<T;t++){const a=vi(t,0),b=vi(t,1),c=vi(t,2);
+  const ex=P[b]-P[a],ey=P[b+1]-P[a+1],ez=P[b+2]-P[a+2],fx=P[c]-P[a],fy=P[c+1]-P[a+1],fz=P[c+2]-P[a+2];
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx,L=Math.sqrt(nx*nx+ny*ny+nz*nz);if(L<1e-12)continue;
+  const area=L/2,dn=(dx*nx+dy*ny+dz*nz)/L,za=h(a),zb=h(b),zc=h(c);A+=area;
+  if(Math.max(za,zb,zc)<=mn+tol){if(dn>.99)baseA+=area;continue}  // tablaya değen yüz
+  if(dn>s){ovA+=area;supV+=area*dn*((za+zb+zc)/3-mn);if(flags)flags[t]=1}}
+ return{ovA,supV,baseA,A,height:mx-mn,needs:ovA>A*1e-3}}
+
+/* En az destekle basılacak yönü bul. Adaylar: 6 eksen ve en büyük düz yüzler (tabana yatırılır).
+   Puan: destek hacmi + yükseklik payı − taban alanı payı. Şimdiki yön %3'ten fazla kötü değilse korunur. */
+function bestDown(P,I,cur,ang){cur=cur||[0,0,-1];
+ const T=I?I.length/3:Math.floor(P.length/9),vi=I?(t,k)=>3*I[3*t+k]:(t,k)=>9*t+3*k,bins=new Map();
+ for(let t=0;t<T;t++){const a=vi(t,0),b=vi(t,1),c=vi(t,2);
+  const ex=P[b]-P[a],ey=P[b+1]-P[a+1],ez=P[b+2]-P[a+2],fx=P[c]-P[a],fy=P[c+1]-P[a+1],fz=P[c+2]-P[a+2];
+  const nx=ey*fz-ez*fy,ny=ez*fx-ex*fz,nz=ex*fy-ey*fx,L=Math.sqrt(nx*nx+ny*ny+nz*nz);if(L<1e-12)continue;
+  const k=Math.round(nx/L*40)+','+Math.round(ny/L*40)+','+Math.round(nz/L*40);let e=bins.get(k);if(!e){e={a:0,n:[0,0,0]};bins.set(k,e)}
+  e.a+=L/2;e.n[0]+=nx/2;e.n[1]+=ny/2;e.n[2]+=nz/2}
+ const cands=[cur.slice(),[0,0,-1],[0,0,1],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]];
+ [...bins.values()].sort((x,y)=>y.a-x.a).slice(0,8).forEach(e=>{const l=Math.hypot(...e.n);if(l>0)cands.push(e.n.map(v=>v/l))});
+ const uniq=[];cands.forEach(d=>{const l=Math.hypot(...d)||1,u=d.map(v=>v/l);if(!uniq.some(q=>q[0]*u[0]+q[1]*u[1]+q[2]*u[2]>.9995))uniq.push(u)});
+ const score=r=>r.supV+.02*r.A*r.height-.5*r.baseA*Math.sqrt(r.A)*.1;
+ const res=uniq.map(d=>{const r=printAnalyze(P,I,d,ang);return{d,r,s:score(r)}});
+ const now=res[0];let best=now;res.forEach(x=>{if(x.s<best.s)best=x});
+ if(best!==now&&best.s>now.s-Math.abs(now.s)*.03)best=now;
+ return{down:best.d,res:best.r,cur:now.r,changed:best!==now}}
+
+/* Fiyat tahmini. stats: ölçek 1'deki meshStats; o: {scale, material, infill, qty, supportVol (ölçek 1, mm³)} */
 function estimate(stats,o,cfg){cfg=cfg||QUOTE_CFG;
  const s=o.scale||1,qty=Math.max(1,Math.round(o.qty||1)),mat=cfg.materials[o.material]||cfg.materials.PLA;
  const infill=typeof o.infill==='number'?o.infill:(cfg.infills.find(f=>f.key===o.infill)||cfg.infills[1]).value;
  const vol=stats.vol*s*s*s,area=stats.area*s*s;
  const shell=Math.min(vol,area*cfg.wallMm),solid=shell+infill*(vol-shell);
- const grams=solid/1000*mat.density,hours=cfg.warmupH+grams/cfg.gramsPerHour;
+ const supGrams=(o.supportVol||0)*s*s*s*cfg.supportFill/1000*mat.density;
+ const grams=solid/1000*mat.density+supGrams,hours=cfg.warmupH+grams/cfg.gramsPerHour;
  const perPiece=grams*mat.perGram+hours*cfg.hourRate;
  let total=cfg.setupFee+perPiece*qty;
  total=Math.max(cfg.minPrice,Math.ceil(total/cfg.roundTo)*cfg.roundTo);
- return{vol,area,grams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
+ return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
 }
 
 /* Biçimleme: Türkçe sayı yazımı */
@@ -92,4 +130,4 @@ function fmtNum(v,d){d=d||0;return Number(v).toLocaleString('tr-TR',{minimumFrac
 function fmtHours(h){const m5=Math.round(h*60/5)*5;if(m5<60)return Math.max(5,m5)+' dakika';const H=Math.floor(h),M=Math.round((h-H)*60/5)*5;
  return M===60?(H+1)+' saat':M?H+' saat '+M+' dakika':H+' saat'}
 
-if(typeof module!=='undefined')module.exports={QUOTE_CFG,meshStats,meshCheck,guessUnit,fitInfo,estimate,fmtNum,fmtHours};
+if(typeof module!=='undefined')module.exports={QUOTE_CFG,meshStats,meshCheck,guessUnit,fitInfo,estimate,printAnalyze,bestDown,fmtNum,fmtHours};

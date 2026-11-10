@@ -22,6 +22,7 @@
 - **Montaj** – parçaları modele sürükleyip bırak (yüzeye oturur); dönel ve kayar eklemler, pozlar.
 - **Mühendislik hesapları** – hacim, malzemeye göre kütle, ağırlık merkezi; hava aracı için asılı kalma gücü, kanat yükü, süre, tutunma hızı.
 - **Ölçüm** – uzaklık için iki, açı için üç noktaya tıkla; ölçüler parçasına bağlı kalır. Bir kenarın üstüne gelince boyu ve yüzleri arasındaki açı görünür.
+- **Baskıya hazırla (Baskı sekmesi)** – yazıcını seç (P1S, A1 mini, Ender-3, Prusa MK4… ya da kendi ölçün); sığıyor mu gör, sığmıyorsa tek tıkla küçült. Destek isteyen yerler kırmızı görünür, destek gramı ve tablaya değen alan hesaplanır. *En az destekle yatır* parçayı en az destek isteyen yöne çevirir. Tahmini baskı fiyatı ve tek tıkla *Fiyat sayfasında aç ve sipariş ver*.
 - **Yuvarlak kutu** – köşe yarıçapı gerçek mm olan kutu; cihaz kasaları için.
 - **Her şeyi geri al** – `Ctrl+Z` / `Ctrl+Y` düzenleme, çizim, eklem ve ölçümleri kapsar.
 - **İçe/dışa aktar** – GLB, OBJ, STL açılır; STL, OBJ, GLB ve proje dosyası kaydedilir.
@@ -34,6 +35,8 @@
 - Hacim ve yüzey alanından gram, baskı süresi ve TL hesaplanır. Fiyat tablosu `app/src/quote/price.js` içindeki `QUOTE_CFG`'de, kendi maliyetine göre düzenle.
 - Yazıcıya (varsayılan Bambu Lab P1S, 256 mm) sığmayan model otomatik küçültülür; açık yüzey ve cm/inç ile kaydedilmiş dosya uyarısı var.
 - "Pahalı mı geldi?" önerisi: tek tıkla daha hafif doluluk ya da %80 boyut.
+- Havada kalan yerler için destek gramı fiyata eklenir; "Daha az destekle yatır" ile modeli en ucuz yöne çevirir.
+- DreamDesign'daki *Baskı → Fiyat sayfasında aç* modeli, malzemeyi ve sağlamlığı bu sayfaya aktarır.
 - Sipariş: `QUOTE_CFG.whatsapp` numarasına özetle WhatsApp mesajı açılır, ölçeklenmiş STL indirilir. Sayfa bir siteye `<iframe>` ile gömülürse sipariş ve STL `postMessage({type:'3ddream-order', ...})` ile üst sayfaya gider.
 
 Derleme: `node app/src/quote/build.js` → `docs/bastir.html`.

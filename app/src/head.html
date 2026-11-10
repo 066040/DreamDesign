@@ -25,8 +25,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 #lbls span{position:absolute;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 #lbls span.m{border-color:var(--acc);color:var(--acc)}
 #side{width:360px;display:flex;flex-direction:column;background:var(--panel);border-left:1px solid var(--line);min-height:0}
-#tabs{display:flex;flex-wrap:wrap;gap:2px;padding:6px;border-bottom:1px solid var(--line)}
-#tabs button{padding:5px 8px;font-size:13px}
+#tabs{display:flex;gap:1px;padding:6px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:thin}
+#tabs button{padding:5px 6px;font-size:13px;flex:1 0 auto}
 #pages{flex:1;overflow:auto;padding:14px}
 .page{display:none}.page.on{display:block}
 h3{margin:0 0 8px;font-size:14px}
@@ -113,7 +113,7 @@ summary{cursor:pointer;font-weight:600}
   </div>
  </div>
  <aside id="side">
-  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="file">Dosya</button></div>
+  <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="print">Baskı</button><button data-tab="file">Dosya</button></div>
   <div id="pages">
    <div class="page on" id="p-model">
     <div class="sec"><h3>Model yükle</h3>
@@ -240,6 +240,23 @@ summary{cursor:pointer;font-weight:600}
      <div class="two"><div><label>Kanat alanı (m²)</label><input type="number" id="wa" value="9" step="0.5"></div><div><label>Seyir hızı (m/s)</label><input type="number" id="wv" value="55"></div></div>
      <div class="two"><div><label>CL maks. (iniş)</label><input type="number" id="wcl" value="1.5" step="0.1"></div><div><label>Sürtünme CD0</label><input type="number" id="wcd" value="0.03" step="0.005"></div></div>
      <div id="wout"></div></div>
+   </div>
+   <div class="page" id="p-print">
+    <div class="sec"><h3>Yazıcı</h3>
+     <select id="prPrinter" aria-label="Yazıcı"></select>
+     <div class="two" id="prCustom" hidden style="grid-template-columns:repeat(3,1fr)"><div><label>X (mm)</label><input type="number" id="prBx" value="200" min="10"></div><div><label>Y (mm)</label><input type="number" id="prBy" value="200" min="10"></div><div><label>Z (mm)</label><input type="number" id="prBz" value="200" min="10"></div></div>
+     <label class="chk"><input type="checkbox" id="prAll">Görünen tüm parçalar (yoksa yalnız seçili)</label>
+     <div id="prFit"></div></div>
+    <div class="sec"><h3>Destek</h3>
+     <label>Sarkma eşiği: <span id="prAngV">45°</span></label><input type="range" id="prAng" min="30" max="70" step="5" value="45">
+     <p class="note">Dik duvardan bu açıdan fazla eğik, altı boş yüzeyler destek ister. Çoğu yazıcı için 45° iyi bir başlangıç.</p>
+     <label class="chk"><input type="checkbox" id="prShow" checked>Destek isteyen yerleri kırmızı göster</label>
+     <div id="prOut"></div>
+     <div class="btnrow"><button class="sm" id="prBest">En az destekle yatır</button><button class="sm" id="prDown">Tablaya oturt</button></div></div>
+    <div class="sec"><h3>Tahmini baskı fiyatı</h3>
+     <div class="two"><div><label>Malzeme</label><select id="prMat"></select></div><div><label>Sağlamlık</label><select id="prInf"></select></div></div>
+     <div id="prPrice"></div>
+     <div class="btnrow"><button class="sm" id="prOrder">Fiyat sayfasında aç ve sipariş ver</button></div><div class="msg" id="prMsg"></div></div>
    </div>
    <div class="page" id="p-file">
     <div class="sec"><h3>Proje</h3><div class="btnrow" style="margin-top:0"><button class="sm" id="psave">Projeyi kaydet</button><button class="sm" id="pload">Proje aç…</button></div><input id="pfile" type="file" accept=".json,.atolye" hidden>

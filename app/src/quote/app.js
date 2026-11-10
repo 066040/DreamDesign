@@ -46,15 +46,16 @@ function positionsOf(obj){/* her türlü geometriyi tek indekssiz üçgen dizisi
  obj.traverse(o=>{if(!o.isMesh||!o.geometry)return;let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);parts.push(g.attributes.position.array)});
  const n=parts.reduce((a,p)=>a+p.length,0),out=new Float32Array(n);let k=0;parts.forEach(p=>{out.set(p,k);k+=p.length});return out}
 
+function parseModel(ext,buf){let pos;
+ if(ext==='stl')pos=positionsOf(new THREE.Mesh(new THREE.STLLoader().parse(buf)));
+ else pos=positionsOf(new THREE.OBJLoader().parse(new TextDecoder().decode(buf)));
+ if(!pos.length||pos.length<9)throw new Error('boş');
+ rotate(pos,'x',-1);/* STL/OBJ dosyaları genelde Z yukarı: Y yukarıya çevir */
+ return pos}
 function loadFile(f){if(!f)return;const ext=(f.name.split('.').pop()||'').toLowerCase();
  if(!['stl','obj'].includes(ext)){toast('Bu dosya türü açılmıyor. STL ya da OBJ dosyası seç.');return}
  const r=new FileReader();r.onerror=()=>toast('Dosya okunamadı.');
- r.onload=()=>{try{let pos;
-   if(ext==='stl')pos=positionsOf(new THREE.Mesh(new THREE.STLLoader().parse(r.result)));
-   else pos=positionsOf(new THREE.OBJLoader().parse(new TextDecoder().decode(r.result)));
-   if(!pos.length||pos.length<9)throw new Error('boş');
-   /* STL/OBJ dosyaları genelde Z yukarı: Y yukarıya çevir */
-   rotate(pos,'x',-1);setModel(f.name,pos)}catch(e){toast('Dosya açılamadı. Bozuk ya da boş olabilir.')}};
+ r.onload=()=>{try{setModel(f.name,parseModel(ext,r.result))}catch(e){toast('Dosya açılamadı. Bozuk ya da boş olabilir.')}};
  r.readAsArrayBuffer(f)}
 
 function rotate(pos,axis,sgn){/* 90° döndür (sgn: +1/-1) */
@@ -76,6 +77,8 @@ function setModel(name,pos){seat(pos);st.name=name;st.orig=pos;st.pos=Float32Arr
  fileNotes(!fi.fits);update(true);frame()}
 
 function rebuild(){const pos=st.pos;st.base=meshStats(pos);
+ /* destek: Y yukarı, aşağı −Y. En iyi yön de bir kez hesaplanır */
+ st.sup=printAnalyze(pos,null,[0,-1,0],C.overhang);st.best=st.sup.needs?bestDown(pos,null,[0,-1,0],C.overhang):null;
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.computeVertexNormals();
  if(mesh){scene.remove(mesh);mesh.geometry.dispose()}mesh=new THREE.Mesh(g,modelMat);scene.add(mesh)}
 
@@ -130,7 +133,7 @@ $('qMinus').onclick=()=>{st.qty=Math.max(1,st.qty-1);update()};
 $('qPlus').onclick=()=>{st.qty=Math.min(99,st.qty+1);update()};
 
 /* ---------- Hesap ve ekran ---------- */
-const opts=over=>Object.assign({scale:effScale(),material:st.material,infill:st.infill,qty:st.qty},over||{});
+const opts=over=>Object.assign({scale:effScale(),material:st.material,infill:st.infill,qty:st.qty,supportVol:st.sup?st.sup.supV:0},over||{});
 function update(){if(!st.base)return;
  st.pct=Math.round(Math.min(1000,Math.max(1,st.pct))*10)/10;
  const s=effScale();mesh.scale.setScalar(s);
@@ -138,14 +141,25 @@ function update(){if(!st.base)return;
  const sz=curSize();[['w',0],['h',1],['d',2]].forEach(([id,k])=>{if(document.activeElement!==$(id))$(id).value=Math.round(sz[k]*10)/10});
  $('dims').textContent=fmtNum(sz[0],1)+' × '+fmtNum(sz[2],1)+' × '+fmtNum(sz[1],1)+' mm';
  fitNote();
- const e=estimate(st.base,opts());st.est=e;
+ const e=estimate(st.base,opts());st.est=e;supNote(e);
  const fits=fitInfo(sz).fits;
  const pe=$('price');pe.textContent=fits?fmtNum(e.total)+' '+C.currency:'—';
  if(fits&&e.total!==st.lastTotal){pe.classList.remove('flash');void pe.offsetWidth;pe.classList.add('flash')}st.lastTotal=e.total;
- $('priceInfo').textContent=fits?'Yaklaşık '+fmtNum(e.grams*e.qty,e.grams<10?1:0)+' g malzeme, '+fmtHours(e.hours*e.qty)+' baskı'+(e.qty>1?' ('+e.qty+' adet)':'')+(e.minApplied?'. En düşük sipariş tutarı uygulandı.':''):'Yazıcıya sığmayan boyutun fiyatı hesaplanmaz.';
+ $('priceInfo').textContent=fits?'Yaklaşık '+fmtNum(e.grams*e.qty,e.grams<10?1:0)+' g malzeme'+(e.supGrams>.5?' (destek dahil)':'')+', '+fmtHours(e.hours*e.qty)+' baskı'+(e.qty>1?' ('+e.qty+' adet)':'')+(e.minApplied?'. En düşük sipariş tutarı uygulandı.':''):'Yazıcıya sığmayan boyutun fiyatı hesaplanmaz.';
  $('order').disabled=!fits;
  cheaperHint(fits,e)}
 
+function supNote(e){/* havada kalan yerler: destek gramı ve daha az destekli yön önerisi */
+ const box=$('supNote');box.innerHTML='';if(!st.sup||!st.sup.needs||e.supGrams<.5)return;
+ const d=document.createElement('div');d.className='note';
+ d.innerHTML='<b>Bazı yerler havada kalıyor.</b> Altlarına sonradan sökülen destek basılacak (yaklaşık '+fmtNum(e.supGrams*e.qty,e.supGrams<10?1:0)+' g, fiyata dahil).';
+ const b=st.best;if(b&&b.changed){const s=effScale()**3*C.supportFill/1000*C.materials[st.material].density,save=(b.cur.supV-b.res.supV)*s*st.qty;
+  if(save>=.5){const btn=document.createElement('button');btn.className='ghost';btn.textContent='Daha az destekle yatır ('+fmtNum(save,save<10?1:0)+' g daha az)';
+   btn.onclick=()=>{const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(...b.down),new THREE.Vector3(0,-1,0)),v=new THREE.Vector3(),p=st.pos;
+    for(let i=0;i<p.length;i+=3){v.set(p[i],p[i+1],p[i+2]).applyQuaternion(q);p[i]=v.x;p[i+1]=v.y;p[i+2]=v.z}
+    seat(p);rebuild();update(true);frame();toast('Model en az destek isteyen yöne çevrildi.')};
+   d.append(document.createElement('br'),btn)}}
+ box.append(d)}
 function cheaperHint(fits,e){/* "Pahalı mı geldi?" — tek tıkla daha ucuz seçenek */
  const b=$('cheaper');b.hidden=true;if(!fits||e.minApplied)return;
  let alt=null;
@@ -177,6 +191,14 @@ $('orderForm').onsubmit=e=>{if(e.submitter&&e.submitter.value!=='send')return;
  const txt='Merhaba, '+C.brand+' sipariş:\n'+summary().map(([k,v])=>k+': '+v).join('\n')+'\nAd: '+name+'\nTelefon: '+phone+(order.note?'\nNot: '+order.note:'')+'\n(Dosyayı bu mesaja ekliyorum: '+fileName+')';
  open('https://wa.me/'+C.whatsapp+'?text='+encodeURIComponent(txt),'_blank');
  toast('WhatsApp açılıyor. İnen '+fileName+' dosyasını mesaja ekle.')};
+
+/* DreamDesign'dan gelen model: bastir.html#dd penceresi açılınca hazır olduğunu bildirir, modeli bekler */
+function setRadios(){radios($('mats'),Object.keys(C.materials).map(k=>({key:k,...C.materials[k]})),()=>st.material,k=>{st.material=k;update()});
+ radios($('infills'),C.infills,()=>st.infill,k=>{st.infill=k;update()})}
+addEventListener('message',e=>{const d=e.data;if(!d||d.type!=='dd-quote-model'||(window.opener&&e.source!==window.opener))return;
+ try{if(C.materials[d.material])st.material=d.material;if(C.infills.some(i=>i.key===d.infill))st.infill=d.infill;setRadios();
+  setModel(d.name||'dreamdesign.stl',parseModel('stl',d.stl));toast('Model DreamDesign\'dan geldi.')}catch(err){toast('DreamDesign modeli açılamadı.')}});
+if(location.hash==='#dd'&&window.opener)try{window.opener.postMessage({type:'dd-quote-ready'},'*')}catch(e){}
 
 let tt;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4200)}
 window.__quote={st,setModel,update,estimate:()=>st.est};
