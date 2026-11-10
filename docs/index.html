@@ -65,10 +65,12 @@ body.simple #simple{display:flex!important}
 .s-pri{background:var(--acc);color:var(--accink);border-color:var(--acc)}
 .s-pri:hover{filter:brightness(1.07);background:var(--acc)}
 .s-msg{margin-top:8px;min-height:1em;font-size:14px}
-.s-price{margin-top:auto;position:sticky;bottom:0;padding:12px 16px 14px;background:var(--panel);border-top:1px solid var(--line);display:grid;gap:8px}
-.s-price span{color:var(--mut);font-size:13px;display:block}
-.s-price strong{font-size:28px;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
-.s-price small{color:var(--mut);font-size:13px}
+.s-price{margin-top:auto;position:sticky;bottom:0;padding:8px 12px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.s-price>div{flex:1;min-width:0}
+.s-price span{color:var(--mut);font-size:12px;display:block;line-height:1.2}
+.s-price strong{font-size:19px;font-variant-numeric:tabular-nums;display:block;line-height:1.2}
+.s-price small{color:var(--mut);font-size:12px;display:block;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-price .s-btn{width:auto;flex:none;padding:8px 14px;min-height:40px;font-size:14px}
 .page{display:none}.page.on{display:block}
 h3{margin:0 0 8px;font-size:14px}
 .sec{margin-bottom:18px}
@@ -221,8 +223,8 @@ summary{cursor:pointer;font-weight:600}
     <button class="s-btn" id="sJoin">Hepsini tek parça yap</button>
    </section>
    <div class="s-price">
-    <div><span>Tahmini baskı fiyatı</span><strong id="sPrice">—</strong><small id="sPriceInfo">Önce bir şekil ekle.</small></div>
-    <button class="s-btn s-pri" id="sOrder" disabled>Fiyat al ve sipariş ver</button>
+    <div><span>Tahmini fiyat</span><strong id="sPrice">—</strong><small id="sPriceInfo">Önce bir şekil ekle.</small></div>
+    <button class="s-btn s-pri" id="sOrder" disabled>Sipariş ver</button>
    </div>
   </div>
   <div id="tabs"><button data-tab="model" class="on">Model</button><button data-tab="edit">Düzenle</button><button data-tab="shelf">Raf</button><button data-tab="joint">Eklem</button><button data-tab="calc">Hesap</button><button data-tab="print">Baskı</button><button data-tab="file">Dosya</button></div>
@@ -997,9 +999,9 @@ function estimate(stats,o,cfg){cfg=cfg||QUOTE_CFG;
  const supGrams=(o.supportVol||0)*s*s*s*cfg.supportFill/1000*mat.density;
  const grams=solid/1000*mat.density+supGrams,hours=cfg.warmupH+grams/cfg.gramsPerHour;
  const perPiece=grams*mat.perGram+hours*cfg.hourRate;
- let total=cfg.setupFee+perPiece*qty;
+ let total=cfg.setupFee+perPiece*qty;const raw=total;
  total=Math.max(cfg.minPrice,Math.ceil(total/cfg.roundTo)*cfg.roundTo);
- return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice};
+ return{vol,area,grams,supGrams,hours,qty,total,unit:total/qty,material:mat.name,infill,minApplied:total===cfg.minPrice,raw};
 }
 
 /* Biçimleme: Türkçe sayı yazımı */
@@ -2625,7 +2627,9 @@ function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.
   const sz=[0,1,2].map(k=>mx[k]-mn[k]),fl=[Math.max(sz[0],sz[1]),Math.min(sz[0],sz[1])];
   if(fl[0]>bed[0]||fl[1]>bed[1]||sz[2]>bed[2]){el.textContent='Sığmıyor';inf.textContent='Yazıcı en fazla '+bed[0]+' mm basabilir. Şekilleri küçült.';return}
   const e=estimate({vol:M.vol,area:M.area},{scale:1,material:'PLA',infill:'normal',qty:1,supportVol:r.supV});
-  el.textContent=f(e.total,0)+' '+QUOTE_CFG.currency;inf.textContent='PLA, yaklaşık '+f(e.grams,e.grams<10?1:0)+' g, '+fmtHours(e.hours)+' baskı. Malzeme ve rengi sonraki adımda değiştirebilirsin.'}
+  el.textContent=f(e.total,0)+' '+QUOTE_CFG.currency;const g=f(e.grams,e.grams<10?1:0)+' g';
+  inf.textContent=e.minApplied?'En düşük sipariş tutarı (hesap '+f(Math.ceil(e.raw),0)+' '+QUOTE_CFG.currency+', '+g+')':'PLA, '+g+', '+fmtHours(e.hours);
+  inf.title=e.minApplied?'Küçük parçalarda en düşük sipariş tutarı '+QUOTE_CFG.minPrice+' '+QUOTE_CFG.currency+'. Birkaç parçayı aynı siparişe eklersen bu tutarın içinde basılır.':'Malzeme ve rengi sipariş adımında değiştirebilirsin.'}
  catch(err){el.textContent='—';inf.textContent=''}}
 function sPriceSoon(){if(uiMode!=='simple')return;clearTimeout(sT);sT=setTimeout(sPrice,150)}
 $('#sOrder').onclick=()=>{const all=$('#prAll').checked;$('#prAll').checked=true;$('#prMat').value='PLA';$('#prInf').value='normal';

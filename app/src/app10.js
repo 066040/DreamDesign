@@ -107,7 +107,9 @@ function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.
   const sz=[0,1,2].map(k=>mx[k]-mn[k]),fl=[Math.max(sz[0],sz[1]),Math.min(sz[0],sz[1])];
   if(fl[0]>bed[0]||fl[1]>bed[1]||sz[2]>bed[2]){el.textContent='Sığmıyor';inf.textContent='Yazıcı en fazla '+bed[0]+' mm basabilir. Şekilleri küçült.';return}
   const e=estimate({vol:M.vol,area:M.area},{scale:1,material:'PLA',infill:'normal',qty:1,supportVol:r.supV});
-  el.textContent=f(e.total,0)+' '+QUOTE_CFG.currency;inf.textContent='PLA, yaklaşık '+f(e.grams,e.grams<10?1:0)+' g, '+fmtHours(e.hours)+' baskı. Malzeme ve rengi sonraki adımda değiştirebilirsin.'}
+  el.textContent=f(e.total,0)+' '+QUOTE_CFG.currency;const g=f(e.grams,e.grams<10?1:0)+' g';
+  inf.textContent=e.minApplied?'En düşük sipariş tutarı (hesap '+f(Math.ceil(e.raw),0)+' '+QUOTE_CFG.currency+', '+g+')':'PLA, '+g+', '+fmtHours(e.hours);
+  inf.title=e.minApplied?'Küçük parçalarda en düşük sipariş tutarı '+QUOTE_CFG.minPrice+' '+QUOTE_CFG.currency+'. Birkaç parçayı aynı siparişe eklersen bu tutarın içinde basılır.':'Malzeme ve rengi sipariş adımında değiştirebilirsin.'}
  catch(err){el.textContent='—';inf.textContent=''}}
 function sPriceSoon(){if(uiMode!=='simple')return;clearTimeout(sT);sT=setTimeout(sPrice,150)}
 $('#sOrder').onclick=()=>{const all=$('#prAll').checked;$('#prAll').checked=true;$('#prMat').value='PLA';$('#prInf').value='normal';
