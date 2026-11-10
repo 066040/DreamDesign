@@ -4,7 +4,8 @@
 const QUOTE_CFG={
  brand:'3D Dream',
  currency:'TL',
- whatsapp:'',                // siparişlerin geleceği numara, ülke koduyla: '905xxxxxxxxx'. Boşsa sipariş gönderilemez.
+ whatsapp:'905537400385',    // siparişlerin geleceği numara, ülke koduyla: '905xxxxxxxxx'. Boşsa sipariş gönderilemez.
+ ordersOpen:false,           // SİPARİŞ ANAHTARI: yazıcı gelip fiyatlar netleşince true yap. false iken fiyat görünür ama sipariş alınmaz.
  bed:[256,256,256],          // yazıcının basabildiği en büyük kutu (Bambu Lab P1S)
  bedMargin:6,                // kenarlardan bırakılan pay
  wallMm:1.6,                 // duvar + alt/üst kabuğun ortalama kalınlığı
