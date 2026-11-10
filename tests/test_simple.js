@@ -50,7 +50,7 @@ ok(r&&r.t==='rbox'&&r.rad===5&&r.size.join()==='40,40,40'&&r.same&&r.c&&r.n===1,
 r=run('fazla yuvarla',`${$('#sRad')}.value='50';${$('#sRoundGo')}.click();return{rad:sel.rad,msg:${$('#sMsg')}.textContent}`);
 ok(r&&r.rad===20&&/En fazla/.test(r.msg),'yarıçap ölçüye sığacak kadar sınırlandı');
 r=run('küre yuvarla',`${$('[data-add=sph]')}.click();${$('#sRoundBtn')}.click();return{d:${$('#sRoundGo')}.disabled,t:${$('#sRoundTip')}.textContent}`);
-ok(r&&r.d&&/yalnız kutuda/.test(r.t),'kürede yuvarlama kapalı ve nedeni yazıyor');
+ok(r&&!r.d&&/dış kenarlarını/.test(r.t),'kutu dışındaki şekillerde de yuvarlama açık, ne yaptığı yazıyor');
 
 /* delik: 40 mm kutunun üstüne Ø6 boydan boya */
 r=await arun('delik',`[...parts].forEach(removePart);select(null);${$('[data-add=box]')}.click();const p=sel,v0=massInfo(p).vol;
