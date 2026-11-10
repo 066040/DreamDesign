@@ -180,7 +180,7 @@ function summary(){const e=st.est,sz=curSize();return[
  ['Model',st.name],['Ölçüler',fmtNum(sz[0],1)+' × '+fmtNum(sz[2],1)+' × '+fmtNum(sz[1],1)+' mm'],
  ['Malzeme',e.material+', '+C.colors[st.color].name],['Sağlamlık',C.infills.find(f=>f.key===st.infill).name],['Adet',String(e.qty)],
  ['Tahmini fiyat',fmtNum(e.total)+' '+C.currency]]}
-$('order').onclick=()=>{const t=$('sum');t.innerHTML='';summary().forEach(([k,v])=>{const r=t.insertRow();r.insertCell().textContent=k;r.insertCell().textContent=v});$('dlg').showModal()};
+$('order').onclick=()=>{if(!C.ordersOpen){toast('Siparişler çok yakında açılıyor. Şimdilik fiyatını görebilirsin.');return}const t=$('sum');t.innerHTML='';summary().forEach(([k,v])=>{const r=t.insertRow();r.insertCell().textContent=k;r.insertCell().textContent=v});$('dlg').showModal()};
 $('orderForm').onsubmit=e=>{if(e.submitter&&e.submitter.value!=='send')return;
  const name=$('oName').value.trim(),phone=$('oPhone').value.trim();if(!name||!phone){e.preventDefault();return}
  const order={name,phone,note:$('oNote').value.trim(),items:Object.fromEntries(summary()),grams:Math.round(st.est.grams),scale:effScale(),material:st.material,infill:st.infill,qty:st.qty,total:st.est.total};

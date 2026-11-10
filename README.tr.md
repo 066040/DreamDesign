@@ -59,6 +59,7 @@ Derleme: `node app/src/quote/build.js` → `docs/bastir.html`.
 **[docs/magaza/](https://066040.github.io/DreamDesign/magaza/)**: 3D baskı işinin vitrini. Ana sayfa, nasıl çalışır, dosyası olmayanlar için parça tasarımı (eski araba parçaları), malzemeler, kendi tasarımlar (yakında) ve DreamDesign'a geçiş. "Fiyat al" düğmeleri `bastir.html`'e gider.
 
 - WhatsApp düğmeleri sayfanın sonundaki `SITE.whatsapp` numarasını kullanır; boşken "yakında açılıyor" der. `QUOTE_CFG.whatsapp` ile aynı numarayı yaz.
+- **Açılış anahtarı:** `SITE.ordersOpen` (bu sayfa) ve `QUOTE_CFG.ordersOpen` (fiyat sayfası) `false` iken fiyat görünür, sipariş alınmaz, üstte "çok yakında" şeridi çıkar. Açılışta ikisini `true` yap, iki sayfadaki `noindex` satırını sil.
 - Derleme gerekmez, tek dosya. Kendi domainine taşırken `docs` klasörü Vercel/Netlify'da olduğu gibi yayınlanabilir.
 
 ## Hızlı başlangıç

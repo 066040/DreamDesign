@@ -1,4 +1,5 @@
 <!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="3D modelini yükle, boyutunu ve malzemesini seç, baskı fiyatını anında gör."><title>Fiyat al – 3D Dream</title>
+<meta name="robots" content="noindex"><!-- açılışta sil: Google'da görünmesin diye -->
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -203,7 +204,8 @@ dialog::backdrop{background:rgb(0 0 0/.45)}
 const QUOTE_CFG={
  brand:'3D Dream',
  currency:'TL',
- whatsapp:'905537400385',                // siparişlerin geleceği numara, ülke koduyla: '905xxxxxxxxx'. Boşsa sipariş gönderilemez.
+ whatsapp:'905537400385',    // siparişlerin geleceği numara, ülke koduyla: '905xxxxxxxxx'. Boşsa sipariş gönderilemez.
+ ordersOpen:false,           // SİPARİŞ ANAHTARI: yazıcı gelip fiyatlar netleşince true yap. false iken fiyat görünür ama sipariş alınmaz.
  bed:[256,256,256],          // yazıcının basabildiği en büyük kutu (Bambu Lab P1S)
  bedMargin:6,                // kenarlardan bırakılan pay
  wallMm:1.6,                 // duvar + alt/üst kabuğun ortalama kalınlığı
@@ -513,7 +515,7 @@ function summary(){const e=st.est,sz=curSize();return[
  ['Model',st.name],['Ölçüler',fmtNum(sz[0],1)+' × '+fmtNum(sz[2],1)+' × '+fmtNum(sz[1],1)+' mm'],
  ['Malzeme',e.material+', '+C.colors[st.color].name],['Sağlamlık',C.infills.find(f=>f.key===st.infill).name],['Adet',String(e.qty)],
  ['Tahmini fiyat',fmtNum(e.total)+' '+C.currency]]}
-$('order').onclick=()=>{const t=$('sum');t.innerHTML='';summary().forEach(([k,v])=>{const r=t.insertRow();r.insertCell().textContent=k;r.insertCell().textContent=v});$('dlg').showModal()};
+$('order').onclick=()=>{if(!C.ordersOpen){toast('Siparişler çok yakında açılıyor. Şimdilik fiyatını görebilirsin.');return}const t=$('sum');t.innerHTML='';summary().forEach(([k,v])=>{const r=t.insertRow();r.insertCell().textContent=k;r.insertCell().textContent=v});$('dlg').showModal()};
 $('orderForm').onsubmit=e=>{if(e.submitter&&e.submitter.value!=='send')return;
  const name=$('oName').value.trim(),phone=$('oPhone').value.trim();if(!name||!phone){e.preventDefault();return}
  const order={name,phone,note:$('oNote').value.trim(),items:Object.fromEntries(summary()),grams:Math.round(st.est.grams),scale:effScale(),material:st.material,infill:st.infill,qty:st.qty,total:st.est.total};

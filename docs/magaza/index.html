@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>3D Dream – Sen hayal et, biz yapalım</title>
+<meta name="robots" content="noindex"><!-- açılışta sil: Google'da görünmesin diye -->
 <meta name="description" content="Modelini yükle, fiyatını hemen gör. Dosyan yoksa kırılan parçanın fotoğrafını gönder, ölçüp tasarlayıp basalım. PLA, PETG ve araç içi için ASA.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
@@ -116,12 +117,15 @@ td:first-child{font-family:Archivo,sans-serif;font-weight:800;font-stretch:115%;
 
 footer{margin-top:72px;padding:28px 0 40px;border-top:1px solid var(--line);font-size:15px;color:var(--mut);display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
 
+[hidden]{display:none!important}
+.soonbar{margin:0;background:var(--ink);color:#e8ebe9;text-align:center;font-size:15px;padding:9px 16px}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:16px;max-width:calc(100% - 32px);display:none;z-index:20}
 #toast.on{display:block}
 </style>
 </head>
 <body>
 <a class="skip" href="#ana">İçeriğe geç</a>
+<p id="soon" class="soonbar">Siparişler çok yakında açılıyor. Şimdilik modelini yükleyip fiyatını görebilirsin.</p>
 <div class="wrap">
  <header class="top">
   <a class="mark" href="./" aria-label="3D Dream ana sayfa">
@@ -223,12 +227,14 @@ footer{margin-top:72px;padding:28px 0 40px;border-top:1px solid var(--line);font
 <script>
 /* SİTE AYARI: siparişlerin geleceği WhatsApp numarası, ülke koduyla ('905xxxxxxxxx').
    Fiyat sayfasındaki numara ayrı: app/src/quote/price.js içindeki QUOTE_CFG.whatsapp. İkisini aynı yap. */
-const SITE={whatsapp:'905537400385'};
+const SITE={whatsapp:'905537400385',
+ ordersOpen:false}; // SİPARİŞ ANAHTARI: yazıcı gelince true yap (fiyat sayfasındaki QUOTE_CFG.ordersOpen ile birlikte)
 const toast=document.getElementById('toast');let tt;
 function say(t){toast.textContent=t;toast.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),4000)}
 document.querySelectorAll('[data-wa]').forEach(a=>{
- if(SITE.whatsapp){a.href='https://wa.me/'+SITE.whatsapp+'?text='+encodeURIComponent(a.dataset.wa);a.target='_blank';a.rel='noopener'}
- else a.addEventListener('click',e=>{e.preventDefault();say('WhatsApp hattı yakında açılıyor. Şimdilik fiyatını fiyat sayfasından görebilirsin.')});
+ document.getElementById('soon').hidden=SITE.ordersOpen;
+ if(SITE.whatsapp&&SITE.ordersOpen){a.href='https://wa.me/'+SITE.whatsapp+'?text='+encodeURIComponent(a.dataset.wa);a.target='_blank';a.rel='noopener'}
+ else a.addEventListener('click',e=>{e.preventDefault();say('Siparişler çok yakında açılıyor. Şimdilik fiyatını fiyat sayfasından görebilirsin.')});
 });
 </script>
 </body>
