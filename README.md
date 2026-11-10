@@ -8,6 +8,10 @@
 
 > **Status: beta (v0.1).** It works and is tested, but it is young. The interface is currently **Turkish only** (English UI is the first roadmap item); the docs are bilingual. Your browser's "translate page" works well in the meantime.
 
+## Simple mode for complete beginners
+
+DreamDesign opens in **Basit** (simple) mode; the *Basit / Gelişmiş* switch at the top left toggles it (remembered; also `?mod=basit` / `?mod=gelismis`). Big buttons, no jargon: add a box, rounded box, cylinder, sphere or cone (or open a file); type its size in mm; pick a colour; move it on the bed, turn it, lay it down, copy or delete it; *make it a cup* (hollow with an open top), *drill a hole* where you click, *round the corners*; *join everything into one part*. A live print price and an order button are always at the bottom. Same geometry code as the advanced mode.
+
 ## What you can do
 
 - **Model from several views** – give a front, side and/or top photo or drawing; DreamDesign intersects the silhouettes into a real, measured solid. One view only? It inflates the shape and you tell it how deep it should be.

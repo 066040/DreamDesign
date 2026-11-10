@@ -1,6 +1,7 @@
 # Changelog
 
-## 0.3.0 – instant print quote and print preparation
+## 0.3.0 – simple mode, instant print quote and print preparation
+- **Basit (simple) mode**, now the default: plain-Turkish panel for beginners (add shape, size in mm, colour, move on bed, turn, lay down, copy, delete, make cup, drill hole, round corners, join all, live price and order). Switch to Gelişmiş any time; choice is remembered, `?mod=` overrides. First visit clears the large advanced demo scene and shows a three-step guide.
 - **New Baskı (print) tab in DreamDesign**: printer presets and custom bed, fit check with shrink-to-fit, overhang/support analysis with red highlight, support grams and bed contact, *lay with least support* auto-orientation (undoable), tablaya oturt, live price, hand-off to the quote page.
 - Shared `printAnalyze` / `bestDown` in `app/src/quote/price.js` (DreamDesign and quote page give the same price); support material is part of the price.
 - **New page `docs/bastir.html`**: upload STL/OBJ, resize (slider or mm), choose material, colour, strength and quantity, see the print price live. Plain Turkish, large touch targets, works on phones.

@@ -8,6 +8,19 @@
 
 > **Durum: beta (v0.1).** Çalışıyor ve test edildi ama genç bir proje. Arayüz şimdilik **yalnızca Türkçe**; İngilizce arayüz yol haritasının ilk maddesi.
 
+## Basit mod: hiç bilmeyen biri için
+
+DreamDesign ilk açılışta **Basit** modda açılır (sol üstte *Basit / Gelişmiş* anahtarı; seçim hatırlanır, `?mod=basit` ya da `?mod=gelismis` ile de seçilir). Teknik kelime yok, büyük düğmeler var:
+
+- **Şekil ekle:** kutu, yuvarlak kutu, silindir, küre, koni ya da dosyadan aç.
+- **Ölçüsünü yaz** (mm): genişlik, derinlik, yükseklik; istersen hepsi aynı oranda değişsin.
+- **Renk seç**, **yerini değiştir** (yalnız tabla üstünde), **döndür**, **yan yatır**, **kopyala**, **sil**.
+- **Kaba çevir:** içini oyup üstü açık kap yapar (kalemlik, saksı). **Delik aç:** yere tıkla, çapı yaz. **Köşeleri yuvarla.**
+- **Hepsini tek parça yap:** üst üste konan şekilleri birleştirir.
+- Altta her zaman **tahmini baskı fiyatı** ve **Fiyat al ve sipariş ver**.
+
+Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey olduğu yerde durur.
+
 ## Neler yapabilirsin
 
 - **Çoklu görünümden model** – ön, yan ve/veya üst fotoğraf ya da çizim ver; siluetler kesiştirilip gerçek ölçülü bir katı çıkar. Tek görünüm varsa şekil şişirilir, derinliği sen belirlersin.
