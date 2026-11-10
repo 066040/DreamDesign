@@ -54,6 +54,13 @@ Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey old
 
 Derleme: `node app/src/quote/build.js` → `docs/bastir.html`.
 
+## 3D Dream mağaza sayfası
+
+**[docs/magaza/](https://066040.github.io/DreamDesign/magaza/)**: 3D baskı işinin vitrini. Ana sayfa, nasıl çalışır, dosyası olmayanlar için parça tasarımı (eski araba parçaları), malzemeler, kendi tasarımlar (yakında) ve DreamDesign'a geçiş. "Fiyat al" düğmeleri `bastir.html`'e gider.
+
+- WhatsApp düğmeleri sayfanın sonundaki `SITE.whatsapp` numarasını kullanır; boşken "yakında açılıyor" der. `QUOTE_CFG.whatsapp` ile aynı numarayı yaz.
+- Derleme gerekmez, tek dosya. Kendi domainine taşırken `docs` klasörü Vercel/Netlify'da olduğu gibi yayınlanabilir.
+
 ## Hızlı başlangıç
 
 ### 1. Sadece tasarım araçları (kurulum yok)

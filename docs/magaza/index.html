@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Dream – Ankara'dan 3D baskı, parça tasarımı</title>
+<meta name="description" content="Modelini yükle, fiyatını hemen gör. Dosyan yoksa kırılan parçanın fotoğrafını gönder, ölçüp tasarlayıp basalım. PLA, PETG ve araç içi için ASA.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* 3D Dream mağaza sayfası.
+   Fikir: sayfanın tek gösterişli yeri baskı tablası. Başlık tablanın üstüne katman katman "basılır".
+   Renkler fiyat sayfasıyla (bastir.html) aynı: aynı marka, aynı tabla rengi. */
+:root{
+ --paper:#eef0ee;   /* sayfa zemini */
+ --panel:#fbfcfb;   /* kutular */
+ --ink:#1d232b;     /* yazı */
+ --mut:#5b6470;     /* ikincil yazı */
+ --line:#d5d9d6;    /* çizgiler */
+ --acc:#0e6e61;     /* tek vurgu: düğmeler, bağlantılar */
+ --acc2:#e3f0ed;
+ --plate:#b8975a;   /* dokulu PEI tabla */
+ --plate-dk:#8f7444;
+ color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px;border-radius:4px}
+h1,h2,h3,.mark{font-family:Archivo,system-ui,sans-serif;font-stretch:118%;letter-spacing:-.015em;line-height:1.05;margin:0}
+h2{font-size:clamp(28px,4vw,40px);font-weight:750;margin-bottom:14px}
+h3{font-size:21px;font-weight:700;font-stretch:105%;letter-spacing:0}
+p{margin:0 0 14px;max-width:62ch}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:var(--panel);padding:8px 12px;z-index:10}
+
+/* Üst çubuk */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0}
+.mark{font-size:24px;font-weight:800;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:10px}
+.mark svg{flex:none}
+nav ul{display:flex;gap:6px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+nav a{display:block;padding:8px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:16px}
+nav a:hover{background:var(--panel)}
+nav a.cta{background:var(--ink);color:var(--panel)}
+nav a.cta:hover{background:#333b45}
+@media (max-width:760px){nav li:not(.keep){display:none}}
+
+/* Tabla: sayfanın asıl görseli */
+.plate{position:relative;border-radius:18px;padding:clamp(28px,6vw,72px) clamp(22px,5vw,64px) clamp(26px,4vw,48px);
+ background:
+  radial-gradient(circle at 20% 30%,rgba(255,255,255,.18) 0 1px,transparent 1.5px) 0 0/7px 7px,
+  radial-gradient(circle at 70% 60%,rgba(0,0,0,.10) 0 1px,transparent 1.5px) 0 0/9px 9px,
+  linear-gradient(160deg,#c3a266,var(--plate) 55%,#a9884e);
+ box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),inset 0 -6px 0 var(--plate-dk);
+ overflow:hidden}
+/* tablanın köşelerindeki hizalama işaretleri, gerçek tablalardaki gibi */
+.plate::before,.plate::after{content:"";position:absolute;width:22px;height:22px;border:2px solid rgba(29,35,43,.28)}
+.plate::before{left:14px;top:14px;border-right:0;border-bottom:0}
+.plate::after{right:14px;top:14px;border-left:0;border-bottom:0}
+.plate small{position:absolute;right:20px;bottom:16px;font-size:13px;color:rgba(29,35,43,.55)}
+@media (max-width:700px){.plate small{position:static;display:block;margin-top:18px}}
+.print{font-size:clamp(44px,8.6vw,108px);font-weight:800;max-width:11.5ch;
+ /* katman çizgileri: 0.2 mm katman yüksekliği gibi ince yatay çizgiler */
+ background:repeating-linear-gradient(180deg,var(--ink) 0 3px,#3a434f 3px 4px);
+ -webkit-background-clip:text;background-clip:text;color:transparent;
+ animation:layers 1.9s steps(28,end) .25s both}
+@keyframes layers{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.print{animation:none}}
+.lead{font-size:clamp(18px,2vw,21px);max-width:44ch;margin-top:22px;color:var(--ink)}
+.acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:12px 22px;border-radius:12px;font-weight:700;font-size:18px;text-decoration:none;border:0;cursor:pointer;font-family:inherit}
+.btn.main{background:var(--acc);color:#fff}
+.btn.main:hover{filter:brightness(1.08)}
+.btn.alt{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(29,35,43,.2)}
+.btn.alt:hover{box-shadow:inset 0 0 0 2px var(--ink)}
+
+section{padding:72px 0 0}
+.intro{color:var(--mut);font-size:19px}
+
+/* Nasıl çalışır: gerçekten sıralı bir süreç, o yüzden numaralı */
+.steps{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink)}
+.steps li{padding:18px 18px 0 0;counter-increment:s}
+.steps li::before{content:counter(s);display:block;font:800 44px/1 Archivo,sans-serif;font-stretch:125%;color:var(--plate-dk);margin-bottom:10px}
+.steps p{font-size:16px;color:var(--mut);margin-top:6px}
+@media (max-width:820px){.steps{grid-template-columns:1fr 1fr;row-gap:12px}}
+@media (max-width:480px){.steps{grid-template-columns:1fr}}
+
+/* Dosyan yok mu */
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.cars{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.cars ul{margin:10px 0 0;padding-left:20px}
+.cars li{margin:4px 0}
+.fine{font-size:15px;color:var(--mut)}
+
+/* Malzemeler: karşılaştırılan şey, o yüzden tablo */
+table{width:100%;border-collapse:collapse;margin-top:22px;font-size:17px}
+th,td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;font-size:15px;color:var(--mut)}
+td:first-child{font-family:Archivo,sans-serif;font-weight:800;font-stretch:115%;font-size:20px;white-space:nowrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
+
+/* Tasarımlar */
+.soon{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+.soon div{border:2px dashed var(--line);border-radius:14px;padding:22px;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end}
+.soon span{font-size:15px;color:var(--mut)}
+@media (max-width:700px){.soon{grid-template-columns:1fr}}
+
+/* DreamDesign */
+.dd{display:grid;grid-template-columns:.9fr 1.1fr;gap:36px;align-items:center;background:var(--ink);color:#e8ebe9;border-radius:18px;padding:clamp(24px,4vw,44px);margin-top:72px}
+.dd a.btn.main{background:#4cc1ad;color:#0c1714}
+.dd p{color:#c4cbd2}
+.dd img{width:100%;height:auto;border-radius:10px;display:block}
+@media (max-width:820px){.dd{grid-template-columns:1fr}}
+
+footer{margin-top:72px;padding:28px 0 40px;border-top:1px solid var(--line);font-size:15px;color:var(--mut);display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:16px;max-width:calc(100% - 32px);display:none;z-index:20}
+#toast.on{display:block}
+</style>
+</head>
+<body>
+<a class="skip" href="#ana">İçeriğe geç</a>
+<div class="wrap">
+ <header class="top">
+  <a class="mark" href="./" aria-label="3D Dream ana sayfa">
+   <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="2" y="21" width="26" height="6" rx="1.5" fill="#b8975a"/><rect x="7" y="16" width="16" height="4" fill="#1d232b"/><rect x="9" y="11" width="12" height="4" fill="#1d232b"/><rect x="11" y="6" width="8" height="4" fill="#0e6e61"/></svg>
+   3D Dream</a>
+  <nav aria-label="Ana menü"><ul>
+   <li><a href="#nasil">Nasıl çalışır</a></li>
+   <li><a href="#parca">Parça yaptır</a></li>
+   <li><a href="#malzeme">Malzemeler</a></li>
+   <li><a href="../">Kendin tasarla</a></li>
+   <li class="keep"><a class="cta" href="../bastir.html">Fiyat al</a></li>
+  </ul></nav>
+ </header>
+
+ <main id="ana">
+  <div class="plate">
+   <h1 class="print">Aklındaki parçayı basıyoruz.</h1>
+   <p class="lead">Modelini yükle, boyutunu ve malzemesini seç, fiyatını hemen gör. Dosyan yoksa kırılan parçanın fotoğrafını gönder; ölçüp tasarlayıp basalım.</p>
+   <div class="acts">
+    <a class="btn main" href="../bastir.html">Modelini yükle, fiyatını gör</a>
+    <a class="btn alt" href="#" data-wa="Merhaba, bir parçam var ama 3D dosyası yok. Fotoğrafını gönderiyorum.">Fotoğrafını gönder</a>
+   </div>
+   <small>Bambu Lab P1S tablası, 256 × 256 × 256 mm</small>
+  </div>
+
+  <section id="nasil" aria-labelledby="h-nasil">
+   <h2 id="h-nasil">Nasıl çalışır</h2>
+   <ol class="steps">
+    <li><h3>Modelini yükle</h3><p>STL ya da OBJ dosyanı sürükle bırak. Model, gerçek ölçüsüyle yazıcı tablasının üstünde görünür.</p></li>
+    <li><h3>Boyut ve malzeme seç</h3><p>Kaydırıcıyla büyüt, küçült. Malzemeyi, rengi ve sağlamlığı seç; fiyat anında değişir.</p></li>
+    <li><h3>WhatsApp'tan onayla</h3><p>Siparişin özetiyle birlikte mesaj olarak gelir. Son kontrolü birlikte yapar, ödemeyi konuşuruz.</p></li>
+    <li><h3>Basılır, kargolanır</h3><p>Parçan basılır, destekleri temizlenir ve kargoya verilir. Ankara içinde elden teslim de olur.</p></li>
+   </ol>
+  </section>
+
+  <section id="parca" aria-labelledby="h-parca">
+   <div class="split">
+    <div>
+     <h2 id="h-parca">Dosyan yok mu? Parçanı gönder.</h2>
+     <p class="intro">Çoğu insanın elinde 3D dosya olmaz; elinde kırılmış bir klips, kaybolmuş bir kapak vardır. Parçanın ya da kırık yerin fotoğrafını, yanına bir cetvel koyarak gönder. Ölçüleri birlikte çıkarır, parçayı sıfırdan tasarlar ve basarız.</p>
+     <p>Tasarım ücreti parçanın zorluğuna göre değişir; basmadan önce fiyatı söylerim, onaylamazsan ödeme yok.</p>
+     <div class="acts"><a class="btn main" href="#" data-wa="Merhaba, parça tasarlatmak istiyorum. Fotoğrafını ve ölçülerini gönderiyorum.">Parçanın fotoğrafını gönder</a></div>
+    </div>
+    <div class="cars">
+     <h3>Eski arabalar için</h3>
+     <p class="fine" style="margin-top:8px">Toros, Şahin, Doğan, Kartal gibi artık parçası üretilmeyen arabaların küçük plastik parçaları:</p>
+     <ul>
+      <li>Klips, kapak ve mandallar</li>
+      <li>Ayna vidası kapakları</li>
+      <li>Havalandırma kanatçıkları ve düğmeler</li>
+      <li>Telefon, bardak ve kart tutucular</li>
+     </ul>
+     <p class="fine" style="margin:14px 0 0">Araç içi parçalar güneşte eğilmesin diye ASA ile basılır. Fren, direksiyon, emniyet kemeri gibi güvenlik parçaları basılmaz.</p>
+    </div>
+   </div>
+  </section>
+
+  <section id="malzeme" aria-labelledby="h-malzeme">
+   <h2 id="h-malzeme">Hangi malzeme?</h2>
+   <p class="intro">Emin değilsen PLA seç; fiyat sayfasında değiştirip farkı hemen görebilirsin.</p>
+   <table>
+    <thead><tr><th scope="col">Malzeme</th><th scope="col">Neye uygun</th><th scope="col">Dayanıklılık</th></tr></thead>
+    <tbody>
+     <tr><td>PLA</td><td>Ev içi kullanım: süs eşyası, figür, kutu, kalemlik. En ekonomik, en çok renk seçeneği.</td><td>Güneşte ve sıcak arabada yumuşar</td></tr>
+     <tr><td>PETG</td><td>Daha dayanıklı ve biraz esnek. Mutfak, banyo ve sık kullanılan parçalar.</td><td>Suya ve darbeye karşı iyi</td></tr>
+     <tr><td>ASA</td><td>Araç içi ve dış mekân parçaları. Güneşte rengi solmaz.</td><td>Sıcağa ve güneşe dayanıklı</td></tr>
+    </tbody>
+   </table>
+   <p class="fine" style="margin-top:14px">Renkler: <span class="dot" style="background:#f2f2ee;box-shadow:inset 0 0 0 1px #ccc"></span>beyaz, <span class="dot" style="background:#26282c"></span>siyah, <span class="dot" style="background:#8d939b"></span>gri, <span class="dot" style="background:#c8352e"></span>kırmızı, <span class="dot" style="background:#2a63c9"></span>mavi, <span class="dot" style="background:#2f9a5a"></span>yeşil, <span class="dot" style="background:#e8b923"></span>sarı, <span class="dot" style="background:#e46d24"></span>turuncu.</p>
+  </section>
+
+  <section id="tasarimlar" aria-labelledby="h-tas">
+   <h2 id="h-tas">Kendi tasarımlarım</h2>
+   <p class="intro">Burada satılacak figürler şu an tasarlanıyor. Hazır oldukça buraya ekleyeceğim.</p>
+   <div class="soon">
+    <div><h3>Savaşçı</h3><span>Tasarlanıyor</span></div>
+    <div><h3>Ejderha</h3><span>Tasarlanıyor</span></div>
+    <div><h3>Çocuklar için karakter</h3><span>Tasarlanıyor</span></div>
+   </div>
+  </section>
+
+  <div class="dd">
+   <div>
+    <h2>Kendin tasarlamak ister misin?</h2>
+    <p>DreamDesign, tarayıcıda çalışan ücretsiz tasarım aracımız. Kutu, silindir gibi şekilleri ekle, ölçüsünü milimetre olarak yaz, delik aç; bitince tek tıkla fiyat al.</p>
+    <div class="acts"><a class="btn main" href="../">DreamDesign'ı aç</a></div>
+   </div>
+   <img src="../img/multiview.png" alt="DreamDesign ekranı: ön, yan ve üst görünümden üretilmiş bir araba modeli" width="1360" height="800">
+  </div>
+ </main>
+
+ <footer>
+  <span>3D Dream, Ankara</span>
+  <span><a href="#" data-wa="Merhaba, bir sorum var.">WhatsApp'tan yaz</a></span>
+  <span>Fiyatlar tahminidir; kesin fiyat sipariş onayında söylenir.</span>
+ </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+/* SİTE AYARI: siparişlerin geleceği WhatsApp numarası, ülke koduyla ('905xxxxxxxxx').
+   Fiyat sayfasındaki numara ayrı: app/src/quote/price.js içindeki QUOTE_CFG.whatsapp. İkisini aynı yap. */
+const SITE={whatsapp:''};
+const toast=document.getElementById('toast');let tt;
+function say(t){toast.textContent=t;toast.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),4000)}
+document.querySelectorAll('[data-wa]').forEach(a=>{
+ if(SITE.whatsapp){a.href='https://wa.me/'+SITE.whatsapp+'?text='+encodeURIComponent(a.dataset.wa);a.target='_blank';a.rel='noopener'}
+ else a.addEventListener('click',e=>{e.preventDefault();say('WhatsApp hattı yakında açılıyor. Şimdilik fiyatını fiyat sayfasından görebilirsin.')});
+});
+</script>
+</body>
+</html>
