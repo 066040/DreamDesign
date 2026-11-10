@@ -162,7 +162,7 @@ const hPrev=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,48,1),new THREE.Mesh
 hPrev.renderOrder=14;hPrev.visible=false;scene.add(hPrev);
 function wDiag(p){const b=worldBox(p);return Math.hypot(b.mx[0]-b.mn[0],b.mx[1]-b.mn[1],b.mx[2]-b.mn[2])}
 /* delik geometrisi (dünya): içe doğru yön, başlangıç, boy */
-function holeSpec(){if(!hole||!parts.includes(hole.p))return null;const D=parseFloat($('#hld').value),dep=parseFloat($('#hldep').value)||0;
+function holeSpec(){if(!hole||!parts.includes(hole.p))return null;const fit=hOp==='cut'?(parseFloat($('#hlfit').value)||0):0,D=parseFloat($('#hld').value)+2*fit,dep=parseFloat($('#hldep').value)||0;
  const c=new THREE.Vector3(+$('#hlx').value,+$('#hly').value,+$('#hlz').value);if(!(D>0)||[c.x,c.y,c.z].some(isNaN))return null;
  let dir=hole.n.clone().negate();const ax=$('#hldir').value;
  if(ax!=='n'){const i='xyz'.indexOf(ax),s=Math.sign(dir.getComponent(i))||-1;dir=new THREE.Vector3().setComponent(i,s)}
@@ -182,11 +182,11 @@ async function holeDo(){const s=holeSpec();if(!s){msg('Önce "Delik" modunda yü
  try{if(cage)cageEnd(true);const cyl=cylMesh([s.start.x,s.start.y,s.start.z],[s.dir.x,s.dir.y,s.dir.z],s.L,s.D/2,64);
   const R=await boolArrays(localArrays(p),{P:toLocal(p,cyl.P),I:cyl.I},s.op==='cut'?'subtract':'union',Math.hypot(...p.base),[p.name,'Delik']);
   const np=replaceWith(p,R,p.name);hole.p=np;refresh();look();histMark();holePreview();
-  msg((s.op==='cut'?'Ø'+f(s.D,2)+' mm delik açıldı'+(s.dep>0?', derinlik '+f(s.dep,2)+' mm':' (boydan boya)'):'Ø'+f(s.D,2)+' mm, '+f(s.dep,2)+' mm çıkıntı eklendi')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#hlmsg');return np}
+  msg((s.op==='cut'?'Ø'+f(s.D,2)+' mm delik açıldı'+(s.D!==parseFloat($('#hld').value)?' (geçme payı dahil)':'')+(s.dep>0?', derinlik '+f(s.dep,2)+' mm':' (boydan boya)'):'Ø'+f(s.D,2)+' mm, '+f(s.dep,2)+' mm çıkıntı eklendi')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#hlmsg');return np}
  catch(e){msg(e.message,null,'#hlmsg');return null}
  finally{holeBusy=false}}
 document.querySelectorAll('#hlop button').forEach(b=>b.onclick=()=>{hOp=b.dataset.ho;document.querySelectorAll('#hlop button').forEach(x=>x.classList.toggle('on',x===b));holePreview()});
-['#hld','#hldep','#hlx','#hly','#hlz','#hldir'].forEach(s=>{$(s).addEventListener('input',holePreview);$(s).addEventListener('change',holePreview)});
+['#hld','#hldep','#hlx','#hly','#hlz','#hldir','#hlfit'].forEach(s=>{$(s).addEventListener('input',holePreview);$(s).addEventListener('change',holePreview)});
 $('#hlgo').onclick=holeDo;
 let down0=null;
 addEventListener('pointerup',e=>{if(mode!=='hole'||e.target!==cv||e.button!==0||!down0)return;const m=Math.hypot(e.clientX-down0[0],e.clientY-down0[1])>4;down0=null;if(!m)holeClick(e)});

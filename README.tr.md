@@ -32,6 +32,8 @@ Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey old
 - **Kes, birleştir, ayna kopya, kopyala** – kapaklı tam düzlem kesimi, birleştirme.
 - **İstediğin gibi gör** – boyalı, üçgen iskelet, ana hat, kesit çizgileri, orta hat; perspektif ya da gerçek dik görünüm; tek tuşla X/Y/Z; ızgara ve canlı ölçüler.
 - **Çizim → katı** – çizgi, dikdörtgen, daire ve yazılan ölçülerle 2B çizim; ekstrüde ya da döndürerek parça yap, fotoğraf ana hattını gerçek boyutta çıkar.
+- **Geçme yuvası (takma çıkarma)** – kapak, pim, geçme parça: girecek parçayı gövdenin içine yerleştir, gövdede ondan her yönde 0,1–0,5 mm büyük bir yuva açılır (Sıkı / Normal / Bol / Serbest). Delik aracında da pim ya da vida için geçme payı seçilebilir.
+- **Kenarları yuvarla / pah kır** – dış kenarlar, iç köşeler ya da hepsi; her şekilde çalışır. İnce duvarı silecek ya da dar boşluğu dolduracak bir yarıçapta işlem uygulanmaz ve nedeni yazılır. Hesap arka planda yürür, sayfa donmaz; uzun sürerse *Durdur*.
 - **Montaj** – parçaları modele sürükleyip bırak (yüzeye oturur); dönel ve kayar eklemler, pozlar.
 - **Mühendislik hesapları** – hacim, malzemeye göre kütle, ağırlık merkezi; hava aracı için asılı kalma gücü, kanat yükü, süre, tutunma hızı.
 - **Ölçüm** – uzaklık için iki, açı için üç noktaya tıkla; ölçüler parçasına bağlı kalır. Bir kenarın üstüne gelince boyu ve yüzleri arasındaki açı görünür.
@@ -97,7 +99,7 @@ Sunucu ayarları (ortam değişkenleri): `TSR_DEVICE=cpu`, `TSR_RES` (ağ çöz�
 ## Dürüst sınırlar
 
 - **Tek fotoğraf nesnenin arkasını göstermez.** TripoSR arka yüzü tahmin eder; sonuç makul bir modeldir, ölçüm değildir. Ölçülü sonuç için iki ya da üç görünüm kullan.
-- Boolean işlemleri ve delik kapalı (su geçirmez) yüzey ister; yapay zeka ağlarında önce *Yüzey temizliği* gerekebilir. Çok girintili kesitlerde kesim kapağı kusurlu olabilir. Yuvarlatma şimdilik yalnız yuvarlak kutuda var, her kenarda değil.
+- Boolean işlemleri ve delik kapalı (su geçirmez) yüzey ister; yapay zeka ağlarında önce *Yüzey temizliği* gerekebilir. Çok girintili kesitlerde kesim kapağı kusurlu olabilir. Kenar yuvarlatma tek tek kenar seçmez; seçili parçanın tüm dış (ya da iç) kenarlarına uygulanır.
 - Çizim alanında kısıt çözücü ve delik yok.
 - Hacim ve kütle kapalı yüzey varsayar; yapay zeka ağlarında yaklaşık çıkar.
 - El hareketi çok sayıda gerçek kamerada denenmedi.
@@ -118,7 +120,7 @@ python tests/test_meshfix.py   # gerekir: numpy trimesh scikit-image
 1. İngilizce arayüz (i18n) ve daha çok dil
 2. Şablon uydurma – araba / uçak / insansı iskeletinden başlayıp siluetlere oturtma
 3. Takılabilir, daha güçlü görüntüden-3D arka uçları (yerel ya da bulut)
-4. Her kenarda yuvarlatma / pah, çizim kısıtları, çizimde delikler
+4. Tek bir kenarı seçerek yuvarlatma / pah, çizim kısıtları, çizimde delikler
 5. Mobil / dokunmatik iyileştirmeler, örnek projeler
 
 ## Lisans

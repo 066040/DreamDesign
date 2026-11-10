@@ -42,8 +42,8 @@ function sPanel(){if(uiMode!=='simple')return;const p=sel&&parts.includes(sel)?s
  const box=$('#sColors');if(box.dataset.for!==String(p.id)||box.dataset.col!==p.color){box.dataset.for=p.id;box.dataset.col=p.color;box.innerHTML='';
   S_COLORS.forEach(([n,h])=>{const b=document.createElement('button');b.style.background=h;b.title=n;b.setAttribute('aria-label',n);b.setAttribute('role','radio');
    b.setAttribute('aria-checked',String(p.color.toLowerCase()===h));b.onclick=()=>{sColor(p,h);histMark();sPanel()};box.append(b)})}
- const isBox=p.type==='box'||p.type==='rbox';$('#sRoundGo').disabled=!isBox;
- $('#sRoundTip').textContent=isBox?'Kutunun keskin köşelerini yuvarlatır.':'Köşe yuvarlama şimdilik yalnız kutuda çalışıyor.';
+ const isBox=p.type==='box'||p.type==='rbox';$('#sRoundGo').disabled=false;
+ $('#sRoundTip').textContent=isBox?'Kutunun keskin köşelerini yuvarlatır.':'Şeklin keskin dış kenarlarını yuvarlatır. Birkaç saniye sürebilir.';
  $('#sMove').setAttribute('aria-pressed',String(mode==='move'));sAria()}
 function sAria(){[['#sCupBtn','#sCup'],['#sHoleBtn','#sHole'],['#sRoundBtn','#sRound']].forEach(([b,pn])=>$(b).setAttribute('aria-expanded',String(!$(pn).hidden)))}
 function sOpenPanel(id){['#sCup','#sHole','#sRound'].forEach(x=>{if(x!==id)$(x).hidden=true});$(id).hidden=!$(id).hidden;
@@ -86,12 +86,13 @@ $('#sHoleGo').onclick=async()=>{if(sBusy)return;sHoleSync();sBusy=true;sMsg('Del
  try{const np=await holeDo();if(np){sMsg('Ø'+f(+$('#sHoleD').value,1)+' mm delik açıldı. Başka yere tıklayıp bir delik daha açabilirsin.','var(--ok)');$('#sHoleGo').disabled=true;hole=null;holePreview()}
   else sMsg($('#hlmsg').textContent||'Delik açılamadı.','var(--warn)')}finally{sBusy=false;sPanel()}};
 
-/* köşe yuvarla: kutu → yuvarlak kutu (aynı ölçü ve yer) */
+/* köşe yuvarla: kutu → yuvarlak kutu (aynı ölçü ve yer); diğer şekillerde dış kenarlar Minkowski ile (app11) */
 $('#sRoundGo').onclick=()=>{const p=sel;if(!p)return;const r=Math.max(0,parseFloat($('#sRad').value)||0),mx=Math.min(...p.size)/2;
- if(r>mx)sMsg('En fazla '+f(mx,1)+' mm olabilir; o kadar yuvarladım.','var(--mut)');
+ if(r>mx&&(p.type==='box'||p.type==='rbox'))sMsg('En fazla '+f(mx,1)+' mm olabilir; o kadar yuvarladım.','var(--mut)');
  if(p.type==='rbox')rboxRebuild(p,Math.min(r,mx));
  else if(p.type==='box'){const sz=p.size.slice(),pos=p.pos.slice(),c=p.color,name=p.name;removePart(p);const q=addRBox(sz,Math.min(r,mx),pos);q.name=name;sColor(q,c);if(q.ground)sit(q);select(q)}
- else return;refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
+ else{if(sBusy)return;sBusy=true;roundPart(p,r,'round','out','#sMsg').then(np=>{sBusy=false;if(np){sPanel();sMsg('Kenarlar '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')}});return}
+ refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
 
 /* birleştir: görünen tüm şekilleri sırayla tek parçada topla */
 $('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');

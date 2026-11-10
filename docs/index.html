@@ -271,9 +271,24 @@ summary{cursor:pointer;font-weight:600}
      <div class="two"><div><label>Çap (mm)</label><input type="number" id="hld" value="5" min="0.1" step="0.5"></div><div><label>Derinlik (mm, 0 = boydan boya)</label><input type="number" id="hldep" value="0" min="0" step="0.5"></div></div>
      <label>Merkez (mm, dünya) · X, Y, Z</label><div class="tri"><input type="number" id="hlx" step="0.5"><input type="number" id="hly" step="0.5"><input type="number" id="hlz" step="0.5"></div>
      <label>Yön</label><select id="hldir"><option value="n">Yüzeye dik</option><option value="x">X ekseni</option><option value="y">Y ekseni</option><option value="z">Z ekseni</option></select>
+     <label>Geçme payı (delik bir pim ya da vida için)</label><select id="hlfit"><option value="0">Yok, çap tam yazdığım kadar</option><option value="0.1">Sıkı: çapa +0,2 mm (çakılarak girer)</option><option value="0.2">Normal: çapa +0,4 mm (elle takılır)</option><option value="0.3">Bol: çapa +0,6 mm (rahat döner)</option></select>
      <label class="chk"><input type="checkbox" id="hlsnap" checked>Tıklanan noktayı 0,5 mm'ye yuvarla</label>
      <div class="btnrow"><button class="wide" id="hlgo">Uygula</button></div>
      <div class="msg" id="hlmsg"></div></details>
+    <details id="d-fit"><summary>Geçme yuvası (takma çıkarma)</summary>
+     <p class="note">Kapak, pim, geçme parça… Girecek parçayı gövdenin içine, yuvanın olacağı yere yerleştir. Seçili parçada (gövde) ondan biraz büyük bir yuva açılır; girecek parça yerinde kalır. İkisini ayrı bastırınca birbirine geçer.</p>
+     <label>Girecek parça</label><select id="fitsel"></select>
+     <label>Geçme payı (her yönde boşluk)</label><select id="fitc"><option value="0.1">0,1 mm – Sıkı</option><option value="0.2" selected>0,2 mm – Normal (önerilen)</option><option value="0.3">0,3 mm – Bol</option><option value="0.5">0,5 mm – Serbest</option></select>
+     <p class="note">Sıkı: zorla girer, kendiliğinden çıkmaz. Normal: elle takılır, çıkarılır. Bol: rahat girer çıkar. Serbest: içinde döner, kayar. Yazıcın çok hassas değilse bir üst seçeneği dene.</p>
+     <div class="btnrow"><button class="wide" id="fitgo">Yuvayı aç</button></div>
+     <div class="msg" id="fitmsg"></div></details>
+    <details id="d-round"><summary>Kenarları yuvarla / pah kır</summary>
+     <p class="note">Seçili parçanın keskin kenarlarını yuvarlatır ya da 45° pah kırar. Yarıçap, en ince duvarın yarısından küçük olmalı; yoksa ince yerler silinir ve işlem uygulanmaz.</p>
+     <div class="grp" id="rdk"><button data-rk="round" class="on">Yuvarla</button><button data-rk="chamfer">Pah kır</button></div>
+     <div class="two"><div><label id="rdrl">Yarıçap (mm)</label><input type="number" id="rdr" value="2" min="0.2" step="0.5"></div>
+      <div><label>Hangi kenarlar</label><select id="rdw"><option value="out">Dış kenarlar</option><option value="in">İç köşeler</option><option value="both">Hepsi</option></select></div></div>
+     <div class="btnrow"><button class="wide" id="rdgo">Seçili parçaya uygula</button></div>
+     <div class="msg" id="rdmsg"></div></details>
     <details id="d-cage"><summary>Kafes (önerilen biçim verme)</summary>
      <p class="note">Modelin etrafına bir nokta kafesi kurulur. Noktaları tutup çekersen model pürüzsüzce şekillenir: tavanı alçalt, burnu uzat, kulpu uzat… Üstteki "Kafes" moduna geçince başlar.</p>
      <label>Kafes yoğunluğu (X · Y · Z nokta)</label><div class="tri"><input type="number" id="cgx" min="2" max="10" value="4"><input type="number" id="cgy" min="2" max="10" value="4"><input type="number" id="cgz" min="2" max="10" value="4"></div>
@@ -2352,7 +2367,7 @@ const hPrev=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,48,1),new THREE.Mesh
 hPrev.renderOrder=14;hPrev.visible=false;scene.add(hPrev);
 function wDiag(p){const b=worldBox(p);return Math.hypot(b.mx[0]-b.mn[0],b.mx[1]-b.mn[1],b.mx[2]-b.mn[2])}
 /* delik geometrisi (dünya): içe doğru yön, başlangıç, boy */
-function holeSpec(){if(!hole||!parts.includes(hole.p))return null;const D=parseFloat($('#hld').value),dep=parseFloat($('#hldep').value)||0;
+function holeSpec(){if(!hole||!parts.includes(hole.p))return null;const fit=hOp==='cut'?(parseFloat($('#hlfit').value)||0):0,D=parseFloat($('#hld').value)+2*fit,dep=parseFloat($('#hldep').value)||0;
  const c=new THREE.Vector3(+$('#hlx').value,+$('#hly').value,+$('#hlz').value);if(!(D>0)||[c.x,c.y,c.z].some(isNaN))return null;
  let dir=hole.n.clone().negate();const ax=$('#hldir').value;
  if(ax!=='n'){const i='xyz'.indexOf(ax),s=Math.sign(dir.getComponent(i))||-1;dir=new THREE.Vector3().setComponent(i,s)}
@@ -2372,11 +2387,11 @@ async function holeDo(){const s=holeSpec();if(!s){msg('Önce "Delik" modunda yü
  try{if(cage)cageEnd(true);const cyl=cylMesh([s.start.x,s.start.y,s.start.z],[s.dir.x,s.dir.y,s.dir.z],s.L,s.D/2,64);
   const R=await boolArrays(localArrays(p),{P:toLocal(p,cyl.P),I:cyl.I},s.op==='cut'?'subtract':'union',Math.hypot(...p.base),[p.name,'Delik']);
   const np=replaceWith(p,R,p.name);hole.p=np;refresh();look();histMark();holePreview();
-  msg((s.op==='cut'?'Ø'+f(s.D,2)+' mm delik açıldı'+(s.dep>0?', derinlik '+f(s.dep,2)+' mm':' (boydan boya)'):'Ø'+f(s.D,2)+' mm, '+f(s.dep,2)+' mm çıkıntı eklendi')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#hlmsg');return np}
+  msg((s.op==='cut'?'Ø'+f(s.D,2)+' mm delik açıldı'+(s.D!==parseFloat($('#hld').value)?' (geçme payı dahil)':'')+(s.dep>0?', derinlik '+f(s.dep,2)+' mm':' (boydan boya)'):'Ø'+f(s.D,2)+' mm, '+f(s.dep,2)+' mm çıkıntı eklendi')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#hlmsg');return np}
  catch(e){msg(e.message,null,'#hlmsg');return null}
  finally{holeBusy=false}}
 document.querySelectorAll('#hlop button').forEach(b=>b.onclick=()=>{hOp=b.dataset.ho;document.querySelectorAll('#hlop button').forEach(x=>x.classList.toggle('on',x===b));holePreview()});
-['#hld','#hldep','#hlx','#hly','#hlz','#hldir'].forEach(s=>{$(s).addEventListener('input',holePreview);$(s).addEventListener('change',holePreview)});
+['#hld','#hldep','#hlx','#hly','#hlz','#hldir','#hlfit'].forEach(s=>{$(s).addEventListener('input',holePreview);$(s).addEventListener('change',holePreview)});
 $('#hlgo').onclick=holeDo;
 let down0=null;
 addEventListener('pointerup',e=>{if(mode!=='hole'||e.target!==cv||e.button!==0||!down0)return;const m=Math.hypot(e.clientX-down0[0],e.clientY-down0[1])>4;down0=null;if(!m)holeClick(e)});
@@ -2562,8 +2577,8 @@ function sPanel(){if(uiMode!=='simple')return;const p=sel&&parts.includes(sel)?s
  const box=$('#sColors');if(box.dataset.for!==String(p.id)||box.dataset.col!==p.color){box.dataset.for=p.id;box.dataset.col=p.color;box.innerHTML='';
   S_COLORS.forEach(([n,h])=>{const b=document.createElement('button');b.style.background=h;b.title=n;b.setAttribute('aria-label',n);b.setAttribute('role','radio');
    b.setAttribute('aria-checked',String(p.color.toLowerCase()===h));b.onclick=()=>{sColor(p,h);histMark();sPanel()};box.append(b)})}
- const isBox=p.type==='box'||p.type==='rbox';$('#sRoundGo').disabled=!isBox;
- $('#sRoundTip').textContent=isBox?'Kutunun keskin köşelerini yuvarlatır.':'Köşe yuvarlama şimdilik yalnız kutuda çalışıyor.';
+ const isBox=p.type==='box'||p.type==='rbox';$('#sRoundGo').disabled=false;
+ $('#sRoundTip').textContent=isBox?'Kutunun keskin köşelerini yuvarlatır.':'Şeklin keskin dış kenarlarını yuvarlatır. Birkaç saniye sürebilir.';
  $('#sMove').setAttribute('aria-pressed',String(mode==='move'));sAria()}
 function sAria(){[['#sCupBtn','#sCup'],['#sHoleBtn','#sHole'],['#sRoundBtn','#sRound']].forEach(([b,pn])=>$(b).setAttribute('aria-expanded',String(!$(pn).hidden)))}
 function sOpenPanel(id){['#sCup','#sHole','#sRound'].forEach(x=>{if(x!==id)$(x).hidden=true});$(id).hidden=!$(id).hidden;
@@ -2606,12 +2621,13 @@ $('#sHoleGo').onclick=async()=>{if(sBusy)return;sHoleSync();sBusy=true;sMsg('Del
  try{const np=await holeDo();if(np){sMsg('Ø'+f(+$('#sHoleD').value,1)+' mm delik açıldı. Başka yere tıklayıp bir delik daha açabilirsin.','var(--ok)');$('#sHoleGo').disabled=true;hole=null;holePreview()}
   else sMsg($('#hlmsg').textContent||'Delik açılamadı.','var(--warn)')}finally{sBusy=false;sPanel()}};
 
-/* köşe yuvarla: kutu → yuvarlak kutu (aynı ölçü ve yer) */
+/* köşe yuvarla: kutu → yuvarlak kutu (aynı ölçü ve yer); diğer şekillerde dış kenarlar Minkowski ile (app11) */
 $('#sRoundGo').onclick=()=>{const p=sel;if(!p)return;const r=Math.max(0,parseFloat($('#sRad').value)||0),mx=Math.min(...p.size)/2;
- if(r>mx)sMsg('En fazla '+f(mx,1)+' mm olabilir; o kadar yuvarladım.','var(--mut)');
+ if(r>mx&&(p.type==='box'||p.type==='rbox'))sMsg('En fazla '+f(mx,1)+' mm olabilir; o kadar yuvarladım.','var(--mut)');
  if(p.type==='rbox')rboxRebuild(p,Math.min(r,mx));
  else if(p.type==='box'){const sz=p.size.slice(),pos=p.pos.slice(),c=p.color,name=p.name;removePart(p);const q=addRBox(sz,Math.min(r,mx),pos);q.name=name;sColor(q,c);if(q.ground)sit(q);select(q)}
- else return;refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
+ else{if(sBusy)return;sBusy=true;roundPart(p,r,'round','out','#sMsg').then(np=>{sBusy=false;if(np){sPanel();sMsg('Kenarlar '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')}});return}
+ refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
 
 /* birleştir: görünen tüm şekilleri sırayla tek parçada topla */
 $('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
@@ -2643,6 +2659,122 @@ addEventListener('pointerup',()=>sPriceSoon());
 /* basit modda seçili şekil parlamasın: seçtiği renk aynen görünsün (seçimi ölçü çizgileri gösterir) */
 const _lookS=look;look=function(){_lookS();if(uiMode==='simple')parts.forEach(p=>p.solidMat.emissive.setHex(0))};
 {const q=new URLSearchParams(location.search).get('mod');setUI(q==='gelismis'?'adv':q==='basit'?'simple':(sStore.get()||'simple'))}
+
+/* ================= Geçme yuvası (takma çıkarma payı) ve kenar yuvarlatma / pah =================
+   İkisi de Minkowski işlemleriyle (manifold-3d) yapılır, dünya ölçüsünde (mm) çalışır:
+   - Geçme yuvası: gövde − (girecek parça ⊕ küre(c)). Yuva, parçadan her yönde c kadar büyük olur.
+   - Dış kenarları yuvarla: (A ⊖ K) ⊕ K  (açma).  İç köşeleri yuvarla: (A ⊕ K) ⊖ K  (kapama).
+     Hepsi: açma ∪ (kapama − A). K küre ise yuvarlatma, sekizyüzlü ise 45° pah olur.
+   Sınır: açma, 2r'den ince duvarları da siler; kapama, 2r'den dar boşlukları da doldurur.
+   Bu yüzden sonuç hacmi beklenenden çok değişirse işlem uygulanmaz ve nedeni söylenir.
+   Hesap tarayıcıda ayrı bir iş parçacığında (Worker) çalışır: sayfa donmaz, "Durdur" ile kesilir.
+   Worker yoksa (testler) aynı kod sayfada çalışır. mf* fonksiyonları yalnız `w`yi kullanır,
+   dışarıdan hiçbir şeye dokunmaz; Worker'a metin olarak kopyalanırlar. */
+function mfKernel(w,kind,r){
+ if(kind==='chamfer')return w.Manifold.sphere(r,4);             // 4 bölmeli küre = sekizyüzlü, köşeleri eksenlerde r uzakta
+ const seg=Math.max(8,Math.min(16,Math.round(r*4)));           // az bölme = hızlı; 1 mm'de yüzey adımı ~0,4 mm, baskıda görünmez
+ return w.Manifold.sphere(r/Math.cos(Math.PI/seg),seg)}        // çokgen küre içeride kalmasın: yüzeyleri en az r uzakta
+function mfMesh(w,P,I,tol){const m=new w.Mesh({numProp:3,vertProperties:P,triVerts:I});m.merge();
+ let a;try{a=new w.Manifold(m)}catch(e){throw new Error('Parça kapalı (su geçirmez) bir yüzey değil. "Yüzey temizliği" ile kırıntıları sil, yüzleri düzelt ya da parçayı yeniden oluştur.')}
+ const s=a.simplify(tol);a.delete();return s}
+function mfBox(w,mn,mx){const P=new Float32Array(24),I=Uint32Array.from([0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7]);
+ for(let i=0;i<8;i++){P[3*i]=(i&1)^((i>>1)&1)?mx[0]:mn[0];P[3*i+1]=i&2?mx[1]:mn[1];P[3*i+2]=i&4?mx[2]:mn[2]}
+ return new w.Manifold(new w.Mesh({numProp:3,vertProperties:P,triVerts:I}))}
+/* aşındırma (A ⊖ K). Girintili parçada manifold'un kendi minkowskiDifference'ı çok yavaş;
+   eşdeğeri: kutu − ((genişletilmiş kutu − A) ⊕ K). Dışbükey parçada kendi işlemi hızlı. */
+function mfErode(w,A,K,r,keep,convex){if(convex)return A.minkowskiDifference(K);
+ const b=A.boundingBox(),g=v=>[v[0]??v.x,v[1]??v.y,v[2]??v.z],mn=g(b.min),mx=g(b.max),m=2*r+1;
+ const outer=keep(mfBox(w,mn.map(v=>v-m),mx.map(v=>v+m))),inner=keep(mfBox(w,mn,mx));
+ return inner.subtract(keep(keep(outer.subtract(A)).minkowskiSum(K)))}
+/* hacimsiz kırıntıları at (Minkowski birleşimlerinde kalan sıfır kalınlıkta yapraklar) */
+function mfClean(R,eps,keep){const pcs=R.decompose();if(pcs.length<2){pcs.forEach(q=>q.delete());return R}let o=null;
+ for(const q of pcs){keep(q);if(q.volume()>eps)o=o?keep(o.add(q)):q}return o||R}
+/* tek iş: {op:'fit',A,B,c} ya da {op:'round',A,r,kind,where}; A/B: {P,I,tol} (dünya, kaynaklanmış) */
+function mfJob(w,J){const ms=[],keep=m=>{ms.push(m);return m};
+ try{const A=keep(mfMesh(w,J.A.P,J.A.I,J.A.tol)),vol0=A.volume();let R;
+  if(J.op==='fit'){const B=keep(mfMesh(w,J.B.P,J.B.I,J.B.tol));R=keep(A.subtract(J.c>0?keep(B.minkowskiSum(keep(mfKernel(w,'round',J.c)))):B))}
+  else{const K=keep(mfKernel(w,J.kind,J.r)),convex=Math.abs(keep(A.hull()).volume()-vol0)<vol0*1e-4;
+   const sm=x=>keep(keep(x).simplify(J.r*1e-3));
+   const open=()=>sm(keep(keep(mfErode(w,A,K,J.r,keep,convex)).minkowskiSum(K)));
+   const close=()=>{const d=keep(A.minkowskiSum(K));return sm(mfErode(w,d,K,J.r,keep,convex))};
+   /* hepsi: iç köşe dolgularını ayrı al; düz yüzlerde kalan sıfır kalınlıklı yaprakları at, sonra ekle */
+   R=J.where==='out'?open():J.where==='in'?close():keep(open().add(mfClean(keep(close().subtract(A)),Math.max(1e-3,.02*J.r**3),keep)))}
+  R=mfClean(R,Math.max(1e-3,R.volume()*1e-6),keep);
+  const g=R.getMesh(),np=g.numProp,V=g.vertProperties,n=V.length/np,P=new Float32Array(n*3);
+  for(let i=0;i<n;i++){P[3*i]=V[np*i];P[3*i+1]=V[np*i+1];P[3*i+2]=V[np*i+2]}
+  return{P,I:Uint32Array.from(g.triVerts),vol:R.volume(),vol0}}
+ finally{ms.forEach(m=>{try{m.delete()}catch(_){}})}}
+
+/* ---------- Worker: sayfa donmasın, uzun işlem durdurulabilsin ---------- */
+const MF_URL='https://cdn.jsdelivr.net/npm/manifold-3d@3.5.4/manifold.js';
+let mfW=null,mfWJob=null;
+function mfWorker(){if(mfW)return mfW;
+ const src=`import Mod from '${MF_URL}';const ready=Mod().then(w=>{w.setup();return w});
+${mfKernel}\n${mfMesh}\n${mfBox}\n${mfErode}\n${mfClean}\n${mfJob}
+onmessage=async e=>{try{const w=await ready,r=mfJob(w,e.data);postMessage({ok:1,r},[r.P.buffer,r.I.buffer])}catch(err){postMessage({ok:0,e:String(err&&err.message||err)})}}`;
+ mfW=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})),{type:'module'});return mfW}
+function mfStop(){if(mfW){mfW.terminate();mfW=null}if(mfWJob){const j=mfWJob;mfWJob=null;j.reject(new Error('Durduruldu. Parça değişmedi.'))}}
+function mfRun(J){
+ if(typeof Worker==='undefined'||window.__manifoldLoader)                     // testler: aynı iş sayfada
+  return loadManifold().then(w=>mfJob(w,J));
+ return new Promise((res,rej)=>{const wk=mfWorker();mfWJob={reject:rej};
+  wk.onmessage=e=>{mfWJob=null;e.data.ok?res(e.data.r):rej(new Error(e.data.e))};
+  wk.onerror=()=>{mfWJob=null;mfW=null;rej(new Error('Hesap modülü yüklenemedi (internet gerekli).'))};
+  wk.postMessage(J)})}
+function mfIn(p){const a=worldArrays(p),d=Math.max(wDiag(p),1),wd=weld(a.P,null,a.I,d*1e-6);return{P:wd.P,I:Uint32Array.from(wd.I),tol:d*1e-5}}
+/* sonucu p'nin yerine koy (konum/dönüş/ölçek korunur) */
+/* 15°: yuvarlatma yüzleri 22-45° aralıklı; daha büyük açıda düz yüzle karışıp çizgili görünür */
+function mfReplace(p,R,name){const S=splitSharp(toLocal(p,R.P),null,R.I,15);return replaceWith(p,S,name)}
+/* bekleme yazısı: geçen süre ve Durdur düğmesi */
+function mfWait(out){const el=$(out),t0=Date.now();el.style.color='var(--mut)';                 // düğme bir kez kurulur; yalnız süre yazısı yenilenir
+ el.innerHTML='Hesaplanıyor…<span></span> <button class="sm" type="button">Durdur</button>';el.querySelector('button').onclick=mfStop;
+ const sp=el.querySelector('span'),iv=setInterval(()=>{sp.textContent=' '+Math.round((Date.now()-t0)/1000)+' sn'},1000);return()=>clearInterval(iv)}
+/* ---------- geçme yuvası ---------- */
+const FIT_PRESETS={'0.1':'Sıkı','0.2':'Normal','0.3':'Bol','0.5':'Serbest'};
+let fitBusy=false;
+async function fitPocket(body,peg,c,out){out=out||'#fitmsg';
+ if(!body||!peg||body===peg){msg('Yuva açılacak parçayı seç, "Girecek parça"dan diğerini seç.',null,out);return null}
+ if(!(c>=0&&c<=2)){msg('Geçme payı 0 ile 2 mm arasında olmalı.',null,out);return null}
+ if(fitBusy)return null;fitBusy=true;const done=mfWait(out);
+ try{if(cage)cageEnd(true);
+  const R=await mfRun({op:'fit',A:mfIn(body),B:mfIn(peg),c});done();
+  if(!R.I.length)throw new Error('Sonuç boş: girecek parça gövdenin tamamını kaplıyor.');
+  if(R.vol>R.vol0-1e-3)throw new Error('Parçalar birbirine değmiyor. Girecek parçayı gövdenin içine, yuvanın olacağı yere yerleştir.');
+  if(!parts.includes(body))throw new Error('Gövde bu arada silinmiş.');
+  const np=mfReplace(body,R,body.name);refresh();look();histMark();
+  msg('Yuva açıldı: her yönde '+f(c,2)+' mm boşluk ('+(FIT_PRESETS[String(c)]||'özel')+'). '+peg.name+' yerinde duruyor; ayrı basılınca yuvaya girer.','var(--ok)',out);return np}
+ catch(e){done();msg(e.message,null,out);return null}
+ finally{fitBusy=false}}
+$('#fitgo').onclick=()=>fitPocket(sel,parts.find(q=>q.id===+$('#fitsel').value),parseFloat(String($('#fitc').value).replace(',','.')));
+
+/* ---------- kenarları yuvarla / pah kır ---------- */
+let rdKind='round',rdBusy=false;
+async function roundPart(p,r,kind,where,out){out=out||'#rdmsg';
+ if(!p){msg('Önce bir parça seç.',null,out);return null}
+ if(!(r>0)){msg('Yarıçapı yaz (mm).',null,out);return null}
+ const b=worldBox(p),mn=Math.min(b.mx[0]-b.mn[0],b.mx[1]-b.mn[1],b.mx[2]-b.mn[2]);
+ if(where!=='in'&&r>=mn/2){msg('Bu parça için en fazla '+f(mn/2*.95,1)+' mm olabilir (en ince ölçüsü '+f(mn,1)+' mm).',null,out);return null}
+ if(rdBusy)return null;rdBusy=true;const done=mfWait(out);
+ try{if(cage)cageEnd(true);
+  const R=await mfRun({op:'round',A:mfIn(p),r,kind,where});done();
+  const dv=(R.vol-R.vol0)/R.vol0;
+  if(!R.I.length||dv<-.2)throw new Error('Bu yarıçap parçanın ince duvarlarını ya da küçük çıkıntılarını siliyor. Daha küçük bir yarıçap dene (duvar kalınlığının yarısından az).');
+  if(dv>.2)throw new Error('Bu yarıçap parçadaki dar boşlukları ya da delikleri dolduruyor. Daha küçük bir yarıçap dene ya da yalnız "Dış kenarlar"ı seç.');
+  if(!parts.includes(p))throw new Error('Parça bu arada silinmiş.');
+  const np=mfReplace(p,R,p.name);refresh();look();histMark();
+  const what={out:'Dış kenarlar',in:'İç köşeler',both:'Tüm kenarlar'}[where];
+  msg(what+' '+f(r,2)+' mm '+(kind==='chamfer'?'pah kırıldı':'yuvarlatıldı')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³ ('+(dv>=0?'+':'')+f(dv*100,1)+'%).','var(--ok)',out);return np}
+ catch(e){done();msg(e.message,null,out);return null}
+ finally{rdBusy=false}}
+document.querySelectorAll('#rdk button').forEach(b=>b.onclick=()=>{rdKind=b.dataset.rk;document.querySelectorAll('#rdk button').forEach(x=>x.classList.toggle('on',x===b));
+ $('#rdrl').textContent=rdKind==='chamfer'?'Pah boyu (mm)':'Yarıçap (mm)'});
+$('#rdgo').onclick=()=>roundPart(sel,parseFloat(String($('#rdr').value).replace(',','.')),rdKind,$('#rdw').value);
+
+/* "Girecek parça" listesi: diğer listelerle birlikte yenilensin */
+{const _fill=fillSelects;fillSelects=function(){_fill();const e=$('#fitsel');if(!e)return;const v=e.value;
+ e.innerHTML=parts.filter(p=>p!==sel).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+ if([...e.options].some(o=>o.value===v))e.value=v}}
+fillSelects();
 
 </script>
 </html>

@@ -271,9 +271,24 @@ summary{cursor:pointer;font-weight:600}
      <div class="two"><div><label>Çap (mm)</label><input type="number" id="hld" value="5" min="0.1" step="0.5"></div><div><label>Derinlik (mm, 0 = boydan boya)</label><input type="number" id="hldep" value="0" min="0" step="0.5"></div></div>
      <label>Merkez (mm, dünya) · X, Y, Z</label><div class="tri"><input type="number" id="hlx" step="0.5"><input type="number" id="hly" step="0.5"><input type="number" id="hlz" step="0.5"></div>
      <label>Yön</label><select id="hldir"><option value="n">Yüzeye dik</option><option value="x">X ekseni</option><option value="y">Y ekseni</option><option value="z">Z ekseni</option></select>
+     <label>Geçme payı (delik bir pim ya da vida için)</label><select id="hlfit"><option value="0">Yok, çap tam yazdığım kadar</option><option value="0.1">Sıkı: çapa +0,2 mm (çakılarak girer)</option><option value="0.2">Normal: çapa +0,4 mm (elle takılır)</option><option value="0.3">Bol: çapa +0,6 mm (rahat döner)</option></select>
      <label class="chk"><input type="checkbox" id="hlsnap" checked>Tıklanan noktayı 0,5 mm'ye yuvarla</label>
      <div class="btnrow"><button class="wide" id="hlgo">Uygula</button></div>
      <div class="msg" id="hlmsg"></div></details>
+    <details id="d-fit"><summary>Geçme yuvası (takma çıkarma)</summary>
+     <p class="note">Kapak, pim, geçme parça… Girecek parçayı gövdenin içine, yuvanın olacağı yere yerleştir. Seçili parçada (gövde) ondan biraz büyük bir yuva açılır; girecek parça yerinde kalır. İkisini ayrı bastırınca birbirine geçer.</p>
+     <label>Girecek parça</label><select id="fitsel"></select>
+     <label>Geçme payı (her yönde boşluk)</label><select id="fitc"><option value="0.1">0,1 mm – Sıkı</option><option value="0.2" selected>0,2 mm – Normal (önerilen)</option><option value="0.3">0,3 mm – Bol</option><option value="0.5">0,5 mm – Serbest</option></select>
+     <p class="note">Sıkı: zorla girer, kendiliğinden çıkmaz. Normal: elle takılır, çıkarılır. Bol: rahat girer çıkar. Serbest: içinde döner, kayar. Yazıcın çok hassas değilse bir üst seçeneği dene.</p>
+     <div class="btnrow"><button class="wide" id="fitgo">Yuvayı aç</button></div>
+     <div class="msg" id="fitmsg"></div></details>
+    <details id="d-round"><summary>Kenarları yuvarla / pah kır</summary>
+     <p class="note">Seçili parçanın keskin kenarlarını yuvarlatır ya da 45° pah kırar. Yarıçap, en ince duvarın yarısından küçük olmalı; yoksa ince yerler silinir ve işlem uygulanmaz.</p>
+     <div class="grp" id="rdk"><button data-rk="round" class="on">Yuvarla</button><button data-rk="chamfer">Pah kır</button></div>
+     <div class="two"><div><label id="rdrl">Yarıçap (mm)</label><input type="number" id="rdr" value="2" min="0.2" step="0.5"></div>
+      <div><label>Hangi kenarlar</label><select id="rdw"><option value="out">Dış kenarlar</option><option value="in">İç köşeler</option><option value="both">Hepsi</option></select></div></div>
+     <div class="btnrow"><button class="wide" id="rdgo">Seçili parçaya uygula</button></div>
+     <div class="msg" id="rdmsg"></div></details>
     <details id="d-cage"><summary>Kafes (önerilen biçim verme)</summary>
      <p class="note">Modelin etrafına bir nokta kafesi kurulur. Noktaları tutup çekersen model pürüzsüzce şekillenir: tavanı alçalt, burnu uzat, kulpu uzat… Üstteki "Kafes" moduna geçince başlar.</p>
      <label>Kafes yoğunluğu (X · Y · Z nokta)</label><div class="tri"><input type="number" id="cgx" min="2" max="10" value="4"><input type="number" id="cgy" min="2" max="10" value="4"><input type="number" id="cgz" min="2" max="10" value="4"></div>
