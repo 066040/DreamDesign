@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased – enclosure from a KiCad board
+- **KiCad kartından kutu** (Model tab, or drop a `.kicad_pcb`): reads Edge.Cuts outline (lines, arcs, rects, circles, polygons), board thickness, mounting holes, and each footprint's side, body box and height; KiCad 6–10 files.
+- Builds a tray (outline offset by clearance + wall), standoffs with pilot holes under every mounting hole, wall openings for edge USB / buttons / connectors (chosen per part), and a lipped press-fit lid placed beside the tray, flat side down.
+- Suggests the space below and above the board from the tallest parts and from USB plug size; either board face can point up.
+- Board preview part is excluded from STL/OBJ/GLB export, print preparation and pricing.
+- The generated tray and lid are normal parts: holes, rounding etc. are added and edited through the step list.
+- Tests: `tests/test_pcb.js`.
+
 ## Unreleased – step list (parametric history)
 - **Yapılanlar (step list)**: each part keeps a recipe (base shape + steps). Shown in the Model tab and in simple mode ("Yaptıkların"). *Değiştir* edits a step's size, *Sil* removes it; the part is rebuilt from its base with every remaining step re-applied, and stays where it was.
 - Recorded steps: primitives and rounded box, holes and bosses, round/chamfer, make cup, resize after other steps, 90° turns. Holes are tied to the surface they were drilled into, so a blind hole keeps its depth when the body's height changes.

@@ -95,13 +95,13 @@ $('#sRoundGo').onclick=()=>{const p=sel;if(!p)return;const r=Math.max(0,parseFlo
  refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
 
 /* birleştir: görünen tüm şekilleri sırayla tek parçada topla */
-$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
+$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis&&!p.ghost);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
  try{let a=list[0];for(let i=1;i<list.length;i++){const r=await boolParts('union',a,list[i],false);if(!r)throw new Error($('#bmsg').textContent||'Birleştirilemedi.');a=r}
   a.name='Birleşik parça';refresh();look();histMark();sMsg('Hepsi tek parça oldu.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false;sPanel()}};
 
 /* ---------- canlı fiyat ve sipariş: Baskı sekmesiyle aynı hesap (PLA, normal, görünen tüm şekiller) ---------- */
-function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis),el=$('#sPrice'),inf=$('#sPriceInfo');
+function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis&&!p.ghost),el=$('#sPrice'),inf=$('#sPriceInfo');
  if(!list.length){el.textContent='—';inf.textContent='Önce bir şekil ekle.';return}
  try{const M=prMesh(list),r=printAnalyze(M.P,M.I,[0,0,-1],QUOTE_CFG.overhang),bed=PRINTERS.p1s.bed;
   let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];for(let i=0;i<M.P.length;i+=3)for(let k=0;k<3;k++){const v=M.P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}

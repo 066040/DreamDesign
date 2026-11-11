@@ -11,7 +11,7 @@ let prLast=null,prT=0;
 const prOpen=()=>$('#p-print').classList.contains('on');
 function prBed(){const k=$('#prPrinter').value;$('#prCustom').hidden=k!=='custom';
  return k==='custom'?['#prBx','#prBy','#prBz'].map(s=>Math.max(1,+$(s).value||200)):PRINTERS[k].bed}
-function prTargets(){return $('#prAll').checked?parts.filter(p=>p.vis):(sel&&sel.vis?[sel]:[])}
+function prTargets(){return $('#prAll').checked?parts.filter(p=>p.vis&&!p.ghost):(sel&&sel.vis?[sel]:[])}
 /* tüm hedeflerin dünya ağı, gerçek hacim ve yüzey alanı */
 function prMesh(list){const m=catMesh(list.map(p=>worldArrays(p)));let vol=0,area=0;
  list.forEach(p=>{const mi=massInfo(p),g=p.mesh.geometry,sc=p.mesh.scale;vol+=mi.vol;area+=areaStats(g.attributes.position.array,g.index.array,[sc.x,sc.y,sc.z]).A});

@@ -39,6 +39,7 @@ Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey old
 - **Ölçüm** – uzaklık için iki, açı için üç noktaya tıkla; ölçüler parçasına bağlı kalır. Bir kenarın üstüne gelince boyu ve yüzleri arasındaki açı görünür.
 - **Baskıya hazırla (Baskı sekmesi)** – yazıcını seç (P1S, A1 mini, Ender-3, Prusa MK4… ya da kendi ölçün); sığıyor mu gör, sığmıyorsa tek tıkla küçült. Destek isteyen yerler kırmızı görünür, destek gramı ve tablaya değen alan hesaplanır. *En az destekle yatır* parçayı en az destek isteyen yöne çevirir. Tahmini baskı fiyatı ve tek tıkla *Fiyat sayfasında aç ve sipariş ver*.
 - **Yuvarlak kutu** – köşe yarıçapı gerçek mm olan kutu; cihaz kasaları için.
+- **KiCad kartından kutu** – `.kicad_pcb` dosyasını seç ya da bırak: kartın çevresi, kalınlığı, vida delikleri ve parça yükseklikleri okunur; karta oturan gövde, vida ayakları, kenardaki USB / düğme / bağlantı için duvar açıklıkları ve baskıya hazır geçmeli kapak çıkarılır. Kart, içinde önizleme olarak görünür ve dışa aktarmaya girmez.
 - **Yapılanlar listesi** – her parça nasıl yapıldığını hatırlar: *Kutu 25 × 25 × 10 mm → Delik Ø3 → Pah 1 mm*. Sonradan herhangi bir adımın ölçüsünü değiştir ya da adımı sil; parça baştan kurulur, kalan adımlar kendiliğinden yeniden uygulanır. Projeyle birlikte kaydedilir, geri al kapsar.
 - **Her şeyi geri al** – `Ctrl+Z` / `Ctrl+Y` düzenleme, çizim, eklem ve ölçümleri kapsar.
 - **İçe/dışa aktar** – GLB, OBJ, STL açılır; STL, OBJ, GLB ve proje dosyası kaydedilir.
@@ -102,6 +103,7 @@ Sunucu ayarları (ortam değişkenleri): `TSR_DEVICE=cpu`, `TSR_RES` (ağ çöz�
 - **Tek fotoğraf nesnenin arkasını göstermez.** TripoSR arka yüzü tahmin eder; sonuç makul bir modeldir, ölçüm değildir. Ölçülü sonuç için iki ya da üç görünüm kullan.
 - Boolean işlemleri ve delik kapalı (su geçirmez) yüzey ister; yapay zeka ağlarında önce *Yüzey temizliği* gerekebilir. Çok girintili kesitlerde kesim kapağı kusurlu olabilir. Kenar yuvarlatma tek tek kenar seçmez; seçili parçanın tüm dış (ya da iç) kenarlarına uygulanır.
 - Yapılanlar listesi ağ üstünde bir tariftir, tam bir parametrik CAD çekirdeği değildir. Kaydedilen adımlar: hazır şekiller, delik ve çıkıntı, yuvarlatma/pah, kaba çevirme, boyut değişikliği, 90° çevirme. Serbest biçim değişiklikleri (kafes, esnet, kenar çekme, kesme, başka parçayla birleştirme, baskı için otomatik yatırma) kendilerinden önceki adımları kilitler: listede görünür ama artık değiştirilemez. Delikler parçanın kenarına değil merkezine göre yerini korur.
+- KiCad kutusu yalnız kart dosyasını okur, 3B modelleri değil: parça yüksekliği model dosyasının adından (`…-H1.8…`) ya da yaygın kılıf tablosundan alınır, bulunamazsa 2 mm sayılır; önerilen boşlukları kontrol et. Açıklıklar dikdörtgendir ve yalnız düz kart kenarına 1 mm'den yakın parçalar için önerilir; ekran, pil gibi kart dışı parçalar bilinmez. Yandan basılan düğmeler duvarın içinde kalır.
 - Çizim alanında kısıt çözücü ve delik yok.
 - Hacim ve kütle kapalı yüzey varsayar; yapay zeka ağlarında yaklaşık çıkar.
 - El hareketi çok sayıda gerçek kamerada denenmedi.

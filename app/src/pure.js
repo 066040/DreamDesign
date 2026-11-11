@@ -475,4 +475,86 @@ function cylMesh(o,d,L,r,seg){seg=seg||48;let a=Math.abs(d[0])<.9?[1,0,0]:[0,1,0
  const b=P.length/3;for(let k=0;k<3;k++)P.push(o[k]);for(let k=0;k<3;k++)P.push(o[k]+d[k]*L);
  for(let i=0;i<seg;i++){const j=(i+1)%seg;I.push(i,j,seg+j,i,seg+j,seg+i,b,j,i,b+1,seg+i,seg+j)}
  return{P:Float32Array.from(P),I:Uint32Array.from(I)}}
+/* ================= KiCad kartı (.kicad_pcb) okuma =================
+   Dosya iç içe parantezli metindir. Buradan kutu için gerekenler çıkarılır: kart çevresi (Edge.Cuts),
+   kalınlık, vida delikleri, parçaların yeri / kapladığı alan / yüksekliği ve kenara dayanan parçalar.
+   Çıkış birimi mm; orijin kart sınır kutusunun merkezi; X sağa, Y yukarı (KiCad ekranındaki gibi, ön yüzden bakış). */
+function sxParse(s){const st=[[]],n=s.length;let i=0;
+ while(i<n){const c=s[i];
+  if(c==='('){st.push([]);i++}
+  else if(c===')'){if(st.length<2)throw new Error('Dosya bozuk: fazladan ")" var.');const x=st.pop();st[st.length-1].push(x);i++}
+  else if(c==='"'){let j=i+1,b='';while(j<n&&s[j]!=='"'){if(s[j]==='\\')j++;b+=s[j];j++}st[st.length-1].push(b);i=j+1}
+  else if(c===' '||c==='\n'||c==='\t'||c==='\r')i++;
+  else{let j=i;while(j<n){const d=s[j];if(d===' '||d==='\n'||d==='\t'||d==='\r'||d==='('||d===')')break;j++}st[st.length-1].push(s.slice(i,j));i=j}}
+ if(st.length!==1||!st[0].length)throw new Error('Dosya bozuk: parantezler kapanmıyor.');return st[0][0]}
+function sxKids(x,n){return x.filter(k=>Array.isArray(k)&&k[0]===n)}
+function sxKid(x,n){for(const k of x)if(Array.isArray(k)&&k[0]===n)return k;return null}
+/* üç noktadan geçen yay → nokta dizisi (uçlar dahil); tol: en büyük kiriş sapması */
+function arc3(a,m,b,tol){const ax=a[0],ay=a[1],bx=m[0],by=m[1],cx=b[0],cy=b[1],d=2*(ax*(by-cy)+bx*(cy-ay)+cx*(ay-by));
+ if(Math.abs(d)<1e-9)return[a,b];
+ const ux=((ax*ax+ay*ay)*(by-cy)+(bx*bx+by*by)*(cy-ay)+(cx*cx+cy*cy)*(ay-by))/d,uy=((ax*ax+ay*ay)*(cx-bx)+(bx*bx+by*by)*(ax-cx)+(cx*cx+cy*cy)*(bx-ax))/d,r=Math.hypot(ax-ux,ay-uy);
+ const t0=Math.atan2(ay-uy,ax-ux),nm=v=>(v%(2*Math.PI)+2*Math.PI)%(2*Math.PI),tm=nm(Math.atan2(by-uy,bx-ux)-t0);let te=nm(Math.atan2(cy-uy,cx-ux)-t0);
+ if(te<1e-9)te=2*Math.PI;const sw=tm<=te?te:te-2*Math.PI;                                  // orta nokta hangi yöndeyse o yönden dön
+ const step=2*Math.acos(Math.max(0,1-(tol||.02)/Math.max(r,1e-6))),k=Math.max(2,Math.ceil(Math.abs(sw)/Math.max(step,.02))),o=[a];
+ for(let i=1;i<k;i++){const t=t0+sw*i/k;o.push([ux+r*Math.cos(t),uy+r*Math.sin(t)])}o.push(b);return o}
+/* tek çizim öğesi → çoklu çizgi(ler). closed: kendi başına kapalı */
+function kiShape(g,T){const P=n=>{const k=sxKid(g,n);return k?T([+k[1],+k[2]]):null},ty=g[0].replace(/^(gr|fp)_/,'');
+ if(ty==='line')return[{pts:[P('start'),P('end')]}];
+ if(ty==='rect'){const a=sxKid(g,'start'),b=sxKid(g,'end'),x0=+a[1],y0=+a[2],x1=+b[1],y1=+b[2];return[{pts:[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map(T),closed:true}]}
+ if(ty==='circle'){const c=sxKid(g,'center'),e=sxKid(g,'end'),r=Math.hypot(e[1]-c[1],e[2]-c[2]),o=[];for(let i=0;i<48;i++){const t=2*Math.PI*i/48;o.push(T([+c[1]+r*Math.cos(t),+c[2]+r*Math.sin(t)]))}return[{pts:o,closed:true}]}
+ if(ty==='arc'){const m=sxKid(g,'mid');if(m)return[{pts:arc3(P('start'),P('mid'),P('end'))}];
+  const c=sxKid(g,'start'),e=sxKid(g,'end'),an=sxKid(g,'angle');if(!an)return[];                // eski biçim: merkez, başlangıç, açı
+  const r=Math.hypot(e[1]-c[1],e[2]-c[2]),t0=Math.atan2(e[2]-c[2],e[1]-c[1]),sw=+an[1]*Math.PI/180,k=Math.max(2,Math.ceil(Math.abs(sw)/.1)),o=[];
+  for(let i=0;i<=k;i++){const t=t0+sw*i/k;o.push(T([+c[1]+r*Math.cos(t),+c[2]+r*Math.sin(t)]))}return[{pts:o}]}
+ if(ty==='poly'){const p=sxKid(g,'pts');if(!p)return[];return[{pts:sxKids(p,'xy').map(k=>T([+k[1],+k[2]])),closed:true}]}
+ return[]}
+/* uçları değen parçaları kapalı halkalara birleştir */
+function kiLoops(segs,tol){const loops=[],open=[];tol=tol||.02;const near=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<=tol;
+ for(const s of segs){if(s.closed)loops.push(s.pts);else if(s.pts.length>1)open.push(s.pts.slice())}
+ while(open.length){let cur=open.pop(),grown=true;
+  while(grown&&!near(cur[0],cur[cur.length-1])){grown=false;
+   for(let i=0;i<open.length;i++){const o=open[i],e=cur[cur.length-1];
+    if(near(o[0],e)){cur=cur.concat(o.slice(1));open.splice(i,1);grown=true;break}
+    if(near(o[o.length-1],e)){cur=cur.concat(o.slice(0,-1).reverse());open.splice(i,1);grown=true;break}}}
+  if(cur.length>3&&near(cur[0],cur[cur.length-1])){cur.pop();loops.push(cur)}}
+ return loops}
+/* parça yüksekliği (mm): 3B model adındaki "H1.8" → bilinen kılıflar → varsayılan. est: tahmin mi */
+function kiHeight(fp,model){const m=/[-_]H(\d+(?:\.\d+)?)(?=[-_.]|$)/.exec(model||'');if(m)return{h:+m[1],est:false};
+ const T=[[/USB_C|TYPE-?C/i,3.3],[/USB_Micro/i,2.8],[/USB_A/i,7],[/JST_PH.*(S\d+B|Horizontal)/i,5],[/JST_PH/i,6],[/JST_SH/i,3],[/JST_XH/i,7],[/ESP32-C3-MINI|ESP32-S3-MINI/i,2.4],[/ESP32-WROOM|ESP32-S3-WROOM|ESP-12/i,3.2],
+  [/PinHeader.*2\.54.*Vertical/i,8.6],[/PinSocket.*2\.54/i,8.6],[/[RC]_0402/,.5],[/R_0603/,.55],[/C_0603/,.9],[/R_0805/,.65],[/C_0805/,1.35],[/R_1206/,.7],[/C_1206/,1.8],[/SOT-23|SOT-323|SC-70/,1.2],[/SOD-123|SOD-323/,1.3],[/SOIC|SOP|ESOP/,1.75],[/QFN|DFN/,1],[/QFP/,1.6],[/LED_0603|LED_0805/,.8],[/CP_Elec_(\d+)/,6]];
+ for(const[r,h]of T)if(r.test(fp))return{h,est:true};return{h:2,est:true}}
+function kiKind(fp,ref,val){const s=fp+' '+val;if(/MountingHole/i.test(fp))return'hole';if(/USB/i.test(fp)||(/^(J|P|CN|X|USB)\d/i.test(ref)&&/USB/i.test(val)))return'usb';
+ if(/^(SW|BTN|KEY|S)\d/i.test(ref)||/\bKEY\b|KEY-|Button|TACT|SW_/i.test(fp))return'button';if(/^(J|P|CN|X)\d/i.test(ref)||/Conn|JST|Jack|Header|FPC/i.test(fp))return'conn';return'part'}
+function kicadBoard(text,name){const t=sxParse(text);if(!Array.isArray(t)||t[0]!=='kicad_pcb')throw new Error('Bu bir KiCad kart dosyası (.kicad_pcb) değil.');
+ const lay=g=>{const k=sxKid(g,'layer');return k?k[1]:''},GR=['gr_line','gr_arc','gr_rect','gr_circle','gr_poly'],FP=['fp_line','fp_arc','fp_rect','fp_circle','fp_poly'],id=p=>p;
+ const fpT=f=>{const at=sxKid(f,'at'),fx=+at[1],fy=+at[2],a=(+at[3]||0)*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return p=>[fx+p[0]*c+p[1]*s,fy-p[0]*s+p[1]*c]};
+ let segs=[];for(const ty of GR)for(const g of sxKids(t,ty))if(lay(g)==='Edge.Cuts')segs=segs.concat(kiShape(g,id));
+ const fps=sxKids(t,'footprint').concat(sxKids(t,'module'));
+ for(const f of fps){const T=fpT(f);for(const ty of FP)for(const g of sxKids(f,ty))if(lay(g)==='Edge.Cuts')segs=segs.concat(kiShape(g,T))}
+ const loops=kiLoops(segs);if(!loops.length)throw new Error('Kartın çevresi bulunamadı: Edge.Cuts katmanında kapalı bir çizgi olmalı.');
+ loops.sort((a,b)=>Math.abs(polyArea(b))-Math.abs(polyArea(a)));
+ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of loops[0]){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])}
+ const cx=(x0+x1)/2,cy=(y0+y1)/2,W=p=>[p[0]-cx,cy-p[1]],ccw=(l,want)=>(polyArea(l)>0)===want?l:l.slice().reverse();
+ const gen=sxKid(t,'general'),th=gen&&sxKid(gen,'thickness'),B={name:name||'kart',t:th?+th[1]:1.6,w:x1-x0,h:y1-y0,outline:ccw(loops[0].map(W),true),cutouts:loops.slice(1).map(l=>ccw(l.map(W),false)),holes:[],comps:[],warn:[]};
+ for(const f of fps){const T=fpT(f),side=lay(f)==='B.Cu'?'B':'F',prop={};
+  for(const p of sxKids(f,'property'))prop[p[1]]=p[2];
+  for(const p of sxKids(f,'fp_text'))if(p[1]==='reference')prop.Reference=p[2];else if(p[1]==='value')prop.Value=p[2];
+  const ref=prop.Reference||'?',val=prop.Value||'',fp=String(f[1]),pads=sxKids(f,'pad'),at=sxKid(f,'at'),o=W([+at[1],+at[2]]);
+  if(/MountingHole/i.test(fp)||(pads.length===1&&pads[0][2]==='np_thru_hole')){const pd=pads[0],dr=pd&&sxKid(pd,'drill'),pa=pd&&sxKid(pd,'at'),c=pd?W(T([pa?+pa[1]:0,pa?+pa[2]:0])):o;
+   const d=dr?+(dr[1]==='oval'?dr[2]:dr[1]):0;if(d>0){B.holes.push({ref,x:c[0],y:c[1],d});continue}}
+  const box=L=>{let a=1e9,b=1e9,c=-1e9,d=-1e9,n=0;for(const ty of FP)for(const g of sxKids(f,ty))if(lay(g)===L)for(const s of kiShape(g,T))for(const q of s.pts){const p=W(q);a=Math.min(a,p[0]);b=Math.min(b,p[1]);c=Math.max(c,p[0]);d=Math.max(d,p[1]);n++}return n>1?[a,b,c,d]:null};
+  let bb=box(side+'.Fab')||box(side+'.CrtYd');
+  if(!bb){let a=1e9,b=1e9,c=-1e9,d=-1e9;for(const pd of pads){const pa=sxKid(pd,'at'),sz=sxKid(pd,'size');if(!pa)continue;const p=W(T([+pa[1],+pa[2]])),r=sz?Math.max(+sz[1],+sz[2])/2:.5;a=Math.min(a,p[0]-r);b=Math.min(b,p[1]-r);c=Math.max(c,p[0]+r);d=Math.max(d,p[1]+r)}
+   if(c<a)continue;bb=[a,b,c,d]}
+  const md=sxKid(f,'model'),hh=kiHeight(fp,md?String(md[1]).split(/[\\/]/).pop():''),kind=kiKind(fp,ref,val);
+  /* kart kenarına en yakın yan: 1 mm içinde ya da dışarı taşıyorsa "kenarda" */
+  const dist={l:bb[0]+B.w/2,r:B.w/2-bb[2],b:bb[1]+B.h/2,t:B.h/2-bb[3]};let edge=null,dm=1;for(const k in dist)if(dist[k]<dm){dm=dist[k];edge=k}
+  B.comps.push({ref,val,fp:fp.split(':').pop(),side,x:o[0],y:o[1],bb,h:hh.h,est:hh.est,kind,edge})}
+ const mx=s=>B.comps.filter(c=>c.side===s).reduce((m,c)=>!m||c.h>m.h?c:m,null);B.maxF=mx('F');B.maxB=mx('B');
+ if(!B.holes.length)B.warn.push('Kartta vida deliği bulunamadı: kart kutuya vidalanamaz, ayaklar eklenmedi.');
+ return B}
+/* kartı ters çevir (arka yüz yukarı): soldan sağa döner, yüzler yer değiştirir */
+function kiFlip(B){const fl=l=>l.map(p=>[-p[0],p[1]]).reverse(),sw={l:'r',r:'l',t:'t',b:'b'};
+ return Object.assign({},B,{outline:fl(B.outline),cutouts:B.cutouts.map(fl),holes:B.holes.map(h=>Object.assign({},h,{x:-h.x})),flipped:!B.flipped,maxF:B.maxB,maxB:B.maxF,
+  comps:B.comps.map(c=>Object.assign({},c,{x:-c.x,side:c.side==='F'?'B':'F',bb:[-c.bb[2],c.bb[1],-c.bb[0],c.bb[3]],edge:c.edge?sw[c.edge]:null}))})}
 //</pure>
