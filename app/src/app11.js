@@ -79,7 +79,7 @@ async function fitPocket(body,peg,c,out){out=out||'#fitmsg';
   if(!R.I.length)throw new Error('Sonuç boş: girecek parça gövdenin tamamını kaplıyor.');
   if(R.vol>R.vol0-1e-3)throw new Error('Parçalar birbirine değmiyor. Girecek parçayı gövdenin içine, yuvanın olacağı yere yerleştir.');
   if(!parts.includes(body))throw new Error('Gövde bu arada silinmiş.');
-  const np=mfReplace(body,R,body.name);refresh();look();histMark();
+  const np=mfReplace(body,R,body.name);rcNote(np,'Geçme yuvası: '+peg.name+', '+f(c,2)+' mm pay');refresh();look();histMark();
   msg('Yuva açıldı: her yönde '+f(c,2)+' mm boşluk ('+(FIT_PRESETS[String(c)]||'özel')+'). '+peg.name+' yerinde duruyor; ayrı basılınca yuvaya girer.','var(--ok)',out);return np}
  catch(e){done();msg(e.message,null,out);return null}
  finally{fitBusy=false}}
@@ -93,13 +93,13 @@ async function roundPart(p,r,kind,where,out){out=out||'#rdmsg';
  const b=worldBox(p),mn=Math.min(b.mx[0]-b.mn[0],b.mx[1]-b.mn[1],b.mx[2]-b.mn[2]);
  if(where!=='in'&&r>=mn/2){msg('Bu parça için en fazla '+f(mn/2*.95,1)+' mm olabilir (en ince ölçüsü '+f(mn,1)+' mm).',null,out);return null}
  if(rdBusy)return null;rdBusy=true;const done=mfWait(out);
- try{if(cage)cageEnd(true);
+ try{if(cage)cageEnd(true);const rc0=rcBegin(p);
   const R=await mfRun({op:'round',A:mfIn(p),r,kind,where});done();
   const dv=(R.vol-R.vol0)/R.vol0;
   if(!R.I.length||dv<-.2)throw new Error('Bu yarıçap parçanın ince duvarlarını ya da küçük çıkıntılarını siliyor. Daha küçük bir yarıçap dene (duvar kalınlığının yarısından az).');
   if(dv>.2)throw new Error('Bu yarıçap parçadaki dar boşlukları ya da delikleri dolduruyor. Daha küçük bir yarıçap dene ya da yalnız "Dış kenarlar"ı seç.');
   if(!parts.includes(p))throw new Error('Parça bu arada silinmiş.');
-  const np=mfReplace(p,R,p.name);refresh();look();histMark();
+  const np=mfReplace(p,R,p.name);rcEnd(rc0,np,{op:'round',r,kind,where});refresh();look();histMark();
   const what={out:'Dış kenarlar',in:'İç köşeler',both:'Tüm kenarlar'}[where];
   msg(what+' '+f(r,2)+' mm '+(kind==='chamfer'?'pah kırıldı':'yuvarlatıldı')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³ ('+(dv>=0?'+':'')+f(dv*100,1)+'%).','var(--ok)',out);return np}
  catch(e){done();msg(e.message,null,out);return null}

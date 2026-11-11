@@ -93,6 +93,26 @@ input[type=color]{height:30px;padding:2px}
 .wide{width:100%;border:1px solid var(--acc);color:var(--acc);font-weight:600}
 #msg,.msg{font-size:12px;margin-top:6px}
 .note{font-size:12px;color:var(--mut);margin:6px 0 0}
+.pcb-info{font-size:13px;line-height:1.45;margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+#pcbOpen{margin:2px 0 6px}
+#pcbOpen .chk{margin:2px 0}
+.rc-list{list-style:none;margin:0;padding:0}
+.rc-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
+.rc-n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--line);font-size:12px;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.rc-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.rc-lock .rc-t{color:var(--mut)}
+.rc-row .sm{flex:none;padding:4px 8px}
+.rc-row .sm[aria-expanded=true]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.rc-del{color:var(--warn)}
+.rc-ed{margin:6px 0 8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.rc-ed label{display:block;position:relative;margin:0 0 8px;color:var(--mut);font-size:13px}
+.rc-ed label input{display:block;width:100%;margin-top:3px;padding-right:38px}
+.rc-ed label span{position:absolute;right:8px;bottom:8px;color:var(--mut);font-size:12px}
+#simple .rc-ed label{margin:0 0 8px}
+#simple .rc-ed label span{bottom:12px}
+.rc-go{display:flex;gap:6px}
+.rc-go button{flex:1}
+.rc-go .sm.s-pri{border-color:var(--acc)}
 details{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:600}
 .card{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:6px;cursor:grab;background:var(--bg)}
@@ -214,6 +234,8 @@ summary{cursor:pointer;font-weight:600}
       <label>Köşe yuvarlaklığı<input type="number" id="sRad" value="4" min="0" step="0.5"><span>mm</span></label>
       <button class="s-btn s-pri" id="sRoundGo">Yuvarla</button>
      </div>
+     <div class="s-sub" id="sRcT">Yaptıkların</div>
+     <div id="sRc"></div>
     </div>
     <div class="s-msg" id="sMsg" role="status"></div>
    </section>
@@ -232,13 +254,31 @@ summary{cursor:pointer;font-weight:600}
    <div class="page on" id="p-model">
     <div class="sec"><h3>Model yükle</h3>
      <button id="load" class="wide">Dosya seç (model veya fotoğraf)</button>
-     <input id="file" type="file" accept=".glb,.gltf,.obj,.stl,.jpg,.jpeg,.png,.webp" hidden>
+     <input id="file" type="file" accept=".glb,.gltf,.obj,.stl,.jpg,.jpeg,.png,.webp,.kicad_pcb" hidden>
      <div class="two"><div><label>Fotoğraf çözünürlüğü</label><select id="genres"><option value="128">128 (hızlı)</option><option value="192" selected>192 (önerilen)</option><option value="256">256 (ince, yavaş)</option></select></div>
       <div><label>Yumuşatma</label><select id="gensm"><option value="0">Kapalı</option><option value="6">Hafif</option><option value="10" selected>Orta</option><option value="20">Güçlü</option></select></div></div>
      <div id="bkrow"><label>Sunucu adresi (fotoğraftan 3D için)</label><div class="row" style="gap:6px"><input id="bkurl" placeholder="http://localhost:8000" style="flex:1"><button class="sm" id="bktest">Bağlan</button></div><div class="msg" id="bkmsg"></div>
       <p class="note">Bu çevrimiçi sayfada tek fotoğraftan 3D için bilgisayarında sunucu çalışmalı (README: scripts/run.bat). Çoklu görünümden model sunucu gerektirmez.</p></div>
      <p class="note">GLB, OBJ, STL açılır. Fotoğraf (JPG, PNG, WEBP) yerel sunucu çalışırken 3D modele çevrilir. Model X–Y düzleminde ortalanır, tabanı Z=0'a oturur, en uzun kenarı 1000 mm olur.</p>
      <div id="msg" role="alert"></div></div>
+    <div class="sec"><h3>KiCad kartından kutu</h3>
+     <button id="pcbPick" class="wide">Kart dosyası seç (.kicad_pcb)</button>
+     <p class="note" id="pcbHint">KiCad'de çizdiğin kartı seç ya da çizim alanına bırak: karta oturan kutu, vida ayakları ve kenardaki USB / düğme açıklıkları çıkarılır.</p>
+     <div id="pcbBox" hidden>
+      <div class="pcb-info" id="pcbInfo"></div>
+      <label for="pcbUp">Kutunun kapağına bakan yüz</label><select id="pcbUp"><option value="F">Ön yüz (F.Cu) yukarı</option><option value="B">Arka yüz (B.Cu) yukarı</option></select>
+      <div class="two"><div><label for="pcbWall">Duvar kalınlığı (mm)</label><input id="pcbWall" type="number" min="0.8" step="0.2" value="2"></div>
+       <div><label for="pcbGap">Kart çevresi boşluk (mm)</label><input id="pcbGap" type="number" min="0.1" step="0.1" value="0.5"></div></div>
+      <div class="two"><div><label for="pcbBelow">Kartın altı (mm)</label><input id="pcbBelow" type="number" min="1" step="0.5" value="5"></div>
+       <div><label for="pcbAbove">Kartın üstü (mm)</label><input id="pcbAbove" type="number" min="1" step="0.5" value="5"></div></div>
+      <div class="two"><div><label for="pcbFloor">Taban kalınlığı (mm)</label><input id="pcbFloor" type="number" min="0.8" step="0.2" value="2"></div>
+       <div><label for="pcbPilot">Vida deliği çapı (mm)</label><input id="pcbPilot" type="number" min="0.5" step="0.1" value="1.8"></div></div>
+      <label>Duvarda açılacak yerler</label><div id="pcbOpen"></div>
+      <label class="chk"><input type="checkbox" id="pcbLid" checked>Kapak da yap (geçmeli, yanına baskıya hazır konur)</label>
+      <label class="chk"><input type="checkbox" id="pcbShow" checked>Kartı önizleme olarak göster (baskıya ve dışa aktarmaya girmez)</label>
+      <button id="pcbGo" class="wide">Kutuyu oluştur</button>
+     </div>
+     <div class="msg" id="pcbMsg" role="status"></div></div>
     <div class="sec"><h3>Çoklu görünümden model</h3>
      <p class="note">Ön, yan ve/veya üst görünümü yükle (fotoğraf, çizim ya da şeffaf PNG; arka plan düz renk olsun). Birden fazla görünümde gerçek ölçüye dayalı hacim çıkar; tek görünümde derinlik tahmin edilip şişirilir.</p>
      <div id="mvrows"></div>
@@ -250,6 +290,7 @@ summary{cursor:pointer;font-weight:600}
      <div class="grp" style="flex-wrap:wrap"><button data-add="box">Kutu</button><button data-add="cyl">Silindir</button><button data-add="sph">Küre</button><button data-add="cone">Koni</button><button id="addrbox" title="Köşeleri yuvarlatılmış kutu (kasa için)">Yuvarlak kutu</button></div></div>
     <div class="sec"><h3>Montaj ağacı</h3><div id="list" class="list"></div></div>
     <div class="sec"><h3>Seçili parça</h3><div id="props"></div></div>
+    <div class="sec"><h3>Yapılanlar</h3><div id="rcList"></div><div class="msg" id="rcMsg" role="status"></div></div>
     <div class="sec"><h3>Toplam</h3><div id="tot"></div>
      <label class="chk"><input type="checkbox" id="showcom" checked>Ağırlık merkezini göster</label>
      <label class="chk"><input type="checkbox" id="showdim" checked>Seçili parçanın ölçü çizgilerini göster</label></div>
@@ -889,6 +930,88 @@ function cylMesh(o,d,L,r,seg){seg=seg||48;let a=Math.abs(d[0])<.9?[1,0,0]:[0,1,0
  const b=P.length/3;for(let k=0;k<3;k++)P.push(o[k]);for(let k=0;k<3;k++)P.push(o[k]+d[k]*L);
  for(let i=0;i<seg;i++){const j=(i+1)%seg;I.push(i,j,seg+j,i,seg+j,seg+i,b,j,i,b+1,seg+i,seg+j)}
  return{P:Float32Array.from(P),I:Uint32Array.from(I)}}
+/* ================= KiCad kartı (.kicad_pcb) okuma =================
+   Dosya iç içe parantezli metindir. Buradan kutu için gerekenler çıkarılır: kart çevresi (Edge.Cuts),
+   kalınlık, vida delikleri, parçaların yeri / kapladığı alan / yüksekliği ve kenara dayanan parçalar.
+   Çıkış birimi mm; orijin kart sınır kutusunun merkezi; X sağa, Y yukarı (KiCad ekranındaki gibi, ön yüzden bakış). */
+function sxParse(s){const st=[[]],n=s.length;let i=0;
+ while(i<n){const c=s[i];
+  if(c==='('){st.push([]);i++}
+  else if(c===')'){if(st.length<2)throw new Error('Dosya bozuk: fazladan ")" var.');const x=st.pop();st[st.length-1].push(x);i++}
+  else if(c==='"'){let j=i+1,b='';while(j<n&&s[j]!=='"'){if(s[j]==='\\')j++;b+=s[j];j++}st[st.length-1].push(b);i=j+1}
+  else if(c===' '||c==='\n'||c==='\t'||c==='\r')i++;
+  else{let j=i;while(j<n){const d=s[j];if(d===' '||d==='\n'||d==='\t'||d==='\r'||d==='('||d===')')break;j++}st[st.length-1].push(s.slice(i,j));i=j}}
+ if(st.length!==1||!st[0].length)throw new Error('Dosya bozuk: parantezler kapanmıyor.');return st[0][0]}
+function sxKids(x,n){return x.filter(k=>Array.isArray(k)&&k[0]===n)}
+function sxKid(x,n){for(const k of x)if(Array.isArray(k)&&k[0]===n)return k;return null}
+/* üç noktadan geçen yay → nokta dizisi (uçlar dahil); tol: en büyük kiriş sapması */
+function arc3(a,m,b,tol){const ax=a[0],ay=a[1],bx=m[0],by=m[1],cx=b[0],cy=b[1],d=2*(ax*(by-cy)+bx*(cy-ay)+cx*(ay-by));
+ if(Math.abs(d)<1e-9)return[a,b];
+ const ux=((ax*ax+ay*ay)*(by-cy)+(bx*bx+by*by)*(cy-ay)+(cx*cx+cy*cy)*(ay-by))/d,uy=((ax*ax+ay*ay)*(cx-bx)+(bx*bx+by*by)*(ax-cx)+(cx*cx+cy*cy)*(bx-ax))/d,r=Math.hypot(ax-ux,ay-uy);
+ const t0=Math.atan2(ay-uy,ax-ux),nm=v=>(v%(2*Math.PI)+2*Math.PI)%(2*Math.PI),tm=nm(Math.atan2(by-uy,bx-ux)-t0);let te=nm(Math.atan2(cy-uy,cx-ux)-t0);
+ if(te<1e-9)te=2*Math.PI;const sw=tm<=te?te:te-2*Math.PI;                                  // orta nokta hangi yöndeyse o yönden dön
+ const step=2*Math.acos(Math.max(0,1-(tol||.02)/Math.max(r,1e-6))),k=Math.max(2,Math.ceil(Math.abs(sw)/Math.max(step,.02))),o=[a];
+ for(let i=1;i<k;i++){const t=t0+sw*i/k;o.push([ux+r*Math.cos(t),uy+r*Math.sin(t)])}o.push(b);return o}
+/* tek çizim öğesi → çoklu çizgi(ler). closed: kendi başına kapalı */
+function kiShape(g,T){const P=n=>{const k=sxKid(g,n);return k?T([+k[1],+k[2]]):null},ty=g[0].replace(/^(gr|fp)_/,'');
+ if(ty==='line')return[{pts:[P('start'),P('end')]}];
+ if(ty==='rect'){const a=sxKid(g,'start'),b=sxKid(g,'end'),x0=+a[1],y0=+a[2],x1=+b[1],y1=+b[2];return[{pts:[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map(T),closed:true}]}
+ if(ty==='circle'){const c=sxKid(g,'center'),e=sxKid(g,'end'),r=Math.hypot(e[1]-c[1],e[2]-c[2]),o=[];for(let i=0;i<48;i++){const t=2*Math.PI*i/48;o.push(T([+c[1]+r*Math.cos(t),+c[2]+r*Math.sin(t)]))}return[{pts:o,closed:true}]}
+ if(ty==='arc'){const m=sxKid(g,'mid');if(m)return[{pts:arc3(P('start'),P('mid'),P('end'))}];
+  const c=sxKid(g,'start'),e=sxKid(g,'end'),an=sxKid(g,'angle');if(!an)return[];                // eski biçim: merkez, başlangıç, açı
+  const r=Math.hypot(e[1]-c[1],e[2]-c[2]),t0=Math.atan2(e[2]-c[2],e[1]-c[1]),sw=+an[1]*Math.PI/180,k=Math.max(2,Math.ceil(Math.abs(sw)/.1)),o=[];
+  for(let i=0;i<=k;i++){const t=t0+sw*i/k;o.push(T([+c[1]+r*Math.cos(t),+c[2]+r*Math.sin(t)]))}return[{pts:o}]}
+ if(ty==='poly'){const p=sxKid(g,'pts');if(!p)return[];return[{pts:sxKids(p,'xy').map(k=>T([+k[1],+k[2]])),closed:true}]}
+ return[]}
+/* uçları değen parçaları kapalı halkalara birleştir */
+function kiLoops(segs,tol){const loops=[],open=[];tol=tol||.02;const near=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<=tol;
+ for(const s of segs){if(s.closed)loops.push(s.pts);else if(s.pts.length>1)open.push(s.pts.slice())}
+ while(open.length){let cur=open.pop(),grown=true;
+  while(grown&&!near(cur[0],cur[cur.length-1])){grown=false;
+   for(let i=0;i<open.length;i++){const o=open[i],e=cur[cur.length-1];
+    if(near(o[0],e)){cur=cur.concat(o.slice(1));open.splice(i,1);grown=true;break}
+    if(near(o[o.length-1],e)){cur=cur.concat(o.slice(0,-1).reverse());open.splice(i,1);grown=true;break}}}
+  if(cur.length>3&&near(cur[0],cur[cur.length-1])){cur.pop();loops.push(cur)}}
+ return loops}
+/* parça yüksekliği (mm): 3B model adındaki "H1.8" → bilinen kılıflar → varsayılan. est: tahmin mi */
+function kiHeight(fp,model){const m=/[-_]H(\d+(?:\.\d+)?)(?=[-_.]|$)/.exec(model||'');if(m)return{h:+m[1],est:false};
+ const T=[[/USB_C|TYPE-?C/i,3.3],[/USB_Micro/i,2.8],[/USB_A/i,7],[/JST_PH.*(S\d+B|Horizontal)/i,5],[/JST_PH/i,6],[/JST_SH/i,3],[/JST_XH/i,7],[/ESP32-C3-MINI|ESP32-S3-MINI/i,2.4],[/ESP32-WROOM|ESP32-S3-WROOM|ESP-12/i,3.2],
+  [/PinHeader.*2\.54.*Vertical/i,8.6],[/PinSocket.*2\.54/i,8.6],[/[RC]_0402/,.5],[/R_0603/,.55],[/C_0603/,.9],[/R_0805/,.65],[/C_0805/,1.35],[/R_1206/,.7],[/C_1206/,1.8],[/SOT-23|SOT-323|SC-70/,1.2],[/SOD-123|SOD-323/,1.3],[/SOIC|SOP|ESOP/,1.75],[/QFN|DFN/,1],[/QFP/,1.6],[/LED_0603|LED_0805/,.8],[/CP_Elec_(\d+)/,6]];
+ for(const[r,h]of T)if(r.test(fp))return{h,est:true};return{h:2,est:true}}
+function kiKind(fp,ref,val){const s=fp+' '+val;if(/MountingHole/i.test(fp))return'hole';if(/USB/i.test(fp)||(/^(J|P|CN|X|USB)\d/i.test(ref)&&/USB/i.test(val)))return'usb';
+ if(/^(SW|BTN|KEY|S)\d/i.test(ref)||/\bKEY\b|KEY-|Button|TACT|SW_/i.test(fp))return'button';if(/^(J|P|CN|X)\d/i.test(ref)||/Conn|JST|Jack|Header|FPC/i.test(fp))return'conn';return'part'}
+function kicadBoard(text,name){const t=sxParse(text);if(!Array.isArray(t)||t[0]!=='kicad_pcb')throw new Error('Bu bir KiCad kart dosyası (.kicad_pcb) değil.');
+ const lay=g=>{const k=sxKid(g,'layer');return k?k[1]:''},GR=['gr_line','gr_arc','gr_rect','gr_circle','gr_poly'],FP=['fp_line','fp_arc','fp_rect','fp_circle','fp_poly'],id=p=>p;
+ const fpT=f=>{const at=sxKid(f,'at'),fx=+at[1],fy=+at[2],a=(+at[3]||0)*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return p=>[fx+p[0]*c+p[1]*s,fy-p[0]*s+p[1]*c]};
+ let segs=[];for(const ty of GR)for(const g of sxKids(t,ty))if(lay(g)==='Edge.Cuts')segs=segs.concat(kiShape(g,id));
+ const fps=sxKids(t,'footprint').concat(sxKids(t,'module'));
+ for(const f of fps){const T=fpT(f);for(const ty of FP)for(const g of sxKids(f,ty))if(lay(g)==='Edge.Cuts')segs=segs.concat(kiShape(g,T))}
+ const loops=kiLoops(segs);if(!loops.length)throw new Error('Kartın çevresi bulunamadı: Edge.Cuts katmanında kapalı bir çizgi olmalı.');
+ loops.sort((a,b)=>Math.abs(polyArea(b))-Math.abs(polyArea(a)));
+ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of loops[0]){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])}
+ const cx=(x0+x1)/2,cy=(y0+y1)/2,W=p=>[p[0]-cx,cy-p[1]],ccw=(l,want)=>(polyArea(l)>0)===want?l:l.slice().reverse();
+ const gen=sxKid(t,'general'),th=gen&&sxKid(gen,'thickness'),B={name:name||'kart',t:th?+th[1]:1.6,w:x1-x0,h:y1-y0,outline:ccw(loops[0].map(W),true),cutouts:loops.slice(1).map(l=>ccw(l.map(W),false)),holes:[],comps:[],warn:[]};
+ for(const f of fps){const T=fpT(f),side=lay(f)==='B.Cu'?'B':'F',prop={};
+  for(const p of sxKids(f,'property'))prop[p[1]]=p[2];
+  for(const p of sxKids(f,'fp_text'))if(p[1]==='reference')prop.Reference=p[2];else if(p[1]==='value')prop.Value=p[2];
+  const ref=prop.Reference||'?',val=prop.Value||'',fp=String(f[1]),pads=sxKids(f,'pad'),at=sxKid(f,'at'),o=W([+at[1],+at[2]]);
+  if(/MountingHole/i.test(fp)||(pads.length===1&&pads[0][2]==='np_thru_hole')){const pd=pads[0],dr=pd&&sxKid(pd,'drill'),pa=pd&&sxKid(pd,'at'),c=pd?W(T([pa?+pa[1]:0,pa?+pa[2]:0])):o;
+   const d=dr?+(dr[1]==='oval'?dr[2]:dr[1]):0;if(d>0){B.holes.push({ref,x:c[0],y:c[1],d});continue}}
+  const box=L=>{let a=1e9,b=1e9,c=-1e9,d=-1e9,n=0;for(const ty of FP)for(const g of sxKids(f,ty))if(lay(g)===L)for(const s of kiShape(g,T))for(const q of s.pts){const p=W(q);a=Math.min(a,p[0]);b=Math.min(b,p[1]);c=Math.max(c,p[0]);d=Math.max(d,p[1]);n++}return n>1?[a,b,c,d]:null};
+  let bb=box(side+'.Fab')||box(side+'.CrtYd');
+  if(!bb){let a=1e9,b=1e9,c=-1e9,d=-1e9;for(const pd of pads){const pa=sxKid(pd,'at'),sz=sxKid(pd,'size');if(!pa)continue;const p=W(T([+pa[1],+pa[2]])),r=sz?Math.max(+sz[1],+sz[2])/2:.5;a=Math.min(a,p[0]-r);b=Math.min(b,p[1]-r);c=Math.max(c,p[0]+r);d=Math.max(d,p[1]+r)}
+   if(c<a)continue;bb=[a,b,c,d]}
+  const md=sxKid(f,'model'),hh=kiHeight(fp,md?String(md[1]).split(/[\\/]/).pop():''),kind=kiKind(fp,ref,val);
+  /* kart kenarına en yakın yan: 1 mm içinde ya da dışarı taşıyorsa "kenarda" */
+  const dist={l:bb[0]+B.w/2,r:B.w/2-bb[2],b:bb[1]+B.h/2,t:B.h/2-bb[3]};let edge=null,dm=1;for(const k in dist)if(dist[k]<dm){dm=dist[k];edge=k}
+  B.comps.push({ref,val,fp:fp.split(':').pop(),side,x:o[0],y:o[1],bb,h:hh.h,est:hh.est,kind,edge})}
+ const mx=s=>B.comps.filter(c=>c.side===s).reduce((m,c)=>!m||c.h>m.h?c:m,null);B.maxF=mx('F');B.maxB=mx('B');
+ if(!B.holes.length)B.warn.push('Kartta vida deliği bulunamadı: kart kutuya vidalanamaz, ayaklar eklenmedi.');
+ return B}
+/* kartı ters çevir (arka yüz yukarı): soldan sağa döner, yüzler yer değiştirir */
+function kiFlip(B){const fl=l=>l.map(p=>[-p[0],p[1]]).reverse(),sw={l:'r',r:'l',t:'t',b:'b'};
+ return Object.assign({},B,{outline:fl(B.outline),cutouts:B.cutouts.map(fl),holes:B.holes.map(h=>Object.assign({},h,{x:-h.x})),flipped:!B.flipped,maxF:B.maxB,maxB:B.maxF,
+  comps:B.comps.map(c=>Object.assign({},c,{x:-c.x,side:c.side==='F'?'B':'F',bb:[-c.bb[2],c.bb[1],-c.bb[0],c.bb[3]],edge:c.edge?sw[c.edge]:null}))})}
 //</pure>
 
 /* ================= 3D baskı fiyat hesabı (saf, DOM'suz) =================
@@ -1182,7 +1305,7 @@ function add(type,size,pos,opts){
  register(p,geo);
  p.edge=new THREE.LineSegments(new THREE.EdgesGeometry(geo,25),new THREE.LineBasicMaterial({color:lin(0x0b0f17),transparent:true,opacity:.6}));p.mesh.add(p.edge);
  metrics(p);apply(p);if(p.ground)sit(p);
- p.orig=snap(p);select(p);return p}
+ rcInit(p);p.orig=snap(p);select(p);return p}
 
 /* ---- içe aktarma ---- */
 /* Tüm mesh'leri dünya matrisiyle tek diziye düz (fixUp: glTF Y-yukarı → Z-yukarı) */
@@ -1253,7 +1376,7 @@ function commitShape(p){const g=p.mesh.geometry;g.computeBoundingBox();const bb=
  p.base=[s.x||1,s.y||1,s.z||1];p.size=p.base.map((v,i)=>v*sc[i]);p.pos=[wc.x,wc.y,wc.z];p.mid=[p.mid[0]-c.x,p.mid[1]-c.y,p.mid[2]-c.z];
  p.analytic=null;p.topo=null;p.gv++;metrics(p);apply(p);if(p.ground)sit(p)}
 /* geometriyi kalıcı 90° çevir: ölçü, ölçek ve simetri merkezi eksenlerle birlikte yer değiştirir */
-function bakeTurn(p,ax){const g=p.mesh.geometry;
+function bakeTurn(p,ax){const g=p.mesh.geometry,rc0=rcBegin(p);
  if(p.edge){p.mesh.remove(p.edge);p.edge.geometry.dispose();p.edge=null}
  pushUndo(p);
  if(ax===0)g.rotateX(Math.PI/2);else if(ax===1)g.rotateY(Math.PI/2);else g.rotateZ(Math.PI/2);
@@ -1261,7 +1384,7 @@ function bakeTurn(p,ax){const g=p.mesh.geometry;
  g.computeBoundingBox();g.computeBoundingSphere();g.computeVertexNormals();
  const s=g.boundingBox.getSize(new THREE.Vector3());p.base=[s.x||1,s.y||1,s.z||1];
  const nsc=perm.map(i=>sc[i]);p.size=p.base.map((v,i)=>v*nsc[i]);p.mid=perm.map(i=>p.mid[i]);
- p.analytic=null;p.topo=null;p.gv++;metrics(p);apply(p);if(p.ground)sit(p);refresh();look()}
+ p.analytic=null;p.topo=null;p.gv++;metrics(p);apply(p);rcEnd(rc0,p,rcRotStep(rc0,ax),p.pos);if(p.ground)sit(p);refresh();look()}
 /* Konumlandırma: dünyada X–Y'de seçilen referansı orijine, tabanı Z=0'a getir. how: bbox | com | base */
 function recentre(p,how){apply(p);const w=worldArrays(p),P=w.P;let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];
  for(let i=0;i<P.length;i+=3)for(let k=0;k<3;k++){if(P[i+k]<mn[k])mn[k]=P[i+k];if(P[i+k]>mx[k])mx[k]=P[i+k]}
@@ -1635,7 +1758,7 @@ $('#domerge').onclick=()=>{const a=sel,b=parts.find(q=>q.id===+$('#mgsel').value
  const m=derive(w.P,w.C,w.I,(a.name+'+'+b.name).slice(0,28),a,{pos:[0,0,0],rot:[0,0,0],scale:[1,1,1]});
  removePart(a);removePart(b);select(m);msg('Birleştirildi. Kaynak toleransı: '+tol+' mm.','var(--ok)')};
 $('#doclone').onclick=()=>{const p=sel;if(!p)return;const L=localArrays(p),xf=xformOf(p);xf.pos[0]+=p.size[0]*1.1;
- select(derive(L.P,L.C,L.I,(p.name+' kopya').slice(0,28),p,xf))};
+ const np=derive(L.P,L.C,L.I,(p.name+' kopya').slice(0,28),p,xf);rcClone(p,np);select(np)};
 document.querySelectorAll('[data-mirror]').forEach(b=>b.onclick=()=>{const p=sel;if(!p)return;const a=+b.dataset.mirror,w=worldArrays(p);
  for(let i=a;i<w.P.length;i+=3)w.P[i]=-w.P[i];for(let i=0;i<w.I.length;i+=3){const t=w.I[i+1];w.I[i+1]=w.I[i+2];w.I[i+2]=t}
  select(derive(w.P,w.C,w.I,(p.name+' ayna').slice(0,28),p,{pos:[0,0,0],rot:[0,0,0],scale:[1,1,1]}))});
@@ -1946,7 +2069,7 @@ document.querySelectorAll('#p-calc input').forEach(i=>i.oninput=updateCalc);
 /* ================= dışa aktarma ve proje ================= */
 function download(name,data,type){try{const b=new Blob([data],{type}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();
  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);return true}catch(e){return false}}
-function exportParts(){const list=$('#exsel').checked&&sel?[sel]:parts.filter(p=>p.vis);return list}
+function exportParts(){const list=$('#exsel').checked&&sel?[sel]:parts.filter(p=>p.vis&&!p.ghost);return list}
 function exportDone(ok,name){msg(ok?name+' indirildi.':'İndirme bu ortamda engellenmiş olabilir. Yerel sunucuda (localhost:8000) dene.',ok?'var(--ok)':null,'#pmsg')}
 $('#exstl').onclick=()=>{const l=exportParts();if(!l.length)return msg('Dışa aktarılacak parça yok.',null,'#pmsg');const m=catMesh(l.map(p=>worldArrays(p)));exportDone(download('dreamdesign.stl',stlBinary(m.P,m.I),'model/stl'),'dreamdesign.stl')};
 $('#exobj').onclick=()=>{const l=exportParts();if(!l.length)return msg('Dışa aktarılacak parça yok.',null,'#pmsg');let s='# DreamDesign (mm, Z yukari)\n',off=0;
@@ -1969,7 +2092,7 @@ function stateData(raw){const E=raw?(a=>a):arr64;
  parts:parts.map(p=>{const g=p.mesh.geometry,ca=g.attributes.color,cp=(k,arr,C)=>raw?hcache(p,k,arr,C):C.from(arr);
   return{id:p.id,name:p.name,type:p.type,mat:p.mat,color:p.color,size:p.size.slice(),base:p.base.slice(),pos:p.pos.slice(),rot:p.rot.slice(),lock:p.lock,ground:p.ground,fill:p.fill,wall:p.wall,mid:p.mid.slice(),
    useVC:p.useVC,hasVC:p.hasVC,vis:p.vis,uvk:p.uvk,rad:p.rad,an:!!p.analytic,P:E(cp('P',g.attributes.position.array,Float32Array)),I:E(cp('I',g.index.array,Uint32Array)),C:ca?E(cp('C',ca.array,Float32Array)):null,
-   orig:raw&&p.orig?{pos:p.orig.pos,base:p.orig.base,size:p.orig.size,position:p.orig.position,mid:p.orig.mid}:undefined}}),
+   rc:rcOut(p,raw,E),ghost:p.ghost||undefined,orig:raw&&p.orig?{pos:p.orig.pos,base:p.orig.base,size:p.orig.size,position:p.orig.position,mid:p.orig.mid}:undefined}}),
  joints:joints.map(J=>({id:J.id,parent:J.parent.id,child:J.child.id,type:J.type,min:J.min,max:J.max,val:J.val,axisP:va(J.axisP),pivotP:va(J.pivotP),posL:va(J.posL),qL:vq(J.qL)})),
  poses:poses.map(p=>({name:p.name,vals:Object.assign({},p.vals)})),
  shelf:raw?shelf.slice():shelf.map(s=>({name:s.name,mat:s.mat,color:s.color,dims:s.dims,P:E(s.P),I:E(s.I),C:s.C?E(s.C):null})),
@@ -1986,7 +2109,7 @@ function restoreParts(d,raw){
   p.id=s.id;mx=Math.max(mx,s.id);register(p,geo);regUV(p);byId[s.id]=p;
   if(s.an&&geos[s.type]){p.analytic={V0:{box:1,cyl:Math.PI/4,sph:Math.PI/6,cone:Math.PI/12}[s.type],Cv:s.type==='cone'?[0,0,-.25]:[0,0,0]};
    p.edge=new THREE.LineSegments(new THREE.EdgesGeometry(geo,25),new THREE.LineBasicMaterial({color:lin(0x0b0f17),transparent:true,opacity:.6}));p.mesh.add(p.edge)}
-  metrics(p);apply(p);
+  metrics(p);apply(p);p.rc=rcIn(s.rc);if(s.ghost)p.ghost=true;
   if(raw){p._hc={P:s.P,I:s.I,C:s.C};if(!p._hc.C)delete p._hc.C}
   p.orig=raw&&s.orig?{p,pos:s.orig.pos,base:s.orig.base,size:s.orig.size,position:s.orig.position,mid:s.orig.mid}:snap(p)});
  uid=Math.max(uid,mx+1);return byId}
@@ -2025,8 +2148,9 @@ function loadFile(file){msg('');
   else if(ext==='glb'||ext==='gltf'){rd.onload=()=>new THREE.GLTFLoader().parse(rd.result,'',g=>ok(g.scene,true),fail);ext==='glb'?rd.readAsArrayBuffer(file):rd.readAsText(file)}
   else if(ext==='obj'){rd.onload=()=>{try{ok(new THREE.OBJLoader().parse(rd.result),true)}catch(e){fail(e)}};rd.readAsText(file)}
   else if(ext==='stl'){rd.onload=()=>{try{ok(new THREE.Mesh(new THREE.STLLoader().parse(rd.result)),false)}catch(e){fail(e)}};rd.readAsArrayBuffer(file)}
+  else if(ext==='kicad_pcb'){rd.onload=()=>{try{pcbLoad(rd.result,base)}catch(e){fail(e)}};rd.readAsText(file)}
   else if(/^(jpe?g|png|webp)$/.test(ext))generate(file,base);
-  else msg('Desteklenen biçimler: GLB, GLTF, OBJ, STL, JPG, PNG, WEBP, proje (.json).');
+  else msg('Desteklenen biçimler: GLB, GLTF, OBJ, STL, JPG, PNG, WEBP, KiCad kartı (.kicad_pcb), proje (.json).');
  }catch(e){fail(e)}}
 async function generate(file,base){
  const bk=backendBase();
@@ -2346,7 +2470,7 @@ async function boolArrays(A,B,op,diag,names){const w=await loadManifold(),tol=Ma
 function toLocal(p,P){apply(p);const inv=new THREE.Matrix4().copy(p.mesh.matrixWorld).invert().elements,o=new Float32Array(P.length);
  for(let i=0;i<P.length;i+=3){const x=P[i],y=P[i+1],z=P[i+2];o[i]=inv[0]*x+inv[4]*y+inv[8]*z+inv[12];o[i+1]=inv[1]*x+inv[5]*y+inv[9]*z+inv[13];o[i+2]=inv[2]*x+inv[6]*y+inv[10]*z+inv[14]}return o}
 /* p'yi sonuçla değiştir (aynı konum/dönüş/ölçek, aynı malzeme) */
-function replaceWith(p,R,name){const g=p.ground,np=derive(R.P,R.C,R.I,name,p,xformOf(p));np.useVC=false;np.ground=g;if(g)sit(np);
+function replaceWith(p,R,name){const g=p.ground,np=derive(R.P,R.C,R.I,name,p,xformOf(p));np._p0=np.pos.slice();rcCarry(p,np);np.useVC=false;np.ground=g;if(g)sit(np);
  const i=parts.indexOf(np);parts.splice(i,1);parts.splice(parts.indexOf(p)+1,0,np);
  removePart(p);select(np);return np}
 let boolBusy=false;
@@ -2354,7 +2478,7 @@ async function boolParts(op,a,b,keep){if(boolBusy)return null;if(!a||!b||a===b){
  boolBusy=true;msg('Hesaplanıyor…','var(--mut)','#bmsg');
  try{if(cage)cageEnd(true);const A=localArrays(a),wb=worldArrays(b),B={P:toLocal(a,wb.P),I:wb.I};
   const R=await boolArrays(A,B,op,Math.hypot(...a.base),[a.name,b.name]);
-  const sym={union:'∪',subtract:'−',intersect:'∩'}[op],np=replaceWith(a,R,(a.name+sym+b.name).slice(0,28));
+  const sym={union:'∪',subtract:'−',intersect:'∩'}[op],np=replaceWith(a,R,(a.name+sym+b.name).slice(0,28));rcNote(np,{union:'Birleştirildi: + ',subtract:'Oyuldu: − ',intersect:'Ortak hacim: ∩ '}[op]+b.name);
   if(!keep)removePart(b);refresh();look();histMark();
   msg({union:'Birleştirildi',subtract:'Oyuldu',intersect:'Ortak hacim kaldı'}[op]+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#bmsg');return np}
  catch(e){msg(e.message,null,'#bmsg');return null}
@@ -2384,9 +2508,9 @@ function holeClick(e){const r=pickAt(e);if(!r)return;const n=r.h.face.normal.clo
 let holeBusy=false;
 async function holeDo(){const s=holeSpec();if(!s){msg('Önce "Delik" modunda yüzeye tıkla ve çapı gir.',null,'#hlmsg');return null}
  if(holeBusy)return null;holeBusy=true;const p=hole.p;msg('Hesaplanıyor…','var(--mut)','#hlmsg');
- try{if(cage)cageEnd(true);const cyl=cylMesh([s.start.x,s.start.y,s.start.z],[s.dir.x,s.dir.y,s.dir.z],s.L,s.D/2,64);
+ try{if(cage)cageEnd(true);const rc0=rcBegin(p),cyl=cylMesh([s.start.x,s.start.y,s.start.z],[s.dir.x,s.dir.y,s.dir.z],s.L,s.D/2,64);
   const R=await boolArrays(localArrays(p),{P:toLocal(p,cyl.P),I:cyl.I},s.op==='cut'?'subtract':'union',Math.hypot(...p.base),[p.name,'Delik']);
-  const np=replaceWith(p,R,p.name);hole.p=np;refresh();look();histMark();holePreview();
+  const np=replaceWith(p,R,p.name);rcEnd(rc0,np,rcHoleStep(rc0,s,parseFloat($('#hld').value)));hole.p=np;refresh();look();histMark();holePreview();
   msg((s.op==='cut'?'Ø'+f(s.D,2)+' mm delik açıldı'+(s.D!==parseFloat($('#hld').value)?' (geçme payı dahil)':'')+(s.dep>0?', derinlik '+f(s.dep,2)+' mm':' (boydan boya)'):'Ø'+f(s.D,2)+' mm, '+f(s.dep,2)+' mm çıkıntı eklendi')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#hlmsg');return np}
  catch(e){msg(e.message,null,'#hlmsg');return null}
  finally{holeBusy=false}}
@@ -2426,10 +2550,10 @@ document.querySelectorAll('#mtype button').forEach(b=>b.onclick=()=>setMType(b.d
 function rboxGeo(size,r){const rb=roundedBox(size[0],size[1],size[2],r,6);return geoFrom(rb.P,null,rb.I)}
 function addRBox(size,r,pos){size=(size||[200,120,40]).slice();r=r==null?Math.min(...size)*.2:r;const n=parts.length;
  const p=baseOpts({type:'rbox',size,base:size.slice(),pos:pos?pos.slice():[(n%5)*260-520,300,0],rad:Math.max(0,Math.min(r,Math.min(...size)/2))});
- p.name='Yuvarlak kutu '+p.id;p.color=COLS[p.id%COLS.length];register(p,rboxGeo(size,p.rad));regUV(p);metrics(p);apply(p);if(p.ground)sit(p);p.orig=snap(p);select(p);return p}
+ p.name='Yuvarlak kutu '+p.id;p.color=COLS[p.id%COLS.length];register(p,rboxGeo(size,p.rad));regUV(p);metrics(p);apply(p);if(p.ground)sit(p);rcInit(p);p.orig=snap(p);select(p);return p}
 /* güncel boyutta, verilen yarıçapla yeniden kur (ölçek 1'e döner, yarıçap gerçek mm kalır) */
 function rboxRebuild(p,r){pushUndo(p);const size=p.size.slice();p.rad=Math.max(0,Math.min(r,Math.min(...size)/2));const g=rboxGeo(size,p.rad);
- geoReplace(p,g.attributes.position.array,null,g.index.array);p.base=size.slice();p.size=size.slice();p.analytic=null;metrics(p);apply(p);if(p.ground)sit(p);refresh();look()}
+ geoReplace(p,g.attributes.position.array,null,g.index.array);p.base=size.slice();p.size=size.slice();p.analytic=null;metrics(p);apply(p);if(p.ground)sit(p);rcInit(p);refresh();look()}
 $('#addrbox').onclick=()=>addRBox();
 const _panel=panel;
 panel=function(){_panel();const p=sel;if(!p||p.type!=='rbox')return;const info=$('#info');if(!info)return;
@@ -2461,7 +2585,7 @@ let prLast=null,prT=0;
 const prOpen=()=>$('#p-print').classList.contains('on');
 function prBed(){const k=$('#prPrinter').value;$('#prCustom').hidden=k!=='custom';
  return k==='custom'?['#prBx','#prBy','#prBz'].map(s=>Math.max(1,+$(s).value||200)):PRINTERS[k].bed}
-function prTargets(){return $('#prAll').checked?parts.filter(p=>p.vis):(sel&&sel.vis?[sel]:[])}
+function prTargets(){return $('#prAll').checked?parts.filter(p=>p.vis&&!p.ghost):(sel&&sel.vis?[sel]:[])}
 /* tüm hedeflerin dünya ağı, gerçek hacim ve yüzey alanı */
 function prMesh(list){const m=catMesh(list.map(p=>worldArrays(p)));let vol=0,area=0;
  list.forEach(p=>{const mi=massInfo(p),g=p.mesh.geometry,sc=p.mesh.scale;vol+=mi.vol;area+=areaStats(g.attributes.position.array,g.index.array,[sc.x,sc.y,sc.z]).A});
@@ -2602,11 +2726,11 @@ $('#sDel').onclick=()=>{if(!sel)return;const n=sel.name;remove();histMark();sMsg
 /* kaba çevir: aynı şeklin küçültülmüş kopyasını yukarıdan oy (dışbükey şekillerde tam, diğerlerinde yaklaşık) */
 async function sCup(p,wall){const b=worldBox(p),sz=[0,1,2].map(k=>b.mx[k]-b.mn[k]);
  if(wall*2>=Math.min(sz[0],sz[1])-0.5||wall>=sz[2]-0.5)throw new Error('Duvar bu şekil için çok kalın. Daha ince bir duvar yaz ya da şekli büyüt.');
- const w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
+ const rc0=rcBegin(p),w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
   eps=Math.max(1,sz[2]*.05),fz=(sz[2]-wall+eps)/sz[2],Q=new Float32Array(P.length);
  for(let i=0;i<P.length;i+=3){Q[i]=cx+(P[i]-cx)*fx;Q[i+1]=cy+(P[i+1]-cy)*fy;Q[i+2]=b.mn[2]+wall+(P[i+2]-b.mn[2])*fz}
  const R=await boolArrays(localArrays(p),{P:toLocal(p,Q),I:w.I},'subtract',Math.hypot(...p.base),[p.name,'İç']);
- return replaceWith(p,R,p.name)}
+ const np=replaceWith(p,R,p.name);rcEnd(rc0,np,{op:'cup',wall,q:rc0.fr.q.toArray()});return np}
 $('#sCupGo').onclick=async()=>{const p=sel;if(!p||sBusy)return;const wall=parseFloat($('#sWall').value);if(!(wall>0))return sMsg('Duvar kalınlığını yaz.','var(--warn)');
  sBusy=true;sMsg('Hazırlanıyor…');try{const np=await sCup(p,wall);if(np.ground)sit(np);refresh();look();histMark();$('#sCup').hidden=true;sPanel();sMsg('Kap oldu. Duvar '+f(wall,1)+' mm.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false}};
@@ -2630,13 +2754,13 @@ $('#sRoundGo').onclick=()=>{const p=sel;if(!p)return;const r=Math.max(0,parseFlo
  refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
 
 /* birleştir: görünen tüm şekilleri sırayla tek parçada topla */
-$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
+$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis&&!p.ghost);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
  try{let a=list[0];for(let i=1;i<list.length;i++){const r=await boolParts('union',a,list[i],false);if(!r)throw new Error($('#bmsg').textContent||'Birleştirilemedi.');a=r}
   a.name='Birleşik parça';refresh();look();histMark();sMsg('Hepsi tek parça oldu.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false;sPanel()}};
 
 /* ---------- canlı fiyat ve sipariş: Baskı sekmesiyle aynı hesap (PLA, normal, görünen tüm şekiller) ---------- */
-function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis),el=$('#sPrice'),inf=$('#sPriceInfo');
+function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis&&!p.ghost),el=$('#sPrice'),inf=$('#sPriceInfo');
  if(!list.length){el.textContent='—';inf.textContent='Önce bir şekil ekle.';return}
  try{const M=prMesh(list),r=printAnalyze(M.P,M.I,[0,0,-1],QUOTE_CFG.overhang),bed=PRINTERS.p1s.bed;
   let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];for(let i=0;i<M.P.length;i+=3)for(let k=0;k<3;k++){const v=M.P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
@@ -2741,7 +2865,7 @@ async function fitPocket(body,peg,c,out){out=out||'#fitmsg';
   if(!R.I.length)throw new Error('Sonuç boş: girecek parça gövdenin tamamını kaplıyor.');
   if(R.vol>R.vol0-1e-3)throw new Error('Parçalar birbirine değmiyor. Girecek parçayı gövdenin içine, yuvanın olacağı yere yerleştir.');
   if(!parts.includes(body))throw new Error('Gövde bu arada silinmiş.');
-  const np=mfReplace(body,R,body.name);refresh();look();histMark();
+  const np=mfReplace(body,R,body.name);rcNote(np,'Geçme yuvası: '+peg.name+', '+f(c,2)+' mm pay');refresh();look();histMark();
   msg('Yuva açıldı: her yönde '+f(c,2)+' mm boşluk ('+(FIT_PRESETS[String(c)]||'özel')+'). '+peg.name+' yerinde duruyor; ayrı basılınca yuvaya girer.','var(--ok)',out);return np}
  catch(e){done();msg(e.message,null,out);return null}
  finally{fitBusy=false}}
@@ -2755,13 +2879,13 @@ async function roundPart(p,r,kind,where,out){out=out||'#rdmsg';
  const b=worldBox(p),mn=Math.min(b.mx[0]-b.mn[0],b.mx[1]-b.mn[1],b.mx[2]-b.mn[2]);
  if(where!=='in'&&r>=mn/2){msg('Bu parça için en fazla '+f(mn/2*.95,1)+' mm olabilir (en ince ölçüsü '+f(mn,1)+' mm).',null,out);return null}
  if(rdBusy)return null;rdBusy=true;const done=mfWait(out);
- try{if(cage)cageEnd(true);
+ try{if(cage)cageEnd(true);const rc0=rcBegin(p);
   const R=await mfRun({op:'round',A:mfIn(p),r,kind,where});done();
   const dv=(R.vol-R.vol0)/R.vol0;
   if(!R.I.length||dv<-.2)throw new Error('Bu yarıçap parçanın ince duvarlarını ya da küçük çıkıntılarını siliyor. Daha küçük bir yarıçap dene (duvar kalınlığının yarısından az).');
   if(dv>.2)throw new Error('Bu yarıçap parçadaki dar boşlukları ya da delikleri dolduruyor. Daha küçük bir yarıçap dene ya da yalnız "Dış kenarlar"ı seç.');
   if(!parts.includes(p))throw new Error('Parça bu arada silinmiş.');
-  const np=mfReplace(p,R,p.name);refresh();look();histMark();
+  const np=mfReplace(p,R,p.name);rcEnd(rc0,np,{op:'round',r,kind,where});refresh();look();histMark();
   const what={out:'Dış kenarlar',in:'İç köşeler',both:'Tüm kenarlar'}[where];
   msg(what+' '+f(r,2)+' mm '+(kind==='chamfer'?'pah kırıldı':'yuvarlatıldı')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³ ('+(dv>=0?'+':'')+f(dv*100,1)+'%).','var(--ok)',out);return np}
  catch(e){done();msg(e.message,null,out);return null}
@@ -2775,6 +2899,306 @@ $('#rdgo').onclick=()=>roundPart(sel,parseFloat(String($('#rdr').value).replace(
  e.innerHTML=parts.filter(p=>p!==sel).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
  if([...e.options].some(o=>o.value===v))e.value=v}}
 fillSelects();
+
+/* ================= Yapılanlar listesi: parçanın tarifi (parametrik geçmiş) =================
+   Her parça nasıl yapıldığını hatırlar: bir temel (hazır şekil ya da serbest ağ) ve üstüne sırayla adımlar
+   (delik, çıkıntı, yuvarlatma, kaba çevirme, boyut, çevirme). Bir adımın ölçüsü değişince parça temelden
+   başlayıp tüm adımlar yeniden uygulanarak baştan kurulur.
+
+   Tarif "gövde uzayı"nda tutulur: mm, eksenler parçanın dönüşüyle aynı, orijin parçaya yapışık.
+   p.rc = {base, locked, steps, off, sc, fp}
+     base   : {kind:'prim',type,size,rad} | {kind:'mesh',P,I,label}
+     locked : artık değiştirilemeyen eski adımların adları (yalnız gösterilir)
+     off    : gövde orijininin parça merkezine göre yeri (gövde eksenlerinde, mm)
+     sc     : son adımdan sonraki boyut (sonradan elle boyut değişti mi diye bakılır)
+     fp     : son adımdan sonraki geometrinin parmak izi (kayıtsız bir değişiklik oldu mu diye bakılır)
+   p.rc değiştirilmez, yenisi atanır: geri-al görüntüleri aynı nesneyi paylaşır.
+   Kaydedilmeyen bir işlem (kafes, esnet, kenar çekme, kesme, başka parçayla birleştirme) geometriyi değiştirirse
+   o ana kadarki adımlar kilitlenir, parçanın o anki hali yeni temel olur. */
+const RC_NAME={box:'Kutu',rbox:'Yuvarlak kutu',cyl:'Silindir',sph:'Küre',cone:'Koni'};
+
+/* ---------- parmak izi, çerçeve, diziler ---------- */
+function rcFp(p){const g=p.mesh.geometry,a=g.attributes.position.array,u=new Uint32Array(a.buffer,a.byteOffset,a.length);let h=2166136261;
+ for(let i=0;i<u.length;i++){h^=u[i];h=Math.imul(h,16777619)}return a.length+':'+g.index.count+':'+(h>>>0)}
+function rcInit(p){p.rc={base:{kind:'prim',type:p.type},locked:[],steps:[],off:[0,0,0],sc:p.size.slice(),fp:rcFp(p)}}
+function rcSameSize(a,b){return a&&b&&[0,1,2].every(k=>Math.abs(a[k]-b[k])<=1e-6*Math.max(1,Math.abs(b[k])))}
+function rcIsPrim(p){return !!RC_NAME[p.type]&&(p.type==='rbox'||!!p.analytic)}
+/* parçanın şu anki geçerli tarifi (parçayı değiştirmez) */
+function rcEff(p){const rc=p.rc;
+ if(!rc)return rcIsPrim(p)?{base:{kind:'prim',type:p.type,size:p.size.slice(),rad:p.rad},locked:[],steps:[],off:[0,0,0]}:{base:{kind:'mesh'},locked:[],steps:[],off:[0,0,0]};
+ if(rc.fp!==rcFp(p))return{base:{kind:'mesh'},locked:rcLabels(rc,p),steps:[],off:[0,0,0],frozen:true};
+ if(!rc.steps.length){
+  if(rc.base.kind==='prim')return Object.assign({},rc,{base:{kind:'prim',type:rc.base.type,size:p.size.slice(),rad:p.type==='rbox'?p.rad:rc.base.rad}});
+  return rc}
+ if(!rcSameSize(rc.sc,p.size))return Object.assign({},rc,{steps:rc.steps.concat([{op:'scale',to:p.size.slice()}])});
+ return rc}
+function rcBBox(P){const mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];
+ for(let i=0;i<P.length;i+=3)for(let k=0;k<3;k++){const v=P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
+ return{mn,mx,c:[0,1,2].map(k=>(mn[k]+mx[k])/2),s:[0,1,2].map(k=>mx[k]-mn[k]),d:Math.hypot(mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2])}}
+/* parçanın şu anki ağı gövde uzayında (mm) */
+function rcBodyArrays(p,off){const g=p.mesh.geometry,a=g.attributes.position.array,P=new Float32Array(a.length);
+ for(let i=0;i<a.length;i+=3)for(let k=0;k<3;k++)P[i+k]=a[i+k]*p.size[k]/p.base[k]-off[k];
+ return{P,I:Uint32Array.from(g.index.array)}}
+/* tarifin somut hali: temel ölçüsü / ağı ve varsa boyut adımı yazılmış */
+function rcMat(p){const e=rcEff(p);
+ if(!e.steps.length&&e.base.kind==='mesh'){const A=rcBodyArrays(p,[0,0,0]);return{base:{kind:'mesh',label:e.base.label,P:A.P,I:A.I},locked:e.locked,steps:[],off:[0,0,0]}}
+ return{base:e.base,locked:e.locked,steps:e.steps,off:e.off}}
+function rcFrame(p,off){apply(p);const q=p.mesh.quaternion.clone();return{q,O:new THREE.Vector3(...off).applyQuaternion(q).add(p.mesh.position)}}
+function rcOff(fr,pos){const v=fr.O.clone().sub(new THREE.Vector3(...pos)).applyQuaternion(fr.q.clone().invert());return[v.x,v.y,v.z]}
+
+/* ---------- kayıt: işlemden önce rcBegin, sonra rcEnd ---------- */
+function rcBegin(p){const rc=rcMat(p);return{p,rc,fr:rcFrame(p,rc.off),pos:p.pos.slice(),A:rc.steps.length||rc.base.kind!=='mesh'?null:{P:rc.base.P,I:rc.base.I}}}
+function rcArrays(ctx){return ctx.A||(ctx.A=rcBodyArrays(ctx.p,ctx.rc.off))}
+/* pos0: yeni parçanın, tablaya oturtulmadan önceki merkezi (şekil dünyada işlemden önceki yerinde) */
+function rcEnd(ctx,np,step,pos0){if(!ctx||!np)return;const rc=ctx.rc;
+ np.rc={base:rc.base,locked:rc.locked,steps:rc.steps.concat([step]),off:rcOff(ctx.fr,pos0||np._p0||np.pos),sc:np.size.slice(),fp:rcFp(np)}}
+/* kaydedilmeyen işlem yeni parça ürettiyse: eski adımlar kilitli olarak taşınır */
+function rcCarry(p,np){np.rc={base:{kind:'mesh'},locked:rcLabels(rcEff(p),p),steps:[],off:[0,0,0],sc:np.size.slice(),fp:rcFp(np)}}
+function rcNote(np,label){if(np&&np.rc)np.rc=Object.assign({},np.rc,{base:Object.assign({},np.rc.base,{label})})}
+function rcClone(p,np){if(!p.rc)return;const fr=rcFrame(p,p.rc.off);fr.O.add(new THREE.Vector3(...np.pos)).sub(new THREE.Vector3(...p.pos));
+ np.rc=Object.assign({},p.rc,{off:rcOff(fr,np.pos),sc:np.size.slice(),fp:rcFp(np)});
+ if(rcFp(p)!==p.rc.fp||!rcSameSize(p.rc.sc,p.size)&&p.rc.steps.length)np.rc=undefined}   // kaynak kayıtsız değişmişse kopya serbest şekil sayılır
+/* doğru üzerindeki ön yüz kesişimlerinden c'ye en yakın olanın d boyunca işaretli uzaklığı (yoksa null) */
+function rcRay(A,c,d){const P=A.P,I=A.I;let best=null;
+ for(let t=0;t<I.length;t+=3){const a=I[t]*3,b=I[t+1]*3,e=I[t+2]*3,
+   e1x=P[b]-P[a],e1y=P[b+1]-P[a+1],e1z=P[b+2]-P[a+2],e2x=P[e]-P[a],e2y=P[e+1]-P[a+1],e2z=P[e+2]-P[a+2],
+   px=d[1]*e2z-d[2]*e2y,py=d[2]*e2x-d[0]*e2z,pz=d[0]*e2y-d[1]*e2x,det=e1x*px+e1y*py+e1z*pz;
+  if(det<1e-12)continue;                                                  // arka yüz ya da paralel
+  const sx=c[0]-P[a],sy=c[1]-P[a+1],sz=c[2]-P[a+2],u=(sx*px+sy*py+sz*pz)/det;if(u<-1e-6||u>1+1e-6)continue;
+  const qx=sy*e1z-sz*e1y,qy=sz*e1x-sx*e1z,qz=sx*e1y-sy*e1x,v=(d[0]*qx+d[1]*qy+d[2]*qz)/det;if(v<-1e-6||u+v>1+1e-6)continue;
+  const s=(e2x*qx+e2y*qy+e2z*qz)/det;if(best===null||Math.abs(s)<Math.abs(best))best=s}
+ return best}
+/* s: holeSpec() sonucu (dünya); dNom: yazılan çap (geçme payı hariç) */
+function rcHoleStep(ctx,s,dNom){const qi=ctx.fr.q.clone().invert(),c=s.c.clone().sub(ctx.fr.O).applyQuaternion(qi),d=s.dir.clone().applyQuaternion(qi).normalize();
+ const st={op:'hole',kind:s.op,d:dNom>0?dNom:s.D,fit:dNom>0?(s.D-dNom)/2:0,dep:s.dep,c:[c.x,c.y,c.z],dir:[d.x,d.y,d.z]};
+ const A=rcArrays(ctx),din=s.op==='cut'?st.dir:st.dir.map(v=>-v),t=rcRay(A,st.c,din);
+ if(t!==null&&Math.abs(t)<=Math.max(1,.02*rcBBox(A.P).d))st.o=-t;         // yüzeye bağlı: gövde ölçüsü değişince delik yüzeyle birlikte taşınır
+ return st}
+/* bakeTurn: yerel eksen çevresinde +90° */
+function rcRotStep(ctx,ax){const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3().setComponent(ax,1),Math.PI/2),bc=rcBBox(rcArrays(ctx).P).c;
+ return{op:'rot',q:q.toArray(),pv:[0,1,2].map(k=>-ctx.rc.off[k]-bc[k]),lbl:ax===2?'turn':'lay'}}
+
+/* ---------- adların yazımı ---------- */
+function rcDims(s){return s.map(v=>f(v,1)).join(' × ')+' mm'}
+function rcBaseLabel(b,p){if(b.kind!=='prim')return b.label||'Serbest şekil';const s=b.size||(p?p.size:null);
+ return RC_NAME[b.type]+(s?' '+rcDims(s):'')+(b.type==='rbox'&&b.rad>0?', köşe '+f(b.rad,1)+' mm':'')}
+function rcStepLabel(st){
+ if(st.op==='hole')return st.kind==='cut'?'Delik Ø'+f(st.d,2)+' mm, '+(st.dep>0?f(st.dep,2)+' mm derin':'boydan boya')+(st.fit>0?' (+'+f(st.fit,2)+' mm geçme payı)':''):'Çıkıntı Ø'+f(st.d,2)+' × '+f(st.dep,2)+' mm';
+ if(st.op==='round')return{out:'Dış kenarlar',in:'İç köşeler',both:'Tüm kenarlar'}[st.where]+' '+f(st.r,2)+' mm '+(st.kind==='chamfer'?'pah kırıldı':'yuvarlatıldı');
+ if(st.op==='cup')return'Kaba çevrildi, duvar '+f(st.wall,1)+' mm';
+ if(st.op==='scale')return'Boyut değişti: '+rcDims(st.to);
+ if(st.op==='rot')return st.lbl==='lay'?'Yan yatırıldı (90°)':'Döndürüldü (90°)';
+ return'İşlem'}
+function rcLabels(rc,p){return rc.locked.concat([rcBaseLabel(rc.base,p)],rc.steps.map(rcStepLabel))}
+
+/* ---------- yeniden kurma: temel + adımlar (gövde uzayı, mm) ---------- */
+function rcBaseArrays(b){
+ if(b.kind==='mesh'){if(!b.P)throw new Error('Temel şekil kayıtlı değil.');return{P:Float32Array.from(b.P),I:Uint32Array.from(b.I)}}
+ const s=b.size;if(b.type==='rbox'){const r=roundedBox(s[0],s[1],s[2],b.rad||0,6);return{P:r.P,I:r.I}}
+ const g=geos[b.type](),a=g.attributes.position.array,P=new Float32Array(a.length);for(let i=0;i<a.length;i+=3)for(let k=0;k<3;k++)P[i+k]=a[i+k]*s[k];
+ const I=Uint32Array.from(g.index.array);g.dispose();return{P,I}}
+function rcRotArr(P,q,pv){const Q=new THREE.Quaternion(q[0],q[1],q[2],q[3]),v=new THREE.Vector3(),o=new Float32Array(P.length);pv=pv||[0,0,0];
+ for(let i=0;i<P.length;i+=3){v.set(P[i]-pv[0],P[i+1]-pv[1],P[i+2]-pv[2]).applyQuaternion(Q);o[i]=v.x+pv[0];o[i+1]=v.y+pv[1];o[i+2]=v.z+pv[2]}return o}
+async function rcStepApply(A,st){const bb=rcBBox(A.P);
+ if(st.op==='hole'){const cut=st.kind==='cut',din=cut?st.dir:st.dir.map(v=>-v);let c=st.c.slice();
+  if(st.o!==undefined){const t=rcRay(A,c,din);if(t===null)throw new Error((cut?'Deliğin':'Çıkıntının')+' yeri artık parçanın dışında kalıyor.');c=c.map((v,k)=>v+din[k]*(t+st.o))}
+  const D=st.d+2*(st.fit||0),eps=Math.max(.5,D*.05),L=cut?(st.dep>0?st.dep+eps:bb.d*2+eps):st.dep+eps;
+  const cyl=cylMesh(c.map((v,k)=>v-st.dir[k]*eps),st.dir,L,D/2,64),v0=triMetrics(A.P,A.I).V;
+  const R=await boolArrays(A,cyl,cut?'subtract':'union',bb.d,['Parça',cut?'Delik':'Çıkıntı']);
+  if(Math.abs(triMetrics(R.P,R.I).V-v0)<=1e-9*Math.abs(v0))throw new Error((cut?'Delik':'Çıkıntı')+' artık parçaya değmiyor.');
+  return{P:R.P,I:R.I}}
+ if(st.op==='round'){const mn=Math.min(...bb.s);
+  if(st.where!=='in'&&st.r>=mn/2)throw new Error('Bu ölçüde en fazla '+f(mn/2*.95,1)+' mm yuvarlatılabilir (en ince ölçü '+f(mn,1)+' mm).');
+  const d=Math.max(bb.d,1),wd=weld(A.P,null,A.I,d*1e-6),R=await mfRun({op:'round',A:{P:wd.P,I:Uint32Array.from(wd.I),tol:d*1e-5},r:st.r,kind:st.kind,where:st.where}),dv=(R.vol-R.vol0)/R.vol0;
+  if(!R.I.length||dv<-.2)throw new Error('Bu yarıçap parçanın ince duvarlarını siliyor. Daha küçük bir değer dene.');
+  if(dv>.2)throw new Error('Bu yarıçap parçadaki delikleri dolduruyor. Daha küçük bir değer dene.');
+  const S=splitSharp(R.P,null,R.I,15);return{P:S.P,I:S.I}}
+ if(st.op==='cup'){const W=rcRotArr(A.P,st.q),b=rcBBox(W),sz=b.s,wall=st.wall;                     // işlemin yapıldığı andaki dünya yönünde: ağız yukarı (+Z)
+  if(wall*2>=Math.min(sz[0],sz[1])-.5||wall>=sz[2]-.5)throw new Error('Duvar bu ölçü için çok kalın.');
+  const fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],eps=Math.max(1,sz[2]*.05),fz=(sz[2]-wall+eps)/sz[2],Q=new Float32Array(W.length);
+  for(let i=0;i<W.length;i+=3){Q[i]=b.c[0]+(W[i]-b.c[0])*fx;Q[i+1]=b.c[1]+(W[i+1]-b.c[1])*fy;Q[i+2]=b.mn[2]+wall+(W[i+2]-b.mn[2])*fz}
+  const R=await boolArrays({P:W,I:A.I},{P:Q,I:A.I},'subtract',b.d,['Parça','İç']);
+  return{P:rcRotArr(R.P,[-st.q[0],-st.q[1],-st.q[2],st.q[3]]),I:R.I}}
+ if(st.op==='scale'){const k=[0,1,2].map(i=>bb.s[i]>1e-9?st.to[i]/bb.s[i]:1),P=new Float32Array(A.P.length);
+  for(let i=0;i<P.length;i+=3)for(let j=0;j<3;j++)P[i+j]=bb.c[j]+(A.P[i+j]-bb.c[j])*k[j];return{P,I:A.I}}
+ if(st.op==='rot')return{P:rcRotArr(A.P,st.q,[0,1,2].map(k=>bb.c[k]+(st.pv?st.pv[k]:0))),I:A.I};
+ throw new Error('Bilinmeyen adım.')}
+async function rcBuild(rc){let A=rcBaseArrays(rc.base);
+ for(let i=0;i<rc.steps.length;i++){try{A=await rcStepApply(A,rc.steps[i])}catch(e){const er=new Error((rc.locked.length+i+2)+'. adım ('+rcStepLabel(rc.steps[i])+') uygulanamadı: '+e.message);er.step=i;throw er}}
+ return A}
+/* parçayı verilen tarifle baştan kur; gövde orijini dünyada yerinde kalır. Olmazsa parça değişmez, hata fırlatılır. */
+let rcBusy=false;
+async function rcApply(p,rc2){
+ if(rcBusy)throw new Error('Önceki hesap sürüyor.');rcBusy=true;
+ try{if(typeof cage!=='undefined'&&cage)cageEnd(true);
+  const fr=rcFrame(p,rcEff(p).off),A=await rcBuild(rc2);
+  if(!parts.includes(p))throw new Error('Parça bu arada silinmiş.');
+  const np=derive(A.P,null,A.I,p.name,p,{pos:[fr.O.x,fr.O.y,fr.O.z],rot:p.rot.slice(),scale:[1,1,1]}),pos0=np.pos.slice();
+  np.useVC=false;np.ground=p.ground;if(np.ground)sit(np);
+  parts.splice(parts.indexOf(np),1);parts.splice(parts.indexOf(p)+1,0,np);
+  const keepBase=rc2.steps.length||rc2.base.kind!=='mesh';
+  np.rc={base:keepBase?rc2.base:{kind:'mesh',label:rc2.base.label},locked:rc2.locked,steps:rc2.steps,off:rcOff(fr,pos0),sc:np.size.slice(),fp:rcFp(np)};
+  if(typeof hole!=='undefined'&&hole&&hole.p===p){hole=null;holePreview()}
+  const was=sel===p;removePart(p);if(was)select(np);refresh();look();histMark();return np}
+ finally{rcBusy=false}}
+
+/* ---------- kaydet / yükle ---------- */
+function rcOut(p,raw,E){const rc=p.rc;if(!rc)return undefined;if(raw||!rc.base.P)return rc;
+ return Object.assign({},rc,{base:Object.assign({},rc.base,{P:E(rc.base.P),I:E(rc.base.I)})})}
+function rcIn(rc){if(!rc||!rc.base||!Array.isArray(rc.steps))return undefined;if(typeof rc.base.P!=='string')return rc;
+ return Object.assign({},rc,{base:Object.assign({},rc.base,{P:f32(rc.base.P),I:u32(rc.base.I)})})}
+
+/* ---------- liste ve düzenleme ---------- */
+let rcUI={pid:0,row:null};
+function rcNum(v){return parseFloat(String(v).replace(',','.'))}
+function rcSay(t,c){if(uiMode==='simple')sMsg(t,c);else msg(t,c,'#rcMsg')}
+/* düzenlenebilir alanlar: [anahtar, yazı, değer, en küçük] */
+function rcFields(row,rc){
+ if(row==='b'){const b=rc.base;if(b.kind!=='prim')return null;
+  const F=[['x','Genişlik (X)',b.size[0],.1],['y','Derinlik (Y)',b.size[1],.1],['z','Yükseklik (Z)',b.size[2],.1]];if(b.type==='rbox')F.push(['rad','Köşe yuvarlaklığı',b.rad||0,0]);return F}
+ const st=rc.steps[row];if(!st)return null;
+ if(st.op==='hole')return st.kind==='cut'?[['d','Delik çapı',st.d,.1],['dep','Derinlik (0 yazarsan boydan boya)',st.dep,0]]:[['d','Çıkıntı çapı',st.d,.1],['dep','Çıkıntı yüksekliği',st.dep,.1]];
+ if(st.op==='round')return[['r',st.kind==='chamfer'?'Pah boyu':'Yuvarlaklık',st.r,.05]];
+ if(st.op==='cup')return[['wall','Duvar kalınlığı',st.wall,.2]];
+ if(st.op==='scale')return[['x','Genişlik (X)',st.to[0],.1],['y','Derinlik (Y)',st.to[1],.1],['z','Yükseklik (Z)',st.to[2],.1]];
+ return null}
+function rcWith(rc,row,V){
+ if(row==='b'){const b=Object.assign({},rc.base,{size:[V.x,V.y,V.z]});if(b.type==='rbox')b.rad=Math.min(V.rad,Math.min(V.x,V.y,V.z)/2);return Object.assign({},rc,{base:b})}
+ const st=Object.assign({},rc.steps[row]);
+ if(st.op==='scale')st.to=[V.x,V.y,V.z];else Object.assign(st,V);
+ const steps=rc.steps.slice();steps[row]=st;return Object.assign({},rc,{steps})}
+function rcRender(){const simple=uiMode==='simple',el=$(simple?'#sRc':'#rcList');if(!el)return;
+ const p=sel&&parts.includes(sel)?sel:null;let h='';
+ if(!p)h=simple?'':'<p class="mut">Bir parça seç: nasıl yapıldığı burada adım adım görünür.</p>';
+ else{const rc=rcEff(p),nL=rc.locked.length;if(rcUI.pid!==p.id)rcUI={pid:p.id,row:null};
+  const row=(n,t,key,lock)=>{const F=!lock&&rcFields(key,rc),open=F&&String(rcUI.row)===String(key),ed=simple?'s-btn':'sm';
+   let r=`<li class="rc-row${lock?' rc-lock':''}"><span class="rc-n">${n}</span><span class="rc-t">${esc(t)}${lock?' <i>(kilitli)</i>':''}</span>`+
+    (F?`<button class="sm" data-rce="${key}" aria-expanded="${!!open}">Değiştir</button>`:'')+(!lock&&key!=='b'?`<button class="sm rc-del" data-rcd="${key}" title="Bu adımı kaldır" aria-label="${n}. adımı kaldır">Sil</button>`:'')+'</li>';
+   if(open)r+=`<li class="rc-ed">`+F.map(([k,l,v,mn])=>`<label>${l}<input type="number" data-rcf="${k}" min="${mn}" step="0.5" value="${+(+v).toFixed(3)}" inputmode="decimal"><span>mm</span></label>`).join('')+
+    `<div class="rc-go"><button class="${ed} s-pri" data-rcgo="${key}">Uygula</button><button class="${ed}" data-rcx="1">Vazgeç</button></div></li>`;
+   return r};
+  h='<ol class="rc-list">'+rc.locked.map((t,i)=>row(i+1,t,'l'+i,true)).join('')+row(nL+1,rcBaseLabel(rc.base,p),'b',false)+rc.steps.map((st,i)=>row(nL+2+i,rcStepLabel(st),i,false)).join('')+'</ol>';
+  if(nL)h+='<p class="note">Kilitli adımlar, sonradan elle yapılan bir biçim değişikliğinden önce kaldı; ölçüleri artık değiştirilemez.</p>';
+  else if(!rc.steps.length&&rc.base.kind==='prim')h+='<p class="note">Delik açtıkça, köşe yuvarladıkça adımlar buraya eklenir. Sonra herhangi birinin ölçüsünü değiştirebilirsin; gerisi kendiliğinden yeniden yapılır.</p>'}
+ if(el._rc===h)return;el._rc=h;el.innerHTML=h;
+ if(simple){const t=$('#sRcT');if(t)t.hidden=!p}}
+async function rcEdit(p,row,V){const rc=rcMat(p);
+ if(row==='b'&&!rc.steps.length&&p.type===rc.base.type&&rcIsPrim(p)){                     // adımsız hazır şekil: doğrudan ölç
+  p.size=[V.x,V.y,V.z];if(p.type==='rbox')rboxRebuild(p,V.rad);else{apply(p);if(p.ground)sit(p)}refresh();look();histMark();return p}
+ return rcApply(p,rcWith(rc,row,V))}
+function rcDelete(p,row){const rc=rcMat(p),steps=rc.steps.slice();steps.splice(row,1);return rcApply(p,Object.assign({},rc,{steps}))}
+async function rcDo(job,okText){if(rcBusy)return null;rcSay('Yeniden yapılıyor…','var(--mut)');
+ try{const np=await job();rcUI.row=null;rcRender();rcSay(okText,'var(--ok)');if(uiMode==='simple')sPanel();return np}
+ catch(e){rcSay(e.message+' Parça değişmedi.','var(--warn)');return null}}
+function rcClick(e){const b=e.target.closest('button');if(!b)return;const p=sel,box=e.currentTarget;if(!p)return;
+ const key=v=>v==='b'?'b':+v;
+ if(b.dataset.rce!==undefined){rcUI.row=String(rcUI.row)===b.dataset.rce?null:key(b.dataset.rce);box._rc=null;rcRender();const i=box.querySelector('.rc-ed input');if(i)i.focus();return}
+ if(b.dataset.rcx){rcUI.row=null;rcRender();return}
+ if(b.dataset.rcd!==undefined){rcDo(()=>rcDelete(p,key(b.dataset.rcd)),'Adım kaldırıldı, parça yeniden yapıldı.');return}
+ if(b.dataset.rcgo!==undefined){const row=key(b.dataset.rcgo),V={};let bad=null;
+  box.querySelectorAll('.rc-ed input').forEach(i=>{const v=rcNum(i.value),mn=+i.min;if(!(v>=mn))bad=i;V[i.dataset.rcf]=v});
+  if(bad){bad.focus();rcSay('Bu ölçü en az '+f(+bad.min,2)+' mm olmalı.','var(--warn)');return}
+  rcDo(()=>rcEdit(p,row,V),'Ölçü değişti, sonraki adımlar yeniden yapıldı.')}}
+['#rcList','#sRc'].forEach(s=>{const el=$(s);if(el){el.addEventListener('click',rcClick);
+ el.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('.rc-ed input')){e.preventDefault();const g=el.querySelector('[data-rcgo]');if(g)g.click()}})}});
+{const _p=panel;panel=function(){_p();rcRender()};const _s=sPanel;sPanel=function(){_s();rcRender()};const _u=setUI;setUI=function(m){_u(m);rcRender()}}
+rcRender();
+
+/* ================= KiCad kartından kutu =================
+   kicadBoard() (pure.js) kartı okur; burada ondan kutu kurulur (manifold-3d ile):
+   - alt gövde: kart çevresinin dışa ötelenmiş hali kadar tekne (taban + duvar), ağzı yukarı
+   - vida ayakları: karttaki her vida deliğinin altında, içinde kılavuz delik
+   - açıklıklar: kenara dayanan USB / düğme / bağlantı için duvarda pencere
+   - kapak: aynı çevre, içeri geçen dudaklı; baskıya hazır (düz yüzü tablada) kutunun yanına konur
+   - kart önizlemesi: kart ve parçaları kutular halinde (yalnız bakmak için, "hayalet" parça)
+   Z düzeni: 0 taban altı · floor kutu içi · floor+below kartın alt yüzü · +t kartın üst yüzü · +above duvarın üstü. */
+const PCB_EDGE={l:'sol kenar',r:'sağ kenar',t:'üst kenar',b:'alt kenar'},PCB_KIND={usb:'USB',button:'düğme',conn:'bağlantı'};
+let pcbB=null;                                                     // okunan kart (ön yüz yukarı haliyle)
+const pcbR=v=>Math.ceil(v*2-1e-9)/2;
+function pcbView(){return pcbB&&$('#pcbUp').value==='B'?kiFlip(pcbB):pcbB}
+/* kart için önerilen boşluklar */
+function pcbAuto(B,lid){const mB=B.maxB?B.maxB.h:0,mF=B.maxF?B.maxF.h:0,eF=B.comps.filter(c=>c.side==='F'&&c.edge).reduce((m,c)=>Math.max(m,c.h),0);
+ const usb=s=>B.comps.filter(c=>c.side===s&&c.edge&&c.kind==='usb').reduce((m,c)=>Math.max(m,c.h/2+3.25),0);      // kablo başlığı tabana / kapağa çarpmasın
+ return{below:pcbR(Math.max(2,mB+.5,usb('B'))),above:pcbR(Math.max(2,mF+1,lid?eF+2.5:0,usb('F')))}}
+function pcbOpenings(B){return B.comps.filter(c=>c.edge&&PCB_KIND[c.kind])}
+/* o: {wall,gap,floor,below,above,pilot,lid,show,open:[ref…]} → {tray,lid,board,info}; diziler dünya mm */
+async function pcbCase(B,o){const w=await loadManifold(),G=[],k=m=>{G.push(m);return m},M=w.Manifold;
+ try{const t=B.t,zb=o.floor+o.below,zt=zb+t,H=zt+o.above,SEG=48;
+  const pg=l=>l.map(p=>({x:p[0],y:p[1]})),cs=k(new w.CrossSection([pg(B.outline)])),outC=k(cs.offset(o.gap+o.wall,'Round',2,SEG)),inC=k(cs.offset(o.gap,'Round',2,SEG));
+  const cyl=(x,y,z0,h,r)=>k(k(M.cylinder(h,r,r,SEG,false)).translate(x,y,z0)),box=(a,b)=>k(k(M.cube({x:b[0]-a[0],y:b[1]-a[1],z:b[2]-a[2]},false)).translate(a[0],a[1],a[2]));
+  const outer=k(outC.extrude(H));let tray=k(outer.subtract(k(k(inC.extrude(H)).translate(0,0,o.floor))));
+  /* vida ayakları */
+  const od=h=>Math.max(h.d+2.8,o.pilot+2.4,4.5),warn=B.warn.slice();
+  if(B.holes.length){let st=null;for(const h of B.holes){const c=cyl(h.x,h.y,o.floor-.5,o.below+.5,od(h)/2);st=st?k(st.add(c)):c;
+    const hit=B.comps.find(c=>c.side==='B'&&c.bb[0]<h.x+od(h)/2&&c.bb[2]>h.x-od(h)/2&&c.bb[1]<h.y+od(h)/2&&c.bb[3]>h.y-od(h)/2);
+    if(hit)warn.push(h.ref+' ayağı '+hit.ref+' parçasına değebilir.')}
+   tray=k(tray.add(k(st.intersect(outer))));
+   for(const h of B.holes)tray=k(tray.subtract(cyl(h.x,h.y,Math.min(1,o.floor/2),zb,o.pilot/2)))}
+  /* duvar açıklıkları */
+  const opened=[],far=o.gap+o.wall+1;
+  for(const c of pcbOpenings(B)){if(!o.open.includes(c.ref))continue;const usb=c.kind==='usb',up=c.side==='F',bb=c.bb,hx=B.w/2,hy=B.h/2;
+   const horiz=c.edge==='l'||c.edge==='r',a0=horiz?bb[1]:bb[0],a1=horiz?bb[3]:bb[2],am=(a0+a1)/2;
+   /* USB: kablonun plastik başlığı da girsin diye 12 × 6,5 mm; diğerleri parçanın kendisi + pay */
+   const u0=usb?Math.min(a0-.6,am-6):a0-.6,u1=usb?Math.max(a1+.6,am+6):a1+.6,zc=up?zt+c.h/2:zb-c.h/2;
+   let z0=usb?Math.min(zc-3.25,up?zt:zb-c.h-.6):(up?zt-.2:zb-c.h-.6),z1=usb?Math.max(zc+3.25,up?zt+c.h+.6:zb):(up?zt+c.h+.6:zb+.2);
+   z0=Math.max(z0,o.floor);z1=Math.min(z1,H+1);
+   const lo=c.edge==='l'?[-hx-far,u0,z0]:c.edge==='r'?[Math.min(bb[2],hx)-1,u0,z0]:c.edge==='b'?[u0,-hy-far,z0]:[u0,Math.min(bb[3],hy)-1,z0];
+   const hi=c.edge==='l'?[Math.max(bb[0],-hx)+1,u1,z1]:c.edge==='r'?[hx+far,u1,z1]:c.edge==='b'?[u1,Math.max(bb[1],-hy)+1,z1]:[u1,hy+far,z1];
+   tray=k(tray.subtract(box(lo,hi)));opened.push(c.ref)}
+  const bbx=outC.bounds(),g=v=>[v[0]??v.x,v[1]??v.y],bmn=g(bbx.min),bmx=g(bbx.max),ow=bmx[0]-bmn[0],oh=bmx[1]-bmn[1];
+  /* kapak: önce yerinde (dudak aşağı), sonra ters çevrilip yanına */
+  let lid=null;const lidT=o.wall,lipH=2,fit=.15,lipW=1.2;
+  if(o.lid){const lo=k(cs.offset(o.gap-fit,'Round',2,SEG)),li=k(cs.offset(o.gap-fit-lipW,'Round',2,SEG));
+   const a=k(k(outC.extrude(lidT)).translate(0,0,H)),lip=k(k(k(lo.subtract(li)).extrude(lipH+.2)).translate(0,0,H-lipH));
+   lid=k(k(k(a.add(lip)).rotate(0,180,0)).translate(ow+8,0,H+lidT))}
+  /* kart önizlemesi */
+  let board=null;
+  if(o.show){let bc=k(new w.CrossSection([B.outline].concat(B.cutouts).map(pg)));
+   for(const h of B.holes)bc=k(bc.subtract(k(k(w.CrossSection.circle(h.d/2,24)).translate(h.x,h.y))));
+   const list=[k(k(bc.extrude(t)).translate(0,0,zb))];
+   for(const c of B.comps){const bb=c.bb;if(bb[2]-bb[0]<.05||bb[3]-bb[1]<.05||c.h<.05)continue;list.push(box([bb[0],bb[1],c.side==='F'?zt-.02:zb-c.h],[bb[2],bb[3],c.side==='F'?zt+c.h:zb+.02]))}
+   board=k(M.union(list))}
+  const out=m=>{if(!m)return null;const g=m.getMesh(),np=g.numProp,V=g.vertProperties,n=V.length/np,P=new Float32Array(n*3);
+   for(let i=0;i<n;i++){P[3*i]=V[np*i];P[3*i+1]=V[np*i+1];P[3*i+2]=V[np*i+2]}const S=splitSharp(P,null,Uint32Array.from(g.triVerts),30);return{P:S.P,I:S.I}};
+  return{tray:out(tray),lid:out(lid),board:out(board),info:{w:ow,h:oh,H,lidT,opened,warn,zb,zt}}}
+ finally{G.forEach(m=>{try{m.delete()}catch(e){}})}}
+
+/* ---------- arayüz ---------- */
+function pcbInfo(){const B=pcbView();if(!B)return;const f1=v=>f(v,1),nF=B.comps.filter(c=>c.side==='F').length,nB=B.comps.length-nF,est=B.comps.some(c=>c.est);
+ const hd=[...new Set(B.holes.map(h=>'Ø'+f(h.d,1)))].join(', ');
+ $('#pcbInfo').innerHTML=`<b>${esc(B.name)}</b>: ${f1(B.w)} × ${f1(B.h)} mm, ${f1(B.t)} mm kalın<br>`+
+  (B.holes.length?`${B.holes.length} vida deliği (${hd} mm)`:'Vida deliği yok')+`, ${B.comps.length} parça (üstte ${nF}, altta ${nB})<br>`+
+  `En yüksek parça: üstte ${B.maxF?esc(B.maxF.ref)+' '+f1(B.maxF.h)+' mm':'yok'}, altta ${B.maxB?esc(B.maxB.ref)+' '+f1(B.maxB.h)+' mm':'yok'}`+(est?'<br><span class="mut">Bazı yükseklikler kılıf adından tahmin edildi; emin değilsen boşluğu büyüt.</span>':'');
+ const L=pcbOpenings(B),prev={};$('#pcbOpen').querySelectorAll('input').forEach(i=>prev[i.dataset.ref]=i.checked);
+ $('#pcbOpen').innerHTML=L.length?L.map(c=>`<label class="chk"><input type="checkbox" data-ref="${esc(c.ref)}"${(prev[c.ref]!==undefined?prev[c.ref]:c.kind!=='conn')?' checked':''}>${esc(c.ref)} · ${PCB_KIND[c.kind]}${c.val&&c.kind!=='usb'?' ('+esc(c.val.slice(0,18))+')':''} · ${PCB_EDGE[c.edge]}</label>`).join(''):'<p class="note">Kenara dayanan USB, düğme ya da bağlantı bulunamadı.</p>'}
+function pcbDefaults(){const B=pcbView();if(!B)return;const a=pcbAuto(B,$('#pcbLid').checked);$('#pcbBelow').value=a.below;$('#pcbAbove').value=a.above;
+ const d=B.holes.length?Math.min(...B.holes.map(h=>h.d)):2.2;$('#pcbPilot').value=+Math.max(.8,d-.4).toFixed(1)}
+function pcbLoad(text,name){pcbB=kicadBoard(text,name);if(uiMode==='simple')setUI('adv');openTab('model');
+ $('#pcbBox').hidden=false;$('#pcbHint').hidden=true;$('#pcbUp').value='F';pcbInfo();pcbDefaults();
+ msg(pcbB.warn.join(' ')||'Kart okundu. Ölçüleri kontrol edip "Kutuyu oluştur"a bas.',pcbB.warn.length?null:'var(--ok)','#pcbMsg');msg('');
+ $('#pcbBox').scrollIntoView&&$('#pcbBox').scrollIntoView({block:'nearest'});return pcbB}
+function pcbOpts(){const n=(s,mn)=>{const v=parseFloat(String($(s).value).replace(',','.'));if(!(v>=mn))throw new Error($(s).previousElementSibling.textContent+' en az '+f(mn,1)+' olmalı.');return v};
+ return{wall:n('#pcbWall',.8),gap:n('#pcbGap',.1),floor:n('#pcbFloor',.8),below:n('#pcbBelow',1),above:n('#pcbAbove',1),pilot:n('#pcbPilot',.5),lid:$('#pcbLid').checked,show:$('#pcbShow').checked,
+  open:[...$('#pcbOpen').querySelectorAll('input:checked')].map(i=>i.dataset.ref)}}
+let pcbBusy=false;
+async function pcbMake(){if(pcbBusy||!pcbB)return null;pcbBusy=true;
+ try{const B=pcbView(),o=pcbOpts();msg('Kutu hesaplanıyor…','var(--mut)','#pcbMsg');
+  const R=await pcbCase(B,o);if(typeof cage!=='undefined'&&cage)cageEnd(true);
+  parts.filter(p=>p.gen==='pcb').forEach(removePart);                                    // önceki denemeyi değiştir
+  const mk=(A,name,color,ghost)=>{if(!A)return null;const p=derive(A.P,null,A.I,name,{color,mat:'ABS plastik',fill:'solid',wall:2,useVC:false,lock:true},{pos:[0,0,0],rot:[0,0,0],scale:[1,1,1]});
+   p.gen='pcb';if(ghost)p.ghost=true;else p.rc={base:{kind:'mesh',label:name+' ('+B.name+' kartından)'},locked:[],steps:[],off:[0,0,0],sc:p.size.slice(),fp:rcFp(p)};return p};
+  const brd=mk(R.board,'Kart (önizleme)','#2e8b57',true),lid=mk(R.lid,'Kutu kapağı','#8fb8ff'),tray=mk(R.tray,'Kutu gövdesi','#6fa8ff');
+  select(tray);refresh();if(typeof fit==='function')fit();look();histMark();
+  const i=R.info,dis=B.comps.some(c=>c.kind==='button'&&i.opened.includes(c.ref));
+  msg(`Kutu hazır: dıştan ${f(i.w,1)} × ${f(i.h,1)} × ${f(i.H+(lid?i.lidT:0),1)} mm`+(B.holes.length?`, ${B.holes.length} vida ayağı`:'')+(i.opened.length?`, ${i.opened.length} açıklık (${i.opened.join(', ')})`:'')+'.'+
+   (dis?' Düğmeler duvarın içinde kalır: basmak için ince bir uç ya da düğme başlığı gerekir.':'')+(i.warn.length?' Dikkat: '+i.warn.join(' '):''),i.warn.length?null:'var(--ok)','#pcbMsg');
+  return{tray,lid,board:brd,info:i}}
+ catch(e){msg('Kutu oluşturulamadı: '+e.message,null,'#pcbMsg');return null}
+ finally{pcbBusy=false}}
+$('#pcbPick').onclick=()=>$('#file').click();
+$('#pcbGo').onclick=pcbMake;
+$('#pcbUp').onchange=()=>{pcbInfo();pcbDefaults()};
+$('#pcbLid').onchange=()=>{const B=pcbView();if(B)$('#pcbAbove').value=Math.max(+$('#pcbAbove').value||0,pcbAuto(B,$('#pcbLid').checked).above)};
 
 </script>
 </html>

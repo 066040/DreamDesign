@@ -154,7 +154,7 @@ function add(type,size,pos,opts){
  register(p,geo);
  p.edge=new THREE.LineSegments(new THREE.EdgesGeometry(geo,25),new THREE.LineBasicMaterial({color:lin(0x0b0f17),transparent:true,opacity:.6}));p.mesh.add(p.edge);
  metrics(p);apply(p);if(p.ground)sit(p);
- p.orig=snap(p);select(p);return p}
+ rcInit(p);p.orig=snap(p);select(p);return p}
 
 /* ---- içe aktarma ---- */
 /* Tüm mesh'leri dünya matrisiyle tek diziye düz (fixUp: glTF Y-yukarı → Z-yukarı) */
@@ -225,7 +225,7 @@ function commitShape(p){const g=p.mesh.geometry;g.computeBoundingBox();const bb=
  p.base=[s.x||1,s.y||1,s.z||1];p.size=p.base.map((v,i)=>v*sc[i]);p.pos=[wc.x,wc.y,wc.z];p.mid=[p.mid[0]-c.x,p.mid[1]-c.y,p.mid[2]-c.z];
  p.analytic=null;p.topo=null;p.gv++;metrics(p);apply(p);if(p.ground)sit(p)}
 /* geometriyi kalıcı 90° çevir: ölçü, ölçek ve simetri merkezi eksenlerle birlikte yer değiştirir */
-function bakeTurn(p,ax){const g=p.mesh.geometry;
+function bakeTurn(p,ax){const g=p.mesh.geometry,rc0=rcBegin(p);
  if(p.edge){p.mesh.remove(p.edge);p.edge.geometry.dispose();p.edge=null}
  pushUndo(p);
  if(ax===0)g.rotateX(Math.PI/2);else if(ax===1)g.rotateY(Math.PI/2);else g.rotateZ(Math.PI/2);
@@ -233,7 +233,7 @@ function bakeTurn(p,ax){const g=p.mesh.geometry;
  g.computeBoundingBox();g.computeBoundingSphere();g.computeVertexNormals();
  const s=g.boundingBox.getSize(new THREE.Vector3());p.base=[s.x||1,s.y||1,s.z||1];
  const nsc=perm.map(i=>sc[i]);p.size=p.base.map((v,i)=>v*nsc[i]);p.mid=perm.map(i=>p.mid[i]);
- p.analytic=null;p.topo=null;p.gv++;metrics(p);apply(p);if(p.ground)sit(p);refresh();look()}
+ p.analytic=null;p.topo=null;p.gv++;metrics(p);apply(p);rcEnd(rc0,p,rcRotStep(rc0,ax),p.pos);if(p.ground)sit(p);refresh();look()}
 /* Konumlandırma: dünyada X–Y'de seçilen referansı orijine, tabanı Z=0'a getir. how: bbox | com | base */
 function recentre(p,how){apply(p);const w=worldArrays(p),P=w.P;let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];
  for(let i=0;i<P.length;i+=3)for(let k=0;k<3;k++){if(P[i+k]<mn[k])mn[k]=P[i+k];if(P[i+k]>mx[k])mx[k]=P[i+k]}

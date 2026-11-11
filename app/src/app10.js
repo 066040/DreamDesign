@@ -67,11 +67,11 @@ $('#sDel').onclick=()=>{if(!sel)return;const n=sel.name;remove();histMark();sMsg
 /* kaba çevir: aynı şeklin küçültülmüş kopyasını yukarıdan oy (dışbükey şekillerde tam, diğerlerinde yaklaşık) */
 async function sCup(p,wall){const b=worldBox(p),sz=[0,1,2].map(k=>b.mx[k]-b.mn[k]);
  if(wall*2>=Math.min(sz[0],sz[1])-0.5||wall>=sz[2]-0.5)throw new Error('Duvar bu şekil için çok kalın. Daha ince bir duvar yaz ya da şekli büyüt.');
- const w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
+ const rc0=rcBegin(p),w=worldArrays(p),P=w.P,cx=(b.mn[0]+b.mx[0])/2,cy=(b.mn[1]+b.mx[1])/2,fx=(sz[0]-2*wall)/sz[0],fy=(sz[1]-2*wall)/sz[1],
   eps=Math.max(1,sz[2]*.05),fz=(sz[2]-wall+eps)/sz[2],Q=new Float32Array(P.length);
  for(let i=0;i<P.length;i+=3){Q[i]=cx+(P[i]-cx)*fx;Q[i+1]=cy+(P[i+1]-cy)*fy;Q[i+2]=b.mn[2]+wall+(P[i+2]-b.mn[2])*fz}
  const R=await boolArrays(localArrays(p),{P:toLocal(p,Q),I:w.I},'subtract',Math.hypot(...p.base),[p.name,'İç']);
- return replaceWith(p,R,p.name)}
+ const np=replaceWith(p,R,p.name);rcEnd(rc0,np,{op:'cup',wall,q:rc0.fr.q.toArray()});return np}
 $('#sCupGo').onclick=async()=>{const p=sel;if(!p||sBusy)return;const wall=parseFloat($('#sWall').value);if(!(wall>0))return sMsg('Duvar kalınlığını yaz.','var(--warn)');
  sBusy=true;sMsg('Hazırlanıyor…');try{const np=await sCup(p,wall);if(np.ground)sit(np);refresh();look();histMark();$('#sCup').hidden=true;sPanel();sMsg('Kap oldu. Duvar '+f(wall,1)+' mm.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false}};
@@ -95,13 +95,13 @@ $('#sRoundGo').onclick=()=>{const p=sel;if(!p)return;const r=Math.max(0,parseFlo
  refresh();look();histMark();sPanel();if(r<=mx)sMsg('Köşeler '+f(r,1)+' mm yuvarlatıldı.','var(--ok)')};
 
 /* birleştir: görünen tüm şekilleri sırayla tek parçada topla */
-$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
+$('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis&&!p.ghost);if(list.length<2)return;sBusy=true;sMsg('Birleştiriliyor…');
  try{let a=list[0];for(let i=1;i<list.length;i++){const r=await boolParts('union',a,list[i],false);if(!r)throw new Error($('#bmsg').textContent||'Birleştirilemedi.');a=r}
   a.name='Birleşik parça';refresh();look();histMark();sMsg('Hepsi tek parça oldu.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false;sPanel()}};
 
 /* ---------- canlı fiyat ve sipariş: Baskı sekmesiyle aynı hesap (PLA, normal, görünen tüm şekiller) ---------- */
-function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis),el=$('#sPrice'),inf=$('#sPriceInfo');
+function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis&&!p.ghost),el=$('#sPrice'),inf=$('#sPriceInfo');
  if(!list.length){el.textContent='—';inf.textContent='Önce bir şekil ekle.';return}
  try{const M=prMesh(list),r=printAnalyze(M.P,M.I,[0,0,-1],QUOTE_CFG.overhang),bed=PRINTERS.p1s.bed;
   let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];for(let i=0;i<M.P.length;i+=3)for(let k=0;k<3;k++){const v=M.P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}

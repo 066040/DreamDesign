@@ -93,6 +93,26 @@ input[type=color]{height:30px;padding:2px}
 .wide{width:100%;border:1px solid var(--acc);color:var(--acc);font-weight:600}
 #msg,.msg{font-size:12px;margin-top:6px}
 .note{font-size:12px;color:var(--mut);margin:6px 0 0}
+.pcb-info{font-size:13px;line-height:1.45;margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+#pcbOpen{margin:2px 0 6px}
+#pcbOpen .chk{margin:2px 0}
+.rc-list{list-style:none;margin:0;padding:0}
+.rc-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
+.rc-n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--line);font-size:12px;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.rc-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.rc-lock .rc-t{color:var(--mut)}
+.rc-row .sm{flex:none;padding:4px 8px}
+.rc-row .sm[aria-expanded=true]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.rc-del{color:var(--warn)}
+.rc-ed{margin:6px 0 8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.rc-ed label{display:block;position:relative;margin:0 0 8px;color:var(--mut);font-size:13px}
+.rc-ed label input{display:block;width:100%;margin-top:3px;padding-right:38px}
+.rc-ed label span{position:absolute;right:8px;bottom:8px;color:var(--mut);font-size:12px}
+#simple .rc-ed label{margin:0 0 8px}
+#simple .rc-ed label span{bottom:12px}
+.rc-go{display:flex;gap:6px}
+.rc-go button{flex:1}
+.rc-go .sm.s-pri{border-color:var(--acc)}
 details{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:600}
 .card{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:6px;cursor:grab;background:var(--bg)}
@@ -214,6 +234,8 @@ summary{cursor:pointer;font-weight:600}
       <label>Köşe yuvarlaklığı<input type="number" id="sRad" value="4" min="0" step="0.5"><span>mm</span></label>
       <button class="s-btn s-pri" id="sRoundGo">Yuvarla</button>
      </div>
+     <div class="s-sub" id="sRcT">Yaptıkların</div>
+     <div id="sRc"></div>
     </div>
     <div class="s-msg" id="sMsg" role="status"></div>
    </section>
@@ -232,13 +254,31 @@ summary{cursor:pointer;font-weight:600}
    <div class="page on" id="p-model">
     <div class="sec"><h3>Model yükle</h3>
      <button id="load" class="wide">Dosya seç (model veya fotoğraf)</button>
-     <input id="file" type="file" accept=".glb,.gltf,.obj,.stl,.jpg,.jpeg,.png,.webp" hidden>
+     <input id="file" type="file" accept=".glb,.gltf,.obj,.stl,.jpg,.jpeg,.png,.webp,.kicad_pcb" hidden>
      <div class="two"><div><label>Fotoğraf çözünürlüğü</label><select id="genres"><option value="128">128 (hızlı)</option><option value="192" selected>192 (önerilen)</option><option value="256">256 (ince, yavaş)</option></select></div>
       <div><label>Yumuşatma</label><select id="gensm"><option value="0">Kapalı</option><option value="6">Hafif</option><option value="10" selected>Orta</option><option value="20">Güçlü</option></select></div></div>
      <div id="bkrow"><label>Sunucu adresi (fotoğraftan 3D için)</label><div class="row" style="gap:6px"><input id="bkurl" placeholder="http://localhost:8000" style="flex:1"><button class="sm" id="bktest">Bağlan</button></div><div class="msg" id="bkmsg"></div>
       <p class="note">Bu çevrimiçi sayfada tek fotoğraftan 3D için bilgisayarında sunucu çalışmalı (README: scripts/run.bat). Çoklu görünümden model sunucu gerektirmez.</p></div>
      <p class="note">GLB, OBJ, STL açılır. Fotoğraf (JPG, PNG, WEBP) yerel sunucu çalışırken 3D modele çevrilir. Model X–Y düzleminde ortalanır, tabanı Z=0'a oturur, en uzun kenarı 1000 mm olur.</p>
      <div id="msg" role="alert"></div></div>
+    <div class="sec"><h3>KiCad kartından kutu</h3>
+     <button id="pcbPick" class="wide">Kart dosyası seç (.kicad_pcb)</button>
+     <p class="note" id="pcbHint">KiCad'de çizdiğin kartı seç ya da çizim alanına bırak: karta oturan kutu, vida ayakları ve kenardaki USB / düğme açıklıkları çıkarılır.</p>
+     <div id="pcbBox" hidden>
+      <div class="pcb-info" id="pcbInfo"></div>
+      <label for="pcbUp">Kutunun kapağına bakan yüz</label><select id="pcbUp"><option value="F">Ön yüz (F.Cu) yukarı</option><option value="B">Arka yüz (B.Cu) yukarı</option></select>
+      <div class="two"><div><label for="pcbWall">Duvar kalınlığı (mm)</label><input id="pcbWall" type="number" min="0.8" step="0.2" value="2"></div>
+       <div><label for="pcbGap">Kart çevresi boşluk (mm)</label><input id="pcbGap" type="number" min="0.1" step="0.1" value="0.5"></div></div>
+      <div class="two"><div><label for="pcbBelow">Kartın altı (mm)</label><input id="pcbBelow" type="number" min="1" step="0.5" value="5"></div>
+       <div><label for="pcbAbove">Kartın üstü (mm)</label><input id="pcbAbove" type="number" min="1" step="0.5" value="5"></div></div>
+      <div class="two"><div><label for="pcbFloor">Taban kalınlığı (mm)</label><input id="pcbFloor" type="number" min="0.8" step="0.2" value="2"></div>
+       <div><label for="pcbPilot">Vida deliği çapı (mm)</label><input id="pcbPilot" type="number" min="0.5" step="0.1" value="1.8"></div></div>
+      <label>Duvarda açılacak yerler</label><div id="pcbOpen"></div>
+      <label class="chk"><input type="checkbox" id="pcbLid" checked>Kapak da yap (geçmeli, yanına baskıya hazır konur)</label>
+      <label class="chk"><input type="checkbox" id="pcbShow" checked>Kartı önizleme olarak göster (baskıya ve dışa aktarmaya girmez)</label>
+      <button id="pcbGo" class="wide">Kutuyu oluştur</button>
+     </div>
+     <div class="msg" id="pcbMsg" role="status"></div></div>
     <div class="sec"><h3>Çoklu görünümden model</h3>
      <p class="note">Ön, yan ve/veya üst görünümü yükle (fotoğraf, çizim ya da şeffaf PNG; arka plan düz renk olsun). Birden fazla görünümde gerçek ölçüye dayalı hacim çıkar; tek görünümde derinlik tahmin edilip şişirilir.</p>
      <div id="mvrows"></div>
@@ -250,6 +290,7 @@ summary{cursor:pointer;font-weight:600}
      <div class="grp" style="flex-wrap:wrap"><button data-add="box">Kutu</button><button data-add="cyl">Silindir</button><button data-add="sph">Küre</button><button data-add="cone">Koni</button><button id="addrbox" title="Köşeleri yuvarlatılmış kutu (kasa için)">Yuvarlak kutu</button></div></div>
     <div class="sec"><h3>Montaj ağacı</h3><div id="list" class="list"></div></div>
     <div class="sec"><h3>Seçili parça</h3><div id="props"></div></div>
+    <div class="sec"><h3>Yapılanlar</h3><div id="rcList"></div><div class="msg" id="rcMsg" role="status"></div></div>
     <div class="sec"><h3>Toplam</h3><div id="tot"></div>
      <label class="chk"><input type="checkbox" id="showcom" checked>Ağırlık merkezini göster</label>
      <label class="chk"><input type="checkbox" id="showdim" checked>Seçili parçanın ölçü çizgilerini göster</label></div>

@@ -21,7 +21,7 @@ document.querySelectorAll('#p-calc input').forEach(i=>i.oninput=updateCalc);
 /* ================= dışa aktarma ve proje ================= */
 function download(name,data,type){try{const b=new Blob([data],{type}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();
  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);return true}catch(e){return false}}
-function exportParts(){const list=$('#exsel').checked&&sel?[sel]:parts.filter(p=>p.vis);return list}
+function exportParts(){const list=$('#exsel').checked&&sel?[sel]:parts.filter(p=>p.vis&&!p.ghost);return list}
 function exportDone(ok,name){msg(ok?name+' indirildi.':'İndirme bu ortamda engellenmiş olabilir. Yerel sunucuda (localhost:8000) dene.',ok?'var(--ok)':null,'#pmsg')}
 $('#exstl').onclick=()=>{const l=exportParts();if(!l.length)return msg('Dışa aktarılacak parça yok.',null,'#pmsg');const m=catMesh(l.map(p=>worldArrays(p)));exportDone(download('dreamdesign.stl',stlBinary(m.P,m.I),'model/stl'),'dreamdesign.stl')};
 $('#exobj').onclick=()=>{const l=exportParts();if(!l.length)return msg('Dışa aktarılacak parça yok.',null,'#pmsg');let s='# DreamDesign (mm, Z yukari)\n',off=0;
@@ -44,7 +44,7 @@ function stateData(raw){const E=raw?(a=>a):arr64;
  parts:parts.map(p=>{const g=p.mesh.geometry,ca=g.attributes.color,cp=(k,arr,C)=>raw?hcache(p,k,arr,C):C.from(arr);
   return{id:p.id,name:p.name,type:p.type,mat:p.mat,color:p.color,size:p.size.slice(),base:p.base.slice(),pos:p.pos.slice(),rot:p.rot.slice(),lock:p.lock,ground:p.ground,fill:p.fill,wall:p.wall,mid:p.mid.slice(),
    useVC:p.useVC,hasVC:p.hasVC,vis:p.vis,uvk:p.uvk,rad:p.rad,an:!!p.analytic,P:E(cp('P',g.attributes.position.array,Float32Array)),I:E(cp('I',g.index.array,Uint32Array)),C:ca?E(cp('C',ca.array,Float32Array)):null,
-   orig:raw&&p.orig?{pos:p.orig.pos,base:p.orig.base,size:p.orig.size,position:p.orig.position,mid:p.orig.mid}:undefined}}),
+   rc:rcOut(p,raw,E),ghost:p.ghost||undefined,orig:raw&&p.orig?{pos:p.orig.pos,base:p.orig.base,size:p.orig.size,position:p.orig.position,mid:p.orig.mid}:undefined}}),
  joints:joints.map(J=>({id:J.id,parent:J.parent.id,child:J.child.id,type:J.type,min:J.min,max:J.max,val:J.val,axisP:va(J.axisP),pivotP:va(J.pivotP),posL:va(J.posL),qL:vq(J.qL)})),
  poses:poses.map(p=>({name:p.name,vals:Object.assign({},p.vals)})),
  shelf:raw?shelf.slice():shelf.map(s=>({name:s.name,mat:s.mat,color:s.color,dims:s.dims,P:E(s.P),I:E(s.I),C:s.C?E(s.C):null})),
@@ -61,7 +61,7 @@ function restoreParts(d,raw){
   p.id=s.id;mx=Math.max(mx,s.id);register(p,geo);regUV(p);byId[s.id]=p;
   if(s.an&&geos[s.type]){p.analytic={V0:{box:1,cyl:Math.PI/4,sph:Math.PI/6,cone:Math.PI/12}[s.type],Cv:s.type==='cone'?[0,0,-.25]:[0,0,0]};
    p.edge=new THREE.LineSegments(new THREE.EdgesGeometry(geo,25),new THREE.LineBasicMaterial({color:lin(0x0b0f17),transparent:true,opacity:.6}));p.mesh.add(p.edge)}
-  metrics(p);apply(p);
+  metrics(p);apply(p);p.rc=rcIn(s.rc);if(s.ghost)p.ghost=true;
   if(raw){p._hc={P:s.P,I:s.I,C:s.C};if(!p._hc.C)delete p._hc.C}
   p.orig=raw&&s.orig?{p,pos:s.orig.pos,base:s.orig.base,size:s.orig.size,position:s.orig.position,mid:s.orig.mid}:snap(p)});
  uid=Math.max(uid,mx+1);return byId}
@@ -100,8 +100,9 @@ function loadFile(file){msg('');
   else if(ext==='glb'||ext==='gltf'){rd.onload=()=>new THREE.GLTFLoader().parse(rd.result,'',g=>ok(g.scene,true),fail);ext==='glb'?rd.readAsArrayBuffer(file):rd.readAsText(file)}
   else if(ext==='obj'){rd.onload=()=>{try{ok(new THREE.OBJLoader().parse(rd.result),true)}catch(e){fail(e)}};rd.readAsText(file)}
   else if(ext==='stl'){rd.onload=()=>{try{ok(new THREE.Mesh(new THREE.STLLoader().parse(rd.result)),false)}catch(e){fail(e)}};rd.readAsArrayBuffer(file)}
+  else if(ext==='kicad_pcb'){rd.onload=()=>{try{pcbLoad(rd.result,base)}catch(e){fail(e)}};rd.readAsText(file)}
   else if(/^(jpe?g|png|webp)$/.test(ext))generate(file,base);
-  else msg('Desteklenen biçimler: GLB, GLTF, OBJ, STL, JPG, PNG, WEBP, proje (.json).');
+  else msg('Desteklenen biçimler: GLB, GLTF, OBJ, STL, JPG, PNG, WEBP, KiCad kartı (.kicad_pcb), proje (.json).');
  }catch(e){fail(e)}}
 async function generate(file,base){
  const bk=backendBase();

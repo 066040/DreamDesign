@@ -141,7 +141,7 @@ async function boolArrays(A,B,op,diag,names){const w=await loadManifold(),tol=Ma
 function toLocal(p,P){apply(p);const inv=new THREE.Matrix4().copy(p.mesh.matrixWorld).invert().elements,o=new Float32Array(P.length);
  for(let i=0;i<P.length;i+=3){const x=P[i],y=P[i+1],z=P[i+2];o[i]=inv[0]*x+inv[4]*y+inv[8]*z+inv[12];o[i+1]=inv[1]*x+inv[5]*y+inv[9]*z+inv[13];o[i+2]=inv[2]*x+inv[6]*y+inv[10]*z+inv[14]}return o}
 /* p'yi sonuçla değiştir (aynı konum/dönüş/ölçek, aynı malzeme) */
-function replaceWith(p,R,name){const g=p.ground,np=derive(R.P,R.C,R.I,name,p,xformOf(p));np.useVC=false;np.ground=g;if(g)sit(np);
+function replaceWith(p,R,name){const g=p.ground,np=derive(R.P,R.C,R.I,name,p,xformOf(p));np._p0=np.pos.slice();rcCarry(p,np);np.useVC=false;np.ground=g;if(g)sit(np);
  const i=parts.indexOf(np);parts.splice(i,1);parts.splice(parts.indexOf(p)+1,0,np);
  removePart(p);select(np);return np}
 let boolBusy=false;
@@ -149,7 +149,7 @@ async function boolParts(op,a,b,keep){if(boolBusy)return null;if(!a||!b||a===b){
  boolBusy=true;msg('Hesaplanıyor…','var(--mut)','#bmsg');
  try{if(cage)cageEnd(true);const A=localArrays(a),wb=worldArrays(b),B={P:toLocal(a,wb.P),I:wb.I};
   const R=await boolArrays(A,B,op,Math.hypot(...a.base),[a.name,b.name]);
-  const sym={union:'∪',subtract:'−',intersect:'∩'}[op],np=replaceWith(a,R,(a.name+sym+b.name).slice(0,28));
+  const sym={union:'∪',subtract:'−',intersect:'∩'}[op],np=replaceWith(a,R,(a.name+sym+b.name).slice(0,28));rcNote(np,{union:'Birleştirildi: + ',subtract:'Oyuldu: − ',intersect:'Ortak hacim: ∩ '}[op]+b.name);
   if(!keep)removePart(b);refresh();look();histMark();
   msg({union:'Birleştirildi',subtract:'Oyuldu',intersect:'Ortak hacim kaldı'}[op]+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#bmsg');return np}
  catch(e){msg(e.message,null,'#bmsg');return null}
@@ -179,9 +179,9 @@ function holeClick(e){const r=pickAt(e);if(!r)return;const n=r.h.face.normal.clo
 let holeBusy=false;
 async function holeDo(){const s=holeSpec();if(!s){msg('Önce "Delik" modunda yüzeye tıkla ve çapı gir.',null,'#hlmsg');return null}
  if(holeBusy)return null;holeBusy=true;const p=hole.p;msg('Hesaplanıyor…','var(--mut)','#hlmsg');
- try{if(cage)cageEnd(true);const cyl=cylMesh([s.start.x,s.start.y,s.start.z],[s.dir.x,s.dir.y,s.dir.z],s.L,s.D/2,64);
+ try{if(cage)cageEnd(true);const rc0=rcBegin(p),cyl=cylMesh([s.start.x,s.start.y,s.start.z],[s.dir.x,s.dir.y,s.dir.z],s.L,s.D/2,64);
   const R=await boolArrays(localArrays(p),{P:toLocal(p,cyl.P),I:cyl.I},s.op==='cut'?'subtract':'union',Math.hypot(...p.base),[p.name,'Delik']);
-  const np=replaceWith(p,R,p.name);hole.p=np;refresh();look();histMark();holePreview();
+  const np=replaceWith(p,R,p.name);rcEnd(rc0,np,rcHoleStep(rc0,s,parseFloat($('#hld').value)));hole.p=np;refresh();look();histMark();holePreview();
   msg((s.op==='cut'?'Ø'+f(s.D,2)+' mm delik açıldı'+(s.D!==parseFloat($('#hld').value)?' (geçme payı dahil)':'')+(s.dep>0?', derinlik '+f(s.dep,2)+' mm':' (boydan boya)'):'Ø'+f(s.D,2)+' mm, '+f(s.dep,2)+' mm çıkıntı eklendi')+'. Hacim '+f(massInfo(np).vol/1000,2)+' cm³.','var(--ok)','#hlmsg');return np}
  catch(e){msg(e.message,null,'#hlmsg');return null}
  finally{holeBusy=false}}
@@ -221,10 +221,10 @@ document.querySelectorAll('#mtype button').forEach(b=>b.onclick=()=>setMType(b.d
 function rboxGeo(size,r){const rb=roundedBox(size[0],size[1],size[2],r,6);return geoFrom(rb.P,null,rb.I)}
 function addRBox(size,r,pos){size=(size||[200,120,40]).slice();r=r==null?Math.min(...size)*.2:r;const n=parts.length;
  const p=baseOpts({type:'rbox',size,base:size.slice(),pos:pos?pos.slice():[(n%5)*260-520,300,0],rad:Math.max(0,Math.min(r,Math.min(...size)/2))});
- p.name='Yuvarlak kutu '+p.id;p.color=COLS[p.id%COLS.length];register(p,rboxGeo(size,p.rad));regUV(p);metrics(p);apply(p);if(p.ground)sit(p);p.orig=snap(p);select(p);return p}
+ p.name='Yuvarlak kutu '+p.id;p.color=COLS[p.id%COLS.length];register(p,rboxGeo(size,p.rad));regUV(p);metrics(p);apply(p);if(p.ground)sit(p);rcInit(p);p.orig=snap(p);select(p);return p}
 /* güncel boyutta, verilen yarıçapla yeniden kur (ölçek 1'e döner, yarıçap gerçek mm kalır) */
 function rboxRebuild(p,r){pushUndo(p);const size=p.size.slice();p.rad=Math.max(0,Math.min(r,Math.min(...size)/2));const g=rboxGeo(size,p.rad);
- geoReplace(p,g.attributes.position.array,null,g.index.array);p.base=size.slice();p.size=size.slice();p.analytic=null;metrics(p);apply(p);if(p.ground)sit(p);refresh();look()}
+ geoReplace(p,g.attributes.position.array,null,g.index.array);p.base=size.slice();p.size=size.slice();p.analytic=null;metrics(p);apply(p);if(p.ground)sit(p);rcInit(p);refresh();look()}
 $('#addrbox').onclick=()=>addRBox();
 const _panel=panel;
 panel=function(){_panel();const p=sel;if(!p||p.type!=='rbox')return;const info=$('#info');if(!info)return;
