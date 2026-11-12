@@ -23,24 +23,27 @@ function fillSelects(){const opt=(excl)=>parts.filter(p=>p!==excl).map(p=>`<opti
 function syncInputs(){if(!sel)return;document.querySelectorAll('#props input[data-k]').forEach(i=>{
  if(document.activeElement===i)return;i.value=+sel[i.dataset.k][+i.dataset.i].toFixed(2)});
  const g=$('#gnd');if(g)g.checked=sel.ground}
-function panel(){const p=sel,el=$('#props');
+let pMore=false;
+function panel(){const p=sel,el=$('#props');{const d0=$('#pmore');if(d0)pMore=d0.open}
  if(!p){el.innerHTML='<p class="mut">Bir parça seç, ekle ya da model yükle.</p>';return}
  const tri=(k,st)=>`<div class="tri">${[0,1,2].map(i=>`<input type="number" step="${st}" data-k="${k}" data-i="${i}" value="${+p[k][i].toFixed(2)}" aria-label="${k} ${'XYZ'[i]}">`).join('')}</div>`;
  const rd=p.type==='cyl'||p.type==='cone';
  el.innerHTML=`<div class="row"><input id="nm" value="${esc(p.name)}" style="font-weight:600"><button id="del" class="sm">Sil</button></div>
+ <label>Boyut (mm)${rd?' · X ve Y çap, Z yükseklik':' · X, Y, Z'}</label>${tri('size',1)}
+ <div class="row" style="margin-top:8px"><label class="chk" style="margin:0"><input type="checkbox" id="lock"${p.lock?' checked':''}>Oranı koru</label>
+  <span class="grp"><button id="dn">−10%</button><button id="up">+10%</button></span></div>
+ <label>Konum (mm) · X, Y, Z</label>${tri('pos',1)}
+ <label class="chk"><input type="checkbox" id="gnd"${p.ground?' checked':''}>Zemine otur</label>
+ <label>Dönüş (°) · X, Y, Z</label>${tri('rot',5)}
+ <details id="pmore"${pMore?' open':''}><summary>Malzeme, renk ve diğer ayarlar</summary>
  <label>Malzeme</label><select id="mat">${Object.keys(MATS).map(k=>`<option${k===p.mat?' selected':''}>${k}</option>`).join('')}</select>
  ${MATS[p.mat].tint?`<label>Renk</label><input type="color" id="col" value="${p.color}">`:''}
  ${p.hasVC?`<label class="chk"><input type="checkbox" id="vc"${p.useVC?' checked':''}>Fotoğraf rengini kullan</label>`:''}
- <label>Boyut (mm)${rd?' · X ve Y çap, Z yükseklik':' · X, Y, Z'}</label>${tri('size',10)}
- <div class="row" style="margin-top:8px"><label class="chk" style="margin:0"><input type="checkbox" id="lock"${p.lock?' checked':''}>Oranı koru</label>
-  <span class="grp"><button id="dn">−10%</button><button id="up">+10%</button></span></div>
- <label>Dönüş (°) · X, Y, Z</label>${tri('rot',5)}
- <label>Konum (mm) · X, Y, Z</label>${tri('pos',10)}
- <label class="chk"><input type="checkbox" id="gnd"${p.ground?' checked':''}>Zemine otur</label>
  <label>Ortala (X–Y orijine, taban Z=0'a)</label><div class="btnrow" style="margin-top:0"><button class="sm" data-rc="bbox">Sınır kutusu</button><button class="sm" data-rc="base">Taban</button><button class="sm" data-rc="com">Ağırlık merkezi</button></div>
  <label>Yönü kalıcı çevir (90°) – yan yatık geldiyse</label><div class="btnrow" style="margin-top:0"><button class="sm" data-bake="0">X ekseni</button><button class="sm" data-bake="1">Y ekseni</button><button class="sm" data-bake="2">Z ekseni</button></div>
  <label>Dolgu</label><div class="row"><select id="fill"><option value="solid"${p.fill==='solid'?' selected':''}>Dolu</option><option value="shell"${p.fill==='shell'?' selected':''}>İçi boş (çeper)</option></select>
   <input type="number" id="wall" min="0.1" step="0.5" value="${p.wall}" title="Çeper kalınlığı (mm)" ${p.fill==='shell'?'':'hidden'} style="max-width:90px"></div>
+ </details>
  <div id="info" style="margin-top:12px"></div>`;
  el.querySelectorAll('input[data-k]').forEach(i=>i.oninput=()=>{const v=parseFloat(i.value),k=i.dataset.k,idx=+i.dataset.i;if(isNaN(v)||(k==='size'&&v<=0))return;
   if(k==='size'&&p.lock){const r=v/p.size[idx];p.size=p.size.map(s=>s*r);p.size[idx]=v}else p[k][idx]=v;
@@ -107,12 +110,23 @@ function updOrtho(){const a=vp.clientWidth/Math.max(vp.clientHeight,1);orthoCam.
 function setOrtho(on){if(on===isOrtho)return;
  if(on){orthoH=Math.max(cam.position.distanceTo(ctl.target)*Math.tan(22.5*D2R),1);orthoCam.position.copy(persp.position);orthoCam.quaternion.copy(persp.quaternion);orthoCam.up.copy(persp.up);cam=orthoCam}
  else{const d=orthoH/Math.tan(22.5*D2R),dir=orthoCam.position.clone().sub(ctl.target).normalize();persp.position.copy(ctl.target).addScaledVector(dir,d);persp.up.copy(orthoCam.up);persp.lookAt(ctl.target);cam=persp}
- isOrtho=on;ctl.object=cam;tc.camera=cam;ctl.noZoom=on;updOrtho();ctl.update();$('#ortho').classList.toggle('on',on)}
-vp.addEventListener('wheel',e=>{if(!isOrtho||e.target!==cv)return;e.preventDefault();e.stopImmediatePropagation();
- orthoH=Math.min(Math.max(orthoH*Math.pow(1.0015,e.deltaY),5),40000);updOrtho()},{capture:true,passive:false});
+ isOrtho=on;ctl.object=cam;tc.camera=cam;ctl.enableZoom=!on;updOrtho();ctl.update();$('#ortho').classList.toggle('on',on)}
+/* tekerlek: imlecin altındaki nokta yerinde kalacak şekilde yakınlaş / uzaklaş */
+let zPiv=null;
+function zoomPivot(e){if(zPiv&&performance.now()-zPiv.t<400&&Math.hypot(e.clientX-zPiv.x,e.clientY-zPiv.y)<4){zPiv.t=performance.now();return zPiv.P}
+ const r=cv.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera({x:((e.clientX-r.left)/r.width)*2-1,y:-((e.clientY-r.top)/r.height)*2+1},cam);
+ let P=null;const hit=typeof pickAt==='function'?pickAt(e):null;if(hit)P=hit.h.point.clone();
+ if(!P){const n=cam.getWorldDirection(new THREE.Vector3());P=ray.ray.intersectPlane(new THREE.Plane().setFromNormalAndCoplanarPoint(n,ctl.target),new THREE.Vector3())}
+ if(!P)P=ctl.target.clone();zPiv={t:performance.now(),x:e.clientX,y:e.clientY,P};return P}
+function zoomAt(e,k){const P=zoomPivot(e);
+ if(isOrtho){const h=Math.min(Math.max(orthoH*k,5),40000);k=h/orthoH;orthoH=h;const d=ctl.target.clone().sub(P).multiplyScalar(k-1);cam.position.add(d);ctl.target.add(d);updOrtho()}
+ else{const d=cam.position.distanceTo(ctl.target),nd=Math.min(Math.max(d*k,ctl.minDistance),ctl.maxDistance);k=nd/d;cam.position.sub(P).multiplyScalar(k).add(P);ctl.target.sub(P).multiplyScalar(k).add(P)}
+ ctl.update()}
+vp.addEventListener('wheel',e=>{if(e.target!==cv)return;e.preventDefault();e.stopImmediatePropagation();
+ zoomAt(e,Math.pow(1.0015,(e.deltaMode===1?e.deltaY*33:e.deltaY)))},{capture:true,passive:false});
 function bounds(){const b=new THREE.Box3();parts.forEach(p=>{if(!p.vis)return;p.mesh.updateMatrixWorld(true);b.union(new THREE.Box3().setFromObject(p.mesh))});
  if(b.isEmpty())return{c:new THREE.Vector3(),r:600};const s=b.getSize(new THREE.Vector3());return{c:b.getCenter(new THREE.Vector3()),r:Math.max(s.length()/2,60)}}
-function view(n){const d={x:[1,0,0],y:[0,-1,0],z:[0,.001,1],iso:[.7,-.7,.55]}[n],v=new THREE.Vector3(...d).normalize(),b=bounds();
+function view(n){const d={x:[1,0,0],y:[0,-1,0],z:[0,-.001,1],iso:[.7,-.7,.55]}[n],v=new THREE.Vector3(...d).normalize(),b=bounds();
  setOrtho(n!=='iso');
  cam.up.set(0,0,1);ctl.target.copy(b.c);cam.position.copy(b.c).addScaledVector(v,b.r*2.6);if(isOrtho){orthoH=b.r*1.15;updOrtho()}cam.lookAt(b.c);ctl.update()}
 function fit(){const b=bounds(),v=cam.position.clone().sub(ctl.target);if(v.lengthSq()<1e-6)v.set(1,-1,.6);v.normalize();
@@ -121,17 +135,25 @@ document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>view(b.dataset.v)
 $('#fit').onclick=fit;$('#ortho').onclick=()=>setOrtho(!isOrtho);
 
 /* ---- tutamaç (gizmo) ve modlar ---- */
-let tcActive=false,tcEnd=0;
+let tcActive=false,tcEnd=0,tc0=null;
+function hud(t){const el=$('#hud');if(!el)return;el.textContent=t;el.hidden=!t}
+function hudDrag(p){if(!tc0)return;const sg=v=>(v>0?'+':v<0?'−':'')+f(Math.abs(v),1),A=['X','Y','Z'];
+ if(mode==='move'){const d=p.pos.map((v,i)=>v-tc0.pos[i]),on=d.map((v,i)=>Math.abs(v)>1e-6?A[i]+' '+sg(v)+' mm':null).filter(Boolean);hud(on.length?'Taşındı: '+on.join(' · '):'Taşı: oku tut ve sürükle')}
+ else if(mode==='rot'){const d=p.rot.map((v,i)=>{let a=v-tc0.rot[i];while(a>180)a-=360;while(a<-180)a+=360;return a}),on=d.map((v,i)=>Math.abs(v)>1e-4?A[i]+' '+sg(v)+'°':null).filter(Boolean);hud(on.length?'Döndü: '+on.join(' · '):'Döndür: halkayı tut ve çevir')}
+ else if(mode==='scl')hud('Boyut: '+p.size.map(v=>f(v,1)).join(' × ')+' mm')}
+addEventListener('keydown',e=>{if(e.key==='Alt'){tc.setTranslationSnap(null);tc.setRotationSnap(null)}});
+addEventListener('keyup',e=>{if(e.key==='Alt'){tc.setTranslationSnap(TC_SNAP.t);tc.setRotationSnap(TC_SNAP.r)}});
+addEventListener('blur',()=>{tc.setTranslationSnap(TC_SNAP.t);tc.setRotationSnap(TC_SNAP.r)});
 tc.addEventListener('dragging-changed',e=>{ctl.enabled=!e.value;
  if(mode==='cage'){e.value?cageDragStart():cageDragEnd();if(!e.value)tcEnd=performance.now();tcActive=e.value;return}
- if(e.value){tcActive=true}else{tcActive=false;tcEnd=performance.now();panel();stats();list();if(sel){sel.gv++;jointsRebase(sel);look()}}});
+ if(e.value){tcActive=true;tc0=sel?{pos:sel.pos.slice(),rot:sel.rot.slice(),size:sel.size.slice()}:null}else{tcActive=false;tcEnd=performance.now();hud('');panel();stats();list();if(sel){sel.gv++;jointsRebase(sel);look()}}});
 tc.addEventListener('objectChange',()=>{
  if(mode==='cage'){cageDragMove();return}
  const p=sel;if(!p)return;const m=p.mesh;
- if(mode==='move'){p.pos=[m.position.x,m.position.y,m.position.z];p.ground=false}
+ if(mode==='move'){const z0=p.pos[2];p.pos=[m.position.x,m.position.y,m.position.z];if(Math.abs(p.pos[2]-z0)>1e-6)p.ground=false}
  else if(mode==='rot'){p.rot=[m.rotation.x,m.rotation.y,m.rotation.z].map(r=>r*180/Math.PI);if(p.ground)sit(p)}
  else if(mode==='scl'){p.size=p.base.map((b,i)=>b*Math.max(Math.abs([m.scale.x,m.scale.y,m.scale.z][i]),1e-3));if(p.ground)sit(p)}
- apply(p);jointsFollow(p);syncInputs();stats()});
+ apply(p);jointsFollow(p);syncInputs();stats();hudDrag(p)});
 function attachGizmo(){tc.detach();if(sel&&sel.vis&&(mode==='move'||mode==='rot'||mode==='scl')){tc.setMode({move:'translate',rot:'rotate',scl:'scale'}[mode]);tc.attach(sel.mesh)}}
 function setMode(m){const prev=mode;
  if(prev==='cage'&&m!=='cage')cageEnd(true);

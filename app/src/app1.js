@@ -16,9 +16,14 @@ let cam=persp,isOrtho=false,orthoH=600;
 const ren=new THREE.WebGLRenderer({antialias:true});
 ren.outputEncoding=THREE.sRGBEncoding;ren.setPixelRatio(Math.min(devicePixelRatio,2));vp.prepend(ren.domElement);
 const cv=ren.domElement;cv.classList.add('main');
-const ctl=new THREE.TrackballControls(cam,cv);
-ctl.rotateSpeed=3;ctl.zoomSpeed=1.2;ctl.panSpeed=.8;ctl.dynamicDampingFactor=.12;ctl.keys=[-1,-1,-1];ctl.minDistance=30;ctl.maxDistance=40000;
+const ctl=new THREE.OrbitControls(cam,cv);
+ctl.rotateSpeed=.9;ctl.zoomSpeed=1.1;ctl.panSpeed=1;ctl.enableDamping=false;ctl.enableKeys=false;ctl.screenSpacePanning=true;ctl.minDistance=10;ctl.maxDistance=40000;
+ctl.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.PAN,RIGHT:THREE.MOUSE.PAN};
 const tc=new THREE.TransformControls(cam,cv);tc.setSize(.9);scene.add(tc);
+/* tutamaç: 1 mm ve 5° adımlarla gider (Alt basılıyken adımsız); her yöne serbest sürükleyen orta tutamaçlar yok */
+const TC_SNAP={t:1,r:5*Math.PI/180};tc.setTranslationSnap(TC_SNAP.t);tc.setRotationSnap(TC_SNAP.r);
+{const g=tc.children[0],drop=(grp,names)=>{if(!grp)return;grp.children.filter(c=>names.includes(c.name)).forEach(c=>grp.remove(c))};
+ if(g&&g.gizmo){['gizmo','picker'].forEach(k=>{drop(g[k].translate,['XYZ']);drop(g[k].rotate,['E','XYZE'])})}}
 scene.add(new THREE.HemisphereLight(0xffffff,0x556070,.35));
 const dl=new THREE.DirectionalLight(0xffffff,.7);dl.position.set(500,-400,800);scene.add(dl);
 scene.add(new THREE.AxesHelper(300));

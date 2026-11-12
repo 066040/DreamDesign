@@ -17,7 +17,7 @@ DreamDesign ilk açılışta **Basit** modda açılır (sol üstte *Basit / Geli
 - **Renk seç**, **yerini değiştir** (yalnız tabla üstünde), **döndür**, **yan yatır**, **kopyala**, **sil**.
 - **Kaba çevir:** içini oyup üstü açık kap yapar (kalemlik, saksı). **Delik aç:** yere tıkla, çapı yaz. **Köşeleri yuvarla.**
 - **Hepsini tek parça yap:** üst üste konan şekilleri birleştirir.
-- Altta her zaman ince bir şeritte **tahmini fiyat** ve **Sipariş ver**; küçük parçalarda en düşük sipariş tutarı uygulandığı açıkça yazar.
+- Altta her zaman **STL olarak indir** düğmesi durur; fiyat ve sipariş DreamDesign'ın içinde yoktur.
 
 Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey olduğu yerde durur.
 
@@ -37,7 +37,7 @@ Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey old
 - **Montaj** – parçaları modele sürükleyip bırak (yüzeye oturur); dönel ve kayar eklemler, pozlar.
 - **Mühendislik hesapları** – hacim, malzemeye göre kütle, ağırlık merkezi; hava aracı için asılı kalma gücü, kanat yükü, süre, tutunma hızı.
 - **Ölçüm** – uzaklık için iki, açı için üç noktaya tıkla; ölçüler parçasına bağlı kalır. Bir kenarın üstüne gelince boyu ve yüzleri arasındaki açı görünür.
-- **Baskıya hazırla (Baskı sekmesi)** – yazıcını seç (P1S, A1 mini, Ender-3, Prusa MK4… ya da kendi ölçün); sığıyor mu gör, sığmıyorsa tek tıkla küçült. Destek isteyen yerler kırmızı görünür, destek gramı ve tablaya değen alan hesaplanır. *En az destekle yatır* parçayı en az destek isteyen yöne çevirir. Tahmini baskı fiyatı ve tek tıkla *Fiyat sayfasında aç ve sipariş ver*.
+- **Düzenli gelişmiş mod** – üst barda dört temel araç (Seç, Taşı, Döndür, Ölçekle), bir seçim filtresi (parça / kenar ve köşe / yalnız kenar / yalnız köşe) ve diğer her şey için menüler (*Biçim ver*, *Ekle / çıkar*, *Ölç*, *Görünüm*) bulunur; bir araç seçilince yalnız onun paneli açılır. Kamera yan yatmaz: sol tuş döndürür, tekerlek imlecin olduğu yere yakınlaşır, sağ ya da orta tuş kaydırır. Taşıma ve döndürme tutamaçları tek eksende / düzlemde, 1 mm / 5° adımlarla çalışır (Alt: adımsız), sürüklerken ne kadar gittiğini yazar; ok tuşları seçili parçayı 1 mm (Shift: 10 mm) oynatır. *Parça* sekmesinde parça listesi, ölçüler, konum ve yapılanlar listesi bir aradadır.
 - **Yuvarlak kutu** – köşe yarıçapı gerçek mm olan kutu; cihaz kasaları için.
 - **KiCad kartından kutu** – `.kicad_pcb` dosyasını seç ya da bırak: kartın çevresi, kalınlığı, vida delikleri ve parça yükseklikleri okunur; karta oturan gövde, vida ayakları, kenardaki USB / düğme / bağlantı için duvar açıklıkları ve baskıya hazır geçmeli kapak çıkarılır. Kart, içinde önizleme olarak görünür ve dışa aktarmaya girmez.
 - **Yapılanlar listesi** – her parça nasıl yapıldığını hatırlar: *Kutu 25 × 25 × 10 mm → Delik Ø3 → Pah 1 mm*. Sonradan herhangi bir adımın ölçüsünü değiştir ya da adımı sil; parça baştan kurulur, kalan adımlar kendiliğinden yeniden uygulanır. Projeyle birlikte kaydedilir, geri al kapsar.
@@ -53,7 +53,7 @@ Hesaplar gelişmiş modla aynı koddan gelir; Gelişmiş'e geçince her şey old
 - Yazıcıya (varsayılan Bambu Lab P1S, 256 mm) sığmayan model otomatik küçültülür; açık yüzey ve cm/inç ile kaydedilmiş dosya uyarısı var.
 - "Pahalı mı geldi?" önerisi: tek tıkla daha hafif doluluk ya da %80 boyut.
 - Havada kalan yerler için destek gramı fiyata eklenir; "Daha az destekle yatır" ile modeli en ucuz yöne çevirir.
-- DreamDesign'daki *Baskı → Fiyat sayfasında aç* modeli, malzemeyi ve sağlamlığı bu sayfaya aktarır.
+- Fiyat sayfası DreamDesign'dan bağımsızdır: tasarım aracında fiyat, sipariş ve baskı hazırlığı yoktur; model STL olarak indirilip bu sayfaya yüklenir.
 - Sipariş: `QUOTE_CFG.whatsapp` numarasına özetle WhatsApp mesajı açılır, ölçeklenmiş STL indirilir. Sayfa bir siteye `<iframe>` ile gömülürse sipariş ve STL `postMessage({type:'3ddream-order', ...})` ile üst sayfaya gider.
 
 Derleme: `node app/src/quote/build.js` → `docs/bastir.html`.

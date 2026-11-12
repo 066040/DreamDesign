@@ -7,7 +7,7 @@ const run=(name,code)=>{try{return T(code)}catch(e){fails++;console.log('FAIL',n
 
 let r=run('temel',`
  const o={};o.n=parts.length;o.zbox=parts[0].pos[2];o.lib=shelf.length;o.tabs=document.querySelectorAll('.page').length;return o`);
-ok(r&&r.n===2&&near(r.zbox,35,1e-6)&&r.lib===4&&r.tabs===7,'temel sahne, raf 4, 7 sekme '+JSON.stringify(r));
+ok(r&&r.n===2&&near(r.zbox,35,1e-6)&&r.lib===4&&r.tabs===6,'temel sahne, raf 4, 6 sekme '+JSON.stringify(r));
 
 /* içe aktarma: ofsetli, eğik olmayan "araba" + kopuk kırıntı */
 r=run('import',`
@@ -311,30 +311,52 @@ r=run('mv',`
  doUndo();return o`);
 ok(r&&r.n===1&&near(r.dims[0],200,.08)&&near(r.dims[1],400,.08)&&near(r.dims[2],100,.1)&&Math.abs(r.minz)<8&&Math.abs(r.cx)<5&&Math.abs(r.cy)<5,'çoklu görünümden model: ölçü, ortalama, taban '+JSON.stringify(r));
 
-/* Baskı sekmesi: mantar (ince sap + geniş şapka) */
-r=run('baski',`
- const o={};const a=new THREE.BoxGeometry(10,10,20);a.translate(0,0,10);const b=new THREE.BoxGeometry(40,40,5);b.translate(0,0,22.5);
- const m=catMesh([a,b].map(g=>({P:Float32Array.from(g.attributes.position.array),I:Uint32Array.from(g.index.array)})));
- const p=addPlain(m.P,m.I,'mantar');p.pos[0]+=500;apply(p);histMark();select(p);openTab('print');
- o.on=document.querySelector('#p-print').classList.contains('on');o.out=document.querySelector('#prOut').textContent;o.ov=prOv.visible;o.sup=prLast.r.supV;
- o.price=document.querySelector('#prPrice').textContent;o.fit=document.querySelector('#prFit').textContent;
- document.querySelector('#prBest').click();const w=worldArrays(p);o.after=printAnalyze(w.P,w.I,[0,0,-1],45).supV;const bx=worldBox(p);
- o.minz=bx.mn[2];o.h=bx.mx[2]-bx.mn[2];o.cx=(bx.mn[0]+bx.mx[0])/2;o.msg=document.querySelector('#prMsg').textContent;
- o.again=(document.querySelector('#prBest').click(),document.querySelector('#prMsg').textContent);
- doUndo();const P=()=>parts.find(q=>q.name==='mantar');select(P());const w2=worldArrays(P());o.undone=printAnalyze(w2.P,w2.I,[0,0,-1],45).supV;
- document.querySelector('#prPrinter').value='custom';['#prBx','#prBy','#prBz'].forEach(s=>document.querySelector(s).value='20');document.querySelector('#prPrinter').dispatchEvent(new Event('change'));
- o.nofit=document.querySelector('#prFit').textContent;document.querySelector('#prShrink').click();const b2=worldBox(P());o.shr=Math.max(b2.mx[0]-b2.mn[0],b2.mx[1]-b2.mn[1],b2.mx[2]-b2.mn[2]);
- o.fit2=document.querySelector('#prFit').textContent;
- P().pos[2]+=30;apply(P());prUpdate();o.air=document.querySelector('#prOut').textContent;document.querySelector('#prDown').click();o.z=worldBox(P()).mn[2];
- openTab('model');o.hid=!prOv.visible;return o`);
-ok(r&&r.on&&/Destek isteyen/.test(r.out)&&r.ov&&near(r.sup,32000,1e-3),'mantarda destek bulundu ve kırmızı gösterildi: '+(r&&r.sup));
-ok(r&&/TL/.test(r.price)&&/sığıyor/.test(r.fit),'fiyat ve sığma gösterildi');
-ok(r&&r.after<r.sup/20&&Math.abs(r.minz)<1e-3&&near(r.h,25,1e-4)&&near(r.cx,500,1e-3)&&/Döndürüldü/.test(r.msg),'en az destekle yatır: ters çevrildi, tablada, yeri korundu '+JSON.stringify(r&&[r.after,r.minz,r.h,r.cx]));
-ok(r&&/zaten/.test(r.again),'ikinci kez: yön zaten iyi');
-ok(r&&near(r.undone,32000,1e-3),'geri al eski yöne döndürdü');
-ok(r&&/Sığmıyor/.test(r.nofit)&&r.shr<=20+1e-6&&/sığıyor/.test(r.fit2),'küçük yazıcıda sığmadı, küçültünce sığdı ('+(r&&r.shr.toFixed(2))+' mm)');
-ok(r&&/yukarıda/.test(r.air)&&Math.abs(r.z)<1e-6,'havadaki parça uyarısı ve tablaya oturtma');
-ok(r&&r.hid,'başka sekmede kırmızı vurgu gizlenir');
+/* Düzen: baskı/fiyat yok, menüler, seçim filtresi, kararlı taşıma */
+r=run('düzen',`const q=s=>document.querySelector(s),o={};
+ o.tabs=[...document.querySelectorAll('#tabs button')].map(b=>b.textContent).join();o.print=!!q('#p-print')||typeof QUOTE_CFG!=='undefined'||typeof prOrient!=='undefined';
+ o.core=[...document.querySelectorAll('#modes button')].map(b=>b.textContent).join();
+ const mb=[...document.querySelectorAll('#bar .mbtn')];o.menus=mb.map(b=>b.dataset.label).join();o.closed=mb.every(b=>b.nextElementSibling.hidden);
+ mb[0].click();o.open=!mb[0].nextElementSibling.hidden&&mb[0].getAttribute('aria-expanded')==='true';mb[1].click();o.one=mb[0].nextElementSibling.hidden&&!mb[1].nextElementSibling.hidden;
+ select(parts[0]);q('#bar [data-mode=hole]').click();o.mode=mode;o.lbl=mb[1].textContent;o.shut=mb[1].nextElementSibling.hidden;o.tab=q('#tabs button.on').dataset.tab;
+ o.det=[...document.querySelectorAll('#p-edit details')].filter(d=>d.open).map(d=>d.id).join();
+ q('#bar [data-open=d-round]').click();o.mode2=mode;o.det2=[...document.querySelectorAll('#p-edit details')].filter(d=>d.open).map(d=>d.id).join();o.lbl2=mb[1].textContent;
+ const pk=q('#pick');pk.value='corner';pk.dispatchEvent(new Event('change'));o.pm=mode;o.pk=ePickKind;o.lbl3=mb[0].textContent;
+ q('#bar [data-mode=edge]').click();o.pv=pk.value;o.pk2=ePickKind;pk.value='part';pk.dispatchEvent(new Event('change'));o.pm2=mode;setMode('cage');o.pv2=pk.value;setMode('sec');
+ openTab('add');q('#p-add [data-add=box]').click();o.addTab=q('#tabs button.on').dataset.tab;o.props=!!q('#props input');o.msgTop=q('#msg').parentElement.id;
+ return o`);
+ok(r&&r.tabs==='Parça,Ekle,Düzenle,Eklem,Hesap,Dosya'&&!r.print,'sekmeler: '+(r&&r.tabs)+'; baskı ve fiyat kodu uygulamada yok');
+ok(r&&r.core==='Seç,Taşı,Döndür,Ölçekle'&&r.menus==='Biçim ver,Ekle / çıkar,Ölç,Görünüm'&&r.closed,'üst bar: 4 temel araç + menüler: '+(r&&r.menus));
+ok(r&&r.open&&r.one,'menü açılır; biri açılınca öteki kapanır');
+ok(r&&r.mode==='hole'&&r.lbl==='Ekle / çıkar: Delik'&&r.shut&&r.tab==='edit'&&r.det==='d-hole','menüden araç: mod değişir, menü kapanır, yalnız o aracın paneli açılır ('+(r&&r.lbl)+')');
+ok(r&&r.mode2==='sec'&&r.det2==='d-round'&&r.lbl2==='Ekle / çıkar','mod olmayan araç yalnız kendi panelini açar');
+ok(r&&r.pm==='edge'&&r.pk==='corner'&&r.lbl3==='Biçim ver: Kenar'&&r.pv==='any'&&r.pk2==='any'&&r.pm2==='sec'&&r.pv2==='part','seçim filtresi: köşe → kenar aracı yalnız köşe; parça → seç');
+ok(r&&r.addTab==='model'&&r.props&&r.msgTop==='side','parça eklenince ölçüleri görünür; genel ileti her sekmede');
+r=run('kamera',`const o={},up=()=>new THREE.Vector3(0,1,0).applyQuaternion(cam.quaternion),rt=()=>new THREE.Vector3(1,0,0).applyQuaternion(cam.quaternion);
+ view('iso');o.ctl=ctl instanceof THREE.OrbitControls;
+ /* her yöne çevirince ufuk yatık kalır: kameranın sağı hep yatay */
+ let roll=0;for(let i=0;i<40;i++){orbitBy(.37,.21*(i%5-2));ctl.update();roll=Math.max(roll,Math.abs(rt().z))}o.roll=roll;
+ view('z');const u=up(),rr=rt();o.top=[u.x,u.y,rr.x,rr.y].map(v=>+v.toFixed(3));view('y');const r2=rt(),u2=up();o.front=[r2.x,u2.z].map(v=>+v.toFixed(3));
+ /* imlece yakınlaş: imlecin altındaki nokta ekranda yerinde kalır */
+ view('iso');const R={left:0,top:0,width:800,height:600};cv.getBoundingClientRect=()=>R;const P=new THREE.Vector3(120,40,0),sc=()=>{cam.updateMatrixWorld();const s=P.clone().project(cam);return[(s.x+1)/2*800,(1-s.y)/2*600]};
+ persp.aspect=800/600;persp.updateProjectionMatrix();const s0=sc(),d0=cam.position.distanceTo(ctl.target);zPiv={t:performance.now(),x:s0[0],y:s0[1],P};zoomAt({clientX:s0[0],clientY:s0[1]},.5);const s1=sc();
+ o.zoom=[Math.hypot(s1[0]-s0[0],s1[1]-s0[1]),cam.position.distanceTo(ctl.target)/d0];
+ setOrtho(true);updOrtho();const t0=sc(),h0=orthoH;zPiv={t:performance.now(),x:t0[0],y:t0[1],P};zoomAt({clientX:t0[0],clientY:t0[1]},.5);const t1=sc();o.oz=[Math.hypot(t1[0]-t0[0],t1[1]-t0[1]),orthoH/h0];setOrtho(false);view('iso');
+ return o`);
+ok(r&&r.ctl&&r.roll<1e-6,'kamera her yöne çevrilse de yan yatmaz (en çok '+(r&&r.roll.toExponential(1))+')');
+ok(r&&near(r.top[1],1,1e-3)&&near(r.top[2],1,1e-3)&&near(r.front[0],1,1e-6)&&near(r.front[1],1,1e-6),'üstten bakışta +X sağda, +Y yukarıda; önden bakışta +X sağda, +Z yukarıda');
+ok(r&&r.zoom[0]<.5&&near(r.zoom[1],.5,1e-6)&&r.oz[0]<.5&&near(r.oz[1],.5,1e-6),'tekerlek: imlecin altındaki nokta yerinde kalır (kayma '+(r&&r.zoom[0].toFixed(3))+' / '+(r&&r.oz[0].toFixed(3))+' px)');
+r=run('tutamaç',`const o={},g=tc.children[0],nm=k=>g.gizmo[k].children.map(c=>c.name);[...parts].forEach(removePart);const p=add('box',[40,30,20],[0,0,10]);select(p);
+ o.free=nm('translate').includes('XYZ')||nm('rotate').includes('E')||nm('rotate').includes('XYZE')||g.picker.translate.children.some(c=>c.name==='XYZ');o.axes=['X','Y','Z','XY'].every(n=>nm('translate').includes(n));
+ o.snap=[tc.translationSnap,+(tc.rotationSnap*180/Math.PI).toFixed(3)];
+ setMode('move');o.hud0=document.querySelector('#hud').textContent;
+ tc.dispatchEvent({type:'dragging-changed',value:true});p.mesh.position.set(12,-7,10);tc.dispatchEvent({type:'objectChange'});o.hud=document.querySelector('#hud').textContent;o.g1=p.ground;o.pos=p.pos.slice();
+ p.mesh.position.set(12,-7,25);tc.dispatchEvent({type:'objectChange'});o.g2=p.ground;tc.dispatchEvent({type:'dragging-changed',value:false});o.hudEnd=document.querySelector('#hud').hidden;
+ setMode('sec');p.ground=true;sit(p);const x0=p.pos[0],z0=p.pos[2];const key=(k,sh)=>dispatchEvent(new KeyboardEvent('keydown',{key:k,shiftKey:!!sh,bubbles:true}));
+ key('ArrowRight');key('ArrowRight');key('ArrowUp',true);o.nudge=[p.pos[0]-x0,p.pos[1]+7,p.ground];o.hudN=document.querySelector('#hud').textContent;key('PageUp');o.nz=[p.pos[2]-z0,p.ground];
+ dispatchEvent(new KeyboardEvent('keydown',{key:'Alt'}));o.alt=tc.translationSnap;dispatchEvent(new KeyboardEvent('keyup',{key:'Alt'}));o.alt2=tc.translationSnap;return o`);
+ok(r&&!r.free&&r.axes&&r.snap.join()==='1,5','tutamaçta serbest (her yöne) sürükleme yok; eksen okları var; adım 1 mm / 5°');
+ok(r&&/X \+12 mm · Y −7 mm/.test(r.hud)&&r.g1===true&&r.g2===false&&r.hudEnd,'sürüklerken ne kadar gittiği yazar ('+(r&&r.hud)+'); yatay taşımada zeminde kalır, Z değişince kalkar');
+ok(r&&r.nudge.join()==='2,10,true'&&/X \+2 mm · Y \+10 mm/.test(r.hudN)&&r.nz.join()==='1,false'&&r.alt===null&&r.alt2===1,'ok tuşları 1 mm, Shift ile 10 mm; PageUp yukarı; Alt adımı kapatır');
 
 ok(h.errs.length===0,'çalışma sırasında yakalanmamış hata yok '+h.errs.join('|'));
 console.log(fails?('HATA '+fails):'TÜMÜ GEÇTİ');process.exit(fails?1:0);

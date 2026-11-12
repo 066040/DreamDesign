@@ -67,7 +67,7 @@ function pcbInfo(){const B=pcbView();if(!B)return;const f1=v=>f(v,1),nF=B.comps.
  $('#pcbOpen').innerHTML=L.length?L.map(c=>`<label class="chk"><input type="checkbox" data-ref="${esc(c.ref)}"${(prev[c.ref]!==undefined?prev[c.ref]:c.kind!=='conn')?' checked':''}>${esc(c.ref)} · ${PCB_KIND[c.kind]}${c.val&&c.kind!=='usb'?' ('+esc(c.val.slice(0,18))+')':''} · ${PCB_EDGE[c.edge]}</label>`).join(''):'<p class="note">Kenara dayanan USB, düğme ya da bağlantı bulunamadı.</p>'}
 function pcbDefaults(){const B=pcbView();if(!B)return;const a=pcbAuto(B,$('#pcbLid').checked);$('#pcbBelow').value=a.below;$('#pcbAbove').value=a.above;
  const d=B.holes.length?Math.min(...B.holes.map(h=>h.d)):2.2;$('#pcbPilot').value=+Math.max(.8,d-.4).toFixed(1)}
-function pcbLoad(text,name){pcbB=kicadBoard(text,name);if(uiMode==='simple')setUI('adv');openTab('model');
+function pcbLoad(text,name){pcbB=kicadBoard(text,name);if(uiMode==='simple')setUI('adv');openTab('add');
  $('#pcbBox').hidden=false;$('#pcbHint').hidden=true;$('#pcbUp').value='F';pcbInfo();pcbDefaults();
  msg(pcbB.warn.join(' ')||'Kart okundu. Ölçüleri kontrol edip "Kutuyu oluştur"a bas.',pcbB.warn.length?null:'var(--ok)','#pcbMsg');msg('');
  $('#pcbBox').scrollIntoView&&$('#pcbBox').scrollIntoView({block:'nearest'});return pcbB}

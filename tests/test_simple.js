@@ -1,4 +1,4 @@
-/* Basit mod: şekil ekle, ölçü, renk, döndür, kaba çevir, köşe yuvarla, delik, birleştir, fiyat */
+/* Basit mod: şekil ekle, ölçü, renk, döndür, kaba çevir, köşe yuvarla, delik, birleştir, dosya olarak indir */
 const H=require('./harness.js'),path=require('path');let fails=0;
 const ok=(c,m)=>{if(!c){fails++;console.log('FAIL',m)}else console.log('ok  ',m)};
 const near=(a,b,t)=>Math.abs(a-b)<=t*Math.max(1,Math.abs(b));
@@ -8,17 +8,17 @@ const run=(name,code)=>{try{return h.T(code)}catch(e){fails++;console.log('FAIL'
 const arun=async(name,code)=>{try{return await h.run('(async()=>{'+code+'})()','test')}catch(e){fails++;console.log('FAIL',name,'→ HATA',e.stack.split('\n').slice(0,4).join(' | '));return null}};
 const $=s=>`document.querySelector('${s}')`;
 (async()=>{
-let r=run('örnek sahne',`const n0=parts.length;try{localStorage.clear()}catch(_){}setUI('simple');return{n0,n:parts.length,com:comMarker.visible,price:${$('#sPrice')}.textContent,undo:Hist.undo.length}`);
-ok(r&&r.n0===2&&r.n===0&&!r.com&&r.price==='—'&&r.undo===0,'basit moda ilk girişte gelişmiş modun büyük örnek parçaları temizlenir, ağırlık merkezi gizlenir '+JSON.stringify(r));
+let r=run('örnek sahne',`const n0=parts.length;try{localStorage.clear()}catch(_){}setUI('simple');return{n0,n:parts.length,com:comMarker.visible,price:!!${$('#sPrice')}||!!${$('#sOrder')},undo:Hist.undo.length}`);
+ok(r&&r.n0===2&&r.n===0&&!r.com&&r.price===false&&r.undo===0,'basit moda ilk girişte örnek parçalar temizlenir, ağırlık merkezi gizlenir; fiyat ve sipariş yok '+JSON.stringify(r));
 r=run('aç',`[...parts].forEach(removePart);select(null);try{localStorage.clear()}catch(_){}setUI('simple');
- return{cls:document.body.classList.contains('simple'),hid:${$('#simple')}.hidden,guide:${$('#sGuide')}.hidden,on:${$('#mtoggle [data-ui=simple]')}.getAttribute('aria-checked'),mode,price:${$('#sPrice')}.textContent,order:${$('#sOrder')}.disabled}`);
-ok(r&&r.cls&&!r.hid&&!r.guide&&r.on==='true'&&r.price==='—'&&r.order,'basit mod açıldı, ilk açılış rehberi görünür, fiyat boş '+JSON.stringify(r));
+ return{cls:document.body.classList.contains('simple'),hid:${$('#simple')}.hidden,guide:${$('#sGuide')}.hidden,on:${$('#mtoggle [data-ui=simple]')}.getAttribute('aria-checked'),mode,price:${$('#sExInfo')}.textContent,order:${$('#sExport')}.disabled}`);
+ok(r&&r.cls&&!r.hid&&!r.guide&&r.on==='true'&&/Önce bir şekil/.test(r.price)&&r.order,'basit mod açıldı, ilk açılış rehberi görünür, indirme kapalı '+JSON.stringify(r));
 r=run('rehber',`${$('#sGuideOk')}.click();setUI('simple');return ${$('#sGuide')}.hidden`);ok(r===true,'"Anladım" sonrası rehber bir daha çıkmaz');
 
-r=run('kutu',`${$('[data-add=box]')}.click();sPrice();const p=sel,b=worldBox(p);
- return{n:parts.length,size:p.size,minz:b.mn[2],mat:p.mat,w:${$('#sW')}.value,name:${$('#sSelName')}.textContent,price:${$('#sPrice')}.textContent,edit:${$('#sEdit')}.hidden,msg:${$('#sMsg')}.textContent}`);
+r=run('kutu',`${$('[data-add=box]')}.click();const p=sel,b=worldBox(p);
+ return{n:parts.length,size:p.size,minz:b.mn[2],mat:p.mat,w:${$('#sW')}.value,name:${$('#sSelName')}.textContent,price:${$('#sExport')}.disabled,edit:${$('#sEdit')}.hidden,msg:${$('#sMsg')}.textContent}`);
 ok(r&&r.n===1&&r.size.join()==='40,40,40'&&Math.abs(r.minz)<1e-6&&r.mat==='PLA'&&r.w==='40'&&/Kutu/.test(r.name)&&!r.edit,'kutu eklendi: 40 mm, tablada, PLA, panel dolu');
-ok(r&&/TL$/.test(r.price)&&/eklendi/.test(r.msg),'canlı fiyat: '+(r&&r.price));
+ok(r&&r.price===false&&/eklendi/.test(r.msg),'şekil eklenince "STL olarak indir" açılır');
 
 r=run('ölçü',`const p=sel;${$('#sW')}.value='60';${$('#sW')}.dispatchEvent(new Event('change'));const a=p.size.slice();
  ${$('#sLock')}.checked=true;${$('#sH')}.value='80';${$('#sH')}.dispatchEvent(new Event('change'));const b=p.size.slice();${$('#sLock')}.checked=false;
@@ -66,14 +66,10 @@ r=await arun('birleştir',`[...parts].forEach(removePart);select(null);${$('[dat
  return{vis,n:parts.length,v:massInfo(parts[0]).vol,name:parts[0].name,msg:${$('#sMsg')}.textContent}`);
 ok(r&&r.vis&&r.n===1&&near(r.v,40*40*60,1e-3)&&/tek parça/.test(r.msg),'iki kutu birleşti: hacim '+(r&&r.v.toFixed(0))+' = 40×40×60');
 
-/* sığmayan model ve sipariş */
-r=run('küçülünce',`const p=parts[0],o=p.size.slice();const g=()=>{sPrice();return{p:${$('#sPrice')}.textContent,i:${$('#sPriceInfo')}.textContent}};
- p.size=[80,80,80];apply(p);refresh();const big=g();p.size=[10,10,10];apply(p);refresh();const small=g();p.size=o;apply(p);refresh();return{big,small}`);
-ok(r&&r.big.p!==r.small.p&&/En düşük sipariş tutarı/.test(r.small.i)&&/hesap \d/.test(r.small.i),'küçülünce fiyat değişir; en düşük tutar uygulanınca açıkça yazar '+JSON.stringify(r));
-r=run('sığma',`const p=parts[0];p.size=[300,40,40];apply(p);refresh();sPrice();return{p:${$('#sPrice')}.textContent,i:${$('#sPriceInfo')}.textContent}`);
-ok(r&&r.p==='Sığmıyor'&&/256/.test(r.i),'yazıcıya sığmayan: açık uyarı');
-r=run('sipariş',`window.open=()=>null;${$('#sOrder')}.click();return ${$('#sMsg')}.textContent`);
-ok(r&&/engelledi/.test(r),'açılır pencere engellenince ne yapılacağı yazıyor');
+/* dosya olarak indir */
+r=run('indir',`let got=null;const d0=download;download=(n,data)=>{got={n,len:(data.byteLength||data.length)};return true};${$('#sExport')}.click();download=d0;
+ const tris=parts.filter(p=>p.vis&&!p.ghost).reduce((s,p)=>s+p.mesh.geometry.index.count/3,0);return{got,tris,msg:${$('#sMsg')}.textContent,info:${$('#sExInfo')}.textContent}`);
+ok(r&&r.got&&r.got.n==='dreamdesign.stl'&&r.got.len===84+50*r.tris&&/indirildi/.test(r.msg),'"STL olarak indir": görünen şekiller tek STL ('+(r&&r.got&&r.got.len)+' bayt)');
 r=run('gelişmiş',`setUI('adv');return{cls:document.body.classList.contains('simple'),z:tc.showZ,st:localStorage.getItem('dd-ui')}`);
 ok(r&&!r.cls&&r.z&&r.st==='adv','gelişmiş moda dönüş hatırlandı');
 
