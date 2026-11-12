@@ -14,10 +14,10 @@ function setUI(m){uiMode=m==='adv'?'adv':'simple';document.body.classList.toggle
  sStore.set(uiMode);look();
  if(uiMode==='simple'){if(!['sec','move','hole'].includes(mode))setMode('sec');tc.showZ=false;
   if(sDemo.length&&parts.length&&parts.every(p=>sDemo.includes(p))&&!Hist.undo.length){sDemo.slice().forEach(removePart);sDemo.length=0;select(null);histReset();view('iso')}
-  if(sCom===null)sCom=$('#showcom').checked;$('#showcom').checked=false;stats();sPanel();sPrice();
+  if(sCom===null)sCom=$('#showcom').checked;$('#showcom').checked=false;stats();sPanel();
   $('#hint').textContent='Sol tuşla sürükle: etrafında dön · Tekerlek: yakınlaştır · Bir şekle tıkla: seç · Kare = 100 mm';
   let seen=null;try{seen=localStorage.getItem('dd-guide')}catch(_){}$('#sGuide').hidden=!!seen}
- else{tc.showZ=true;if(sCom!==null){$('#showcom').checked=sCom;sCom=null;stats()}$('#hint').textContent='Sol tuş (boşlukta): her yöne döndür · Sağ tuş: kaydır · Tekerlek: yakınlaştır · Kare = 100 mm · Model veya fotoğrafı bu alana bırak'}}
+ else{tc.showZ=true;if(sCom!==null){$('#showcom').checked=sCom;sCom=null;stats()}$('#hint').textContent='Sol tuş: döndür · Sağ ya da orta tuş: kaydır · Tekerlek: imlecin olduğu yere yakınlaş · Ok tuşları: seçili parçayı 1 mm oynat · Kare = 100 mm'}}
 document.querySelectorAll('#mtoggle button').forEach(b=>b.onclick=()=>setUI(b.dataset.ui));
 $('#sGuideOk').onclick=()=>{$('#sGuide').hidden=true;try{localStorage.setItem('dd-guide','1')}catch(_){}};
 
@@ -36,7 +36,7 @@ function sColor(p,hex){p.color=hex;if(p.mat!=='PLA'){p.mat='PLA';if(p.solidMat)p
 /* ---------- seçili şeklin paneli ---------- */
 function sPanel(){if(uiMode!=='simple')return;const p=sel&&parts.includes(sel)?sel:null;
  $('#sEdit').hidden=!p;$('#sNoSel').hidden=!!p;$('#sSelName').textContent=p?p.name:'Şekil seçili değil';
- $('#sJoinSec').hidden=parts.filter(q=>q.vis).length<2;$('#sOrder').disabled=!parts.some(q=>q.vis);
+ $('#sJoinSec').hidden=parts.filter(q=>q.vis).length<2;sExInfo();
  if(!p){['#sCup','#sHole','#sRound'].forEach(id=>$(id).hidden=true);sAria();return}
  [['#sW',0],['#sD',1],['#sH',2]].forEach(([id,k])=>{if(document.activeElement!==$(id))$(id).value=Math.round(p.size[k]*10)/10});
  const box=$('#sColors');if(box.dataset.for!==String(p.id)||box.dataset.col!==p.color){box.dataset.for=p.id;box.dataset.col=p.color;box.innerHTML='';
@@ -100,27 +100,15 @@ $('#sJoin').onclick=async()=>{if(sBusy)return;const list=parts.filter(p=>p.vis&&
   a.name='Birleşik parça';refresh();look();histMark();sMsg('Hepsi tek parça oldu.','var(--ok)')}
  catch(e){sMsg(e.message,'var(--warn)')}finally{sBusy=false;sPanel()}};
 
-/* ---------- canlı fiyat ve sipariş: Baskı sekmesiyle aynı hesap (PLA, normal, görünen tüm şekiller) ---------- */
-function sPrice(){sT=0;if(uiMode!=='simple')return;const list=parts.filter(p=>p.vis&&!p.ghost),el=$('#sPrice'),inf=$('#sPriceInfo');
- if(!list.length){el.textContent='—';inf.textContent='Önce bir şekil ekle.';return}
- try{const M=prMesh(list),r=printAnalyze(M.P,M.I,[0,0,-1],QUOTE_CFG.overhang),bed=PRINTERS.p1s.bed;
-  let mn=[1e30,1e30,1e30],mx=[-1e30,-1e30,-1e30];for(let i=0;i<M.P.length;i+=3)for(let k=0;k<3;k++){const v=M.P[i+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
-  const sz=[0,1,2].map(k=>mx[k]-mn[k]),fl=[Math.max(sz[0],sz[1]),Math.min(sz[0],sz[1])];
-  if(fl[0]>bed[0]||fl[1]>bed[1]||sz[2]>bed[2]){el.textContent='Sığmıyor';inf.textContent='Yazıcı en fazla '+bed[0]+' mm basabilir. Şekilleri küçült.';return}
-  const e=estimate({vol:M.vol,area:M.area},{scale:1,material:'PLA',infill:'normal',qty:1,supportVol:r.supV});
-  el.textContent=f(e.total,0)+' '+QUOTE_CFG.currency;const g=f(e.grams,e.grams<10?1:0)+' g';
-  inf.textContent=e.minApplied?'En düşük sipariş tutarı (hesap '+f(Math.ceil(e.raw),0)+' '+QUOTE_CFG.currency+', '+g+')':'PLA, '+g+', '+fmtHours(e.hours);
-  inf.title=e.minApplied?'Küçük parçalarda en düşük sipariş tutarı '+QUOTE_CFG.minPrice+' '+QUOTE_CFG.currency+'. Birkaç parçayı aynı siparişe eklersen bu tutarın içinde basılır.':'Malzeme ve rengi sipariş adımında değiştirebilirsin.'}
- catch(err){el.textContent='—';inf.textContent=''}}
-function sPriceSoon(){if(uiMode!=='simple')return;clearTimeout(sT);sT=setTimeout(sPrice,150)}
-$('#sOrder').onclick=()=>{const all=$('#prAll').checked;$('#prAll').checked=true;$('#prMat').value='PLA';$('#prInf').value='normal';
- $('#prOrder').click();$('#prAll').checked=all;const m=$('#prMsg').textContent;sMsg(m,/engelledi/.test(m)?'var(--warn)':'var(--mut)')};
-
+/* ---------- dosya olarak indir (görünen tüm şekiller, tek STL) ---------- */
+function sExInfo(){if(uiMode!=='simple')return;const n=parts.filter(p=>p.vis&&!p.ghost).length;$('#sExport').disabled=!n;
+ $('#sExInfo').textContent=n?(n>1?n+' şekil tek dosyada iner.':'Dosyayı baskıya ya da başka programa verebilirsin.'):'Önce bir şekil ekle.'}
+$('#sExport').onclick=()=>{const l=parts.filter(p=>p.vis&&!p.ghost);if(!l.length)return;const m=catMesh(l.map(p=>worldArrays(p)));
+ const ok=download('dreamdesign.stl',stlBinary(m.P,m.I),'model/stl');sMsg(ok===false?'Dosya indirilemedi.':'dreamdesign.stl indirildi (ölçüler mm).',ok===false?'var(--warn)':'var(--ok)')};
 /* ---------- bağlantılar ---------- */
-const _selectS=select;select=function(p){_selectS(p);if(uiMode==='simple'){sPanel();sPriceSoon();if(mode==='hole'&&$('#sHole').hidden)setMode('sec')}};
-const _refreshS=refresh;refresh=function(){_refreshS();sPanel();sPriceSoon()};
+const _selectS=select;select=function(p){_selectS(p);if(uiMode==='simple'){sPanel();if(mode==='hole'&&$('#sHole').hidden)setMode('sec')}};
+const _refreshS=refresh;refresh=function(){_refreshS();sPanel()};
 const _setModeS=setMode;setMode=function(m){_setModeS(m);if(uiMode==='simple'&&!['sec','move','hole'].includes(m)){_setModeS('sec')}if(typeof sPanel==='function')sPanel()};
-addEventListener('pointerup',()=>sPriceSoon());
 /* basit modda seçili şekil parlamasın: seçtiği renk aynen görünsün (seçimi ölçü çizgileri gösterir) */
 const _lookS=look;look=function(){_lookS();if(uiMode==='simple')parts.forEach(p=>p.solidMat.emissive.setHex(0))};
 {const q=new URLSearchParams(location.search).get('mod');setUI(q==='gelismis'?'adv':q==='basit'?'simple':(sStore.get()||'simple'))}

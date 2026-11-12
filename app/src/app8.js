@@ -14,12 +14,13 @@ function eResolve(p,kind,pt){const F=featOf(p),d=(a)=>Math.hypot(a[0]-pt[0],a[1]
  else F.chains.forEach((c,i)=>{c.ws.forEach(w=>{const x=d(F.pos(w));if(x<bd){bd=x;best={p,kind,ci:i}}})});
  return best}
 /* ekranda fareye en yakın köşe (14 px) ya da kenar (10 px) */
+let ePickKind='any';                                             // seçim filtresi: 'any' | 'edge' | 'corner'
 function ePickAt(e){const r=cv.getBoundingClientRect(),mx=e.clientX,my=e.clientY,hit=pickAt(e),list=[];
  if(hit)list.push(hit.p);if(sel&&sel.vis&&!list.includes(sel))list.push(sel);let best=null,bd=Infinity;
  for(const p of list){const F=featOf(p);if(F.nseg>40000)continue;p.mesh.updateMatrixWorld(true);const M=p.mesh.matrixWorld,cache=new Map();
   const S=w=>{let s=cache.get(w);if(s)return s;const v=v3(F.pos(w)).applyMatrix4(M),q=v.clone().project(cam);s={x:(q.x+1)/2*r.width+r.left,y:(1-q.y)/2*r.height+r.top,ok:q.z<1,v};cache.set(w,s);return s};
-  F.corners.forEach((c,i)=>{const s=S(c.w);if(!s.ok)return;const d=Math.hypot(s.x-mx,s.y-my)-6;if(d<8&&d<bd){bd=d;best={p,kind:'corner',ci:i,point:s.v.clone()}}});
-  F.chains.forEach((c,i)=>{for(let k=0;k+1<c.ws.length;k++){const A=S(c.ws[k]),B=S(c.ws[k+1]);if(!A.ok||!B.ok)continue;
+  if(ePickKind!=='edge')F.corners.forEach((c,i)=>{const s=S(c.w);if(!s.ok)return;const d=Math.hypot(s.x-mx,s.y-my)-6;if(d<8&&d<bd){bd=d;best={p,kind:'corner',ci:i,point:s.v.clone()}}});
+  if(ePickKind!=='corner')F.chains.forEach((c,i)=>{for(let k=0;k+1<c.ws.length;k++){const A=S(c.ws[k]),B=S(c.ws[k+1]);if(!A.ok||!B.ok)continue;
    const dx=B.x-A.x,dy=B.y-A.y,L2=dx*dx+dy*dy,t=L2>1e-9?Math.max(0,Math.min(1,((mx-A.x)*dx+(my-A.y)*dy)/L2)):0,d=Math.hypot(A.x+t*dx-mx,A.y+t*dy-my);
    if(d<10&&d<bd){bd=d;best={p,kind:'edge',ci:i,point:A.v.clone().lerp(B.v,t)}}}})}
  return best}

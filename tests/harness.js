@@ -14,7 +14,7 @@ module.exports=function(htmlPath){
  const nm=path.dirname(path.dirname(require.resolve('three/package.json')));
  const three=path.join(nm,'three');
  run(fs.readFileSync(three+'/build/three.js','utf8'),'three.js');
- ['controls/TrackballControls','controls/TransformControls','loaders/GLTFLoader','loaders/OBJLoader','loaders/STLLoader','exporters/GLTFExporter'].forEach(f=>run(fs.readFileSync(three+'/examples/js/'+f+'.js','utf8'),f));
+ ['controls/OrbitControls','controls/TransformControls','loaders/GLTFLoader','loaders/OBJLoader','loaders/STLLoader','exporters/GLTFExporter'].forEach(f=>run(fs.readFileSync(three+'/examples/js/'+f+'.js','utf8'),f));
  run(`THREE.WebGLRenderer=class{constructor(){this.domElement=document.createElement('canvas');this.domElement.getBoundingClientRect=()=>({left:0,top:0,width:800,height:600})}
   setPixelRatio(){}setSize(){}setClearColor(){}render(){}};
   THREE.PMREMGenerator=class{fromScene(){return{texture:{}}}dispose(){}}`,'stub');

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased – tidy advanced mode, stable camera and move; printing and pricing removed
+- **Removed from the design tool**: the *Baskı* tab (printer fit, support preview, auto-orientation, price), and the price / order strip in simple mode. Simple mode now ends with *STL olarak indir*. The standalone quote page (`docs/bastir.html`) and shop page are unchanged and no longer linked from the app.
+- **Top bar**: four core tools plus menus (*Biçim ver*, *Ekle / çıkar*, *Ölç*, *Görünüm*) with shortcuts shown; a selection filter (part / edge and corner / edge only / corner only). Choosing a tool opens only that tool's panel in *Düzenle*.
+- **Camera**: turntable orbit (no roll), wheel zooms toward the cursor in perspective and orthographic views, right or middle button pans; top view now has +Y up.
+- **Move / rotate**: no free-drag handles; 1 mm and 5° steps (Alt for free); live readout of how far the part moved or turned; moving sideways keeps the part on the bed; arrow keys nudge by 1 mm (Shift 10 mm), PageUp / PageDown for height.
+- **Side panel**: *Parça* tab = part list, size / position / rotation, step list; *Ekle* tab = shapes, file import, KiCad enclosure, multi-view, shelf; rarely used part settings folded away; general messages visible on every tab.
+
 ## Unreleased – enclosure from a KiCad board
 - **KiCad kartından kutu** (Model tab, or drop a `.kicad_pcb`): reads Edge.Cuts outline (lines, arcs, rects, circles, polygons), board thickness, mounting holes, and each footprint's side, body box and height; KiCad 6–10 files.
 - Builds a tray (outline offset by clearance + wall), standoffs with pilot holes under every mounting hole, wall openings for edge USB / buttons / connectors (chosen per part), and a lipped press-fit lid placed beside the tray, flat side down.

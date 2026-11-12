@@ -182,7 +182,7 @@ addEventListener('keydown',e=>{
  else if(k==='f')fit();else if(k==='p')setOrtho(!isOrtho);else if(k==='d')skOpen(true);
  else if(k==='q')setMode('sec');else if(k==='g')setMode('move');else if(k==='r')setMode('rot');else if(k==='s')setMode('scl');else if(k==='e')setMode('grab');else if(k==='k')setMode('cage');else if(k==='m')setMode('meas');else if(k==='b')setMode('edge');else if(k==='h')setMode('hole');
  else if(k==='delete'||k==='backspace')remove()});
-new ResizeObserver(()=>{const w=vp.clientWidth,h=vp.clientHeight;if(!w||!h)return;ren.setSize(w,h,false);persp.aspect=w/h;persp.updateProjectionMatrix();updOrtho();ctl.handleResize()}).observe(vp);
+new ResizeObserver(()=>{const w=vp.clientWidth,h=vp.clientHeight;if(!w||!h)return;ren.setSize(w,h,false);persp.aspect=w/h;persp.updateProjectionMatrix();updOrtho()}).observe(vp);
 
 /* ---- başlangıç sahnesi ---- */
 add('box',[640,260,70],[0,0,0]);
@@ -193,7 +193,6 @@ let last=performance.now();
  if(spin){const v=cam.position.clone().sub(ctl.target).applyAxisAngle(Zax,dt*.6);cam.position.copy(ctl.target).add(v)}
  if(grab&&grab.pending){const e=grab.pending;grab.pending=null;doGrab(e)}
  else if(mode==='grab'&&!grab&&hoverEv){const e=hoverEv;hoverEv=null;hover(e)}
- if(isOrtho)ctl.panSpeed=.9*vp.clientWidth/Math.max(cam.position.distanceTo(ctl.target),1);else ctl.panSpeed=.8;
  if(mpendMark.visible)mpendMark.scale.setScalar(markSize());
  if(measures.length)drawMeasures();
  parts.forEach(p=>{if(p.sil)updSilhouette(p)});ctl.update();placeLabels();ren.render(scene,cam)})(performance.now());
